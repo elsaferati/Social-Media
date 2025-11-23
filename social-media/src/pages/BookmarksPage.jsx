@@ -10,7 +10,7 @@ const BookmarksPage = () => {
   return (
     <div className="bookmarks-page p-4">
       <h1 className="text-2xl font-bold mb-4">Bookmarks</h1>
-      <PostsFeed posts={posts} filter="bookmarks" />
+      <PostsFeed posts={posts} />
     </div>
   );
 };
