@@ -137,24 +137,38 @@ app.get("/api/likes", async (req, res) => {
   }
 });
 
-// 6. TOGGLE LIKE (Add or Remove)
+// 6. TOGGLE LIKE (UPDATED WITH NOTIFICATION)
 app.post("/api/likes", async (req, res) => {
   try {
     const { userId, postId } = req.body;
 
-    // Check if already liked
     const [existing] = await db.query("SELECT * FROM likes WHERE userId = ? AND postId = ?", [userId, postId]);
 
     if (existing.length > 0) {
-      // If exists, delete it (Unlike)
+      // Unlike
       await db.query("DELETE FROM likes WHERE userId = ? AND postId = ?", [userId, postId]);
+      // Optional: Delete the notification if they unlike? For now, let's keep it simple.
       res.status(200).json("Post has been disliked.");
     } else {
-      // If not exists, add it (Like)
+      // Like
       await db.query("INSERT INTO likes (userId, postId) VALUES (?, ?)", [userId, postId]);
+
+      // --- NEW: Create Notification ---
+      // 1. First, find out who owns the post (so we know who to notify)
+      const [postData] = await db.query("SELECT userId FROM posts WHERE id = ?", [postId]);
+      const postOwnerId = postData[0].userId;
+
+      // 2. Only notify if you are not liking your own post
+      if (postOwnerId !== userId) {
+         const notifQ = "INSERT INTO notifications (receiverUserId, senderUserId, type, postId) VALUES (?, ?, 'like', ?)";
+         await db.query(notifQ, [postOwnerId, userId, postId]);
+      }
+      // -------------------------------
+
       res.status(200).json("Post has been liked.");
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json(err);
   }
 });
