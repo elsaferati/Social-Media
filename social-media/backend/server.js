@@ -288,6 +288,59 @@ app.get("/api/notifications", async (req, res) => {
   }
 });
 
+// 13. TOGGLE BOOKMARK (Save or Unsave)
+app.post("/api/bookmarks", async (req, res) => {
+  try {
+    const { userId, postId } = req.body;
+
+    const [existing] = await db.query("SELECT * FROM bookmarks WHERE userId = ? AND postId = ?", [userId, postId]);
+
+    if (existing.length > 0) {
+      // Already bookmarked -> Delete it
+      await db.query("DELETE FROM bookmarks WHERE userId = ? AND postId = ?", [userId, postId]);
+      res.status(200).json("Bookmark removed");
+    } else {
+      // Not bookmarked -> Add it
+      await db.query("INSERT INTO bookmarks (userId, postId) VALUES (?, ?)", [userId, postId]);
+      res.status(200).json("Bookmark saved");
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// 14. CHECK IF BOOKMARKED (For the button color)
+app.get("/api/bookmarks/check", async (req, res) => {
+  try {
+    const { userId, postId } = req.query;
+    const [data] = await db.query("SELECT * FROM bookmarks WHERE userId = ? AND postId = ?", [userId, postId]);
+    // Returns true if array length > 0
+    res.status(200).json(data.length > 0); 
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// 15. GET ALL BOOKMARKED POSTS (For Bookmarks Page)
+app.get("/api/posts/bookmarks/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    // Join bookmarks -> posts -> users (to get post details and author info)
+    const q = `
+      SELECT p.*, u.username, u.profilePic 
+      FROM bookmarks b
+      JOIN posts p ON b.postId = p.id
+      JOIN users u ON p.userId = u.id
+      WHERE b.userId = ?
+      ORDER BY b.createdAt DESC
+    `;
+    
+    const [data] = await db.query(q, [userId]);
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 
 app.listen(8800, () => {
   console.log("Backend server running on port 8800!");
