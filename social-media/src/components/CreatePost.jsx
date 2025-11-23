@@ -1,30 +1,24 @@
 import React, { useState } from "react";
 
-function CreatePost() {
+function CreatePost({ onCreate }) {
   const [postContent, setPostContent] = useState("");
 
   const handlePost = () => {
     if (postContent.trim()) {
-      alert("Post created successfully!");
+      onCreate(postContent); // send text to feed
       setPostContent("");
     }
   };
 
   return (
-    <div
-      className="card p-4"
-      data-name="create-post"
-      data-file="components/CreatePost.js"
-    >
+    <div className="card p-4 mb-4">
       <div className="flex gap-3">
-        {/* User Avatar */}
         <img
           src="https://i.pravatar.cc/150?img=1"
           alt="User"
           className="w-12 h-12 rounded-full"
         />
 
-        {/* Post Input */}
         <div className="flex-1">
           <textarea
             value={postContent}
@@ -34,23 +28,8 @@ function CreatePost() {
             rows={3}
           />
 
-          {/* Bottom Actions */}
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-[var(--border-color)]">
-            <div className="flex items-center gap-2">
-              <button className="w-9 h-9 rounded-full hover:bg-[var(--secondary-color)] flex items-center justify-center">
-                <div className="icon-image text-xl text-[var(--primary-color)]"></div>
-              </button>
-
-              <button className="w-9 h-9 rounded-full hover:bg-[var(--secondary-color)] flex items-center justify-center">
-                <div className="icon-smile text-xl text-[var(--primary-color)]"></div>
-              </button>
-
-              <button className="w-9 h-9 rounded-full hover:bg-[var(--secondary-color)] flex items-center justify-center">
-                <div className="icon-map-pin text-xl text-[var(--primary-color)]"></div>
-              </button>
-            </div>
-
-            <button onClick={handlePost} className="btn-primary">
+          <div className="flex justify-end mt-3 pt-3 border-t border-gray-300">
+            <button onClick={handlePost} className="btn-primary px-4 py-1">
               Post
             </button>
           </div>

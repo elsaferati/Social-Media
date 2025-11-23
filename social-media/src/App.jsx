@@ -1,42 +1,47 @@
 import React, { useState } from "react";
+import './App.css'
+import MessageList from "./components/MessageList";
+import ChatWindow from "./components/ChatWindow";
+import ProfileHeader from './components/ProfileHeader.jsx'
+import Header from './components/Header.jsx'
+import CreatePost from "./components/CreatePost";
+import PostsFeed from "./components/PostsFeed";
 
-function CreatePost({ onCreate }) {
-  const [postContent, setPostContent] = useState("");
+function App() {
+  const [activeChat, setActiveChat] = useState(null);
+  const [messages, setMessages] = useState([]);
 
-  const handlePost = () => {
-    if (postContent.trim()) {
-      onCreate(postContent); // send text to feed
-      setPostContent("");
-    }
+  const handleSelectChat = (chat) => {
+    setActiveChat(chat);
+
+    // Example messages
+    setMessages([
+      { sender: "them", text: chat.lastMessage },
+      { sender: "me", text: "Sure, let's do it!" },
+    ]);
+  };
+
+  const handleSend = (text) => {
+    setMessages((prev) => [...prev, { sender: "me", text }]);
   };
 
   return (
-    <div className="card p-4 mb-4">
-      <div className="flex gap-3">
-        <img
-          src="https://i.pravatar.cc/150?img=1"
-          alt="User"
-          className="w-12 h-12 rounded-full"
-        />
+    <div className="h-screen grid grid-cols-1 md:grid-cols-[300px_1fr]">
+      <Header />
+      <ProfileHeader />
+      <CreatePost />
+      <PostsFeed />
+      {/* Chat List */}
+      <MessageList onSelectChat={handleSelectChat} />
 
-        <div className="flex-1">
-          <textarea
-            value={postContent}
-            onChange={(e) => setPostContent(e.target.value)}
-            placeholder="What's on your mind?"
-            className="w-full border-none focus:outline-none resize-none text-lg"
-            rows={3}
-          />
-
-          <div className="flex justify-end mt-3 pt-3 border-t border-gray-300">
-            <button onClick={handlePost} className="btn-primary px-4 py-1">
-              Post
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Chat Window */}
+      <ChatWindow
+        chat={activeChat}
+        messages={messages}
+        onSend={handleSend}
+      />
     </div>
   );
 }
 
-export default CreatePost;
+export default App;
