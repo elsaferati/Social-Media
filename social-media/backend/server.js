@@ -159,16 +159,20 @@ app.post("/api/likes", async (req, res) => {
   }
 });
 
-// 7. FOLLOW A USER
+// 7. FOLLOW A USER (UPDATED WITH NOTIFICATION)
 app.post("/api/relationships", async (req, res) => {
   try {
     const { followerUserId, followedUserId } = req.body;
-    
-    // Prevent following yourself
     if (followerUserId === followedUserId) return res.status(400).json("Cannot follow yourself");
 
     const q = "INSERT INTO relationships (followerUserId, followedUserId) VALUES (?, ?)";
     await db.query(q, [followerUserId, followedUserId]);
+
+    // --- NEW: Create Notification ---
+    const notifQ = "INSERT INTO notifications (receiverUserId, senderUserId, type) VALUES (?, ?, 'follow')";
+    await db.query(notifQ, [followedUserId, followerUserId]);
+    // -------------------------------
+
     res.status(200).json("Following");
   } catch (err) {
     res.status(500).json(err);
