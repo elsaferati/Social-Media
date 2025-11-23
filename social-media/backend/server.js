@@ -249,6 +249,27 @@ app.get("/api/posts/explore", async (req, res) => {
   }
 });
 
+// 12. GET NOTIFICATIONS
+app.get("/api/notifications", async (req, res) => {
+  try {
+    const userId = req.query.userId;
+    
+    // Get notifications AND the sender's info (username/pic)
+    const q = `
+      SELECT n.*, u.username, u.profilePic 
+      FROM notifications n
+      JOIN users u ON n.senderUserId = u.id
+      WHERE n.receiverUserId = ?
+      ORDER BY n.createdAt DESC
+    `;
+    
+    const [data] = await db.query(q, [userId]);
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 
 app.listen(8800, () => {
   console.log("Backend server running on port 8800!");
