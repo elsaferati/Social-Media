@@ -1,23 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 
 const PostCard = ({ post }) => {
-  const [liked, setLiked] = useState(post.isLiked || false);
-  const [likesCount, setLikesCount] = useState(post.likes || 0);
-
-  const toggleLike = () => {
-    setLiked(!liked);
-    setLikesCount(liked ? likesCount - 1 : likesCount + 1);
-  };
-
   return (
-    <div className="post-card p-4 border mb-4 rounded">
-      <p>{post.content}</p>
-      <button
-        onClick={toggleLike}
-        className={`px-2 py-1 rounded mt-2 ${liked ? "bg-red-500 text-white" : "bg-gray-200"}`}
-      >
-        {liked ? "Unlike" : "Like"} ({likesCount})
-      </button>
+    <div className="bg-white p-4 rounded shadow mb-4 border">
+      <div className="flex items-center gap-3 mb-2">
+        <div className="font-bold">{post.username || "Unknown User"}</div>
+        <div className="text-gray-500 text-xs">
+          {new Date(post.createdAt).toLocaleDateString()}
+        </div>
+      </div>
+      <p className="text-gray-800">{post.content}</p>
     </div>
   );
 };
