@@ -1,27 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom"; // To read the URL
 import PostsFeed from "../components/PostsFeed";
-import ProfileHeader from "../components/ProfileHeader";
-import SuggestedUsers from "../components/SuggestedUsers";
+import ProfileHeader from "../components/ProfileHeader"; // Ensure you have this component or create a simple one
 
 const ProfilePage = () => {
-  const [posts, setPosts] = useState([
-    { id: 1, content: "My first profile post", likes: 5, isLiked: false, userId: 1 },
-    { id: 2, content: "Another post", likes: 2, isLiked: true, userId: 1 },
-  ]);
+  const { userId } = useParams(); // Get ID from URL
+  const [user, setUser] = useState(null);
+  const [posts, setPosts] = useState([]);
 
-  const suggestedUsers = [
-    { id: 2, name: "Bob", username: "@bob" },
-    { id: 3, name: "Charlie", username: "@charlie" },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // 1. Fetch User Info
+        const userRes = await fetch(`http://localhost:8800/api/users/${userId}`);
+        const userData = await userRes.json();
+        setUser(userData);
+
+        // 2. Fetch User's Posts
+        const postsRes = await fetch(`http://localhost:8800/api/posts/user/${userId}`);
+        const postsData = await postsRes.json();
+        setPosts(postsData);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchData();
+  }, [userId]); // Re-run if URL changes
+
+  if (!user) return <div className="p-4">Loading profile...</div>;
 
   return (
-    <div className="profile-page flex flex-col md:flex-row gap-4">
-      <div className="flex-1">
-        <ProfileHeader />
-        <PostsFeed posts={posts} />
+    <div className="profile-page flex flex-col gap-4">
+      {/* Header Section */}
+      <div className="bg-white p-6 rounded shadow">
+        <h1 className="text-3xl font-bold mb-2">{user.username}</h1>
+        <p className="text-gray-500">Joined: {new Date(user.created_at).toLocaleDateString()}</p>
+        <div className="mt-4 flex gap-4">
+          <div className="font-bold">{posts.length} <span className="font-normal text-gray-600">Posts</span></div>
+          <div className="font-bold">0 <span className="font-normal text-gray-600">Followers</span></div>
+        </div>
       </div>
-      <div className="w-full md:w-64 flex-shrink-0">
-        <SuggestedUsers users={suggestedUsers} />
+
+      {/* Posts Section */}
+      <div className="flex-1">
+        <h2 className="text-xl font-bold mb-4">Posts</h2>
+        <PostsFeed posts={posts} />
       </div>
     </div>
   );
