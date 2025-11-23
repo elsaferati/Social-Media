@@ -1,31 +1,28 @@
 import React, { useState } from "react";
-import CreatePost from "./CreatePost";
 import PostCard from "./PostCard";
 
-function PostsFeed() {
-  const [posts, setPosts] = useState([]);
+const PostsFeed = ({ filter, userId }) => {
+  // Example posts data
+  const initialPosts = [
+    { id: 1, content: "Hello world!", likes: 5, isLiked: false, userId: 2 },
+    { id: 2, content: "My second post", likes: 2, isLiked: true, userId: 1 },
+  ];
 
-  const addPost = (text) => {
-    const newPost = {
-      id: Date.now(),
-      name: "John Doe",
-      avatar: "https://i.pravatar.cc/150",
-      content: text,
-      createdAt: new Date(),
-    };
+  const [posts, setPosts] = useState(initialPosts);
 
-    setPosts([newPost, ...posts]);
-  };
+  // Filter logic (optional)
+  const displayedPosts = posts.filter((post) => {
+    if (filter === "user" && userId) return post.userId === parseInt(userId);
+    return true; // show all for Home/Explore
+  });
 
   return (
-    <div className="max-w-xl mx-auto mt-10">
-      <CreatePost onCreate={addPost} />
-
-      {posts.map((post) => (
+    <div className="posts-feed">
+      {displayedPosts.map((post) => (
         <PostCard key={post.id} post={post} />
       ))}
     </div>
   );
-}
+};
 
 export default PostsFeed;
