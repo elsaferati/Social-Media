@@ -377,6 +377,58 @@ app.put("/api/users/:userId", async (req, res) => {
     res.status(500).json(err);
   }
 });
+
+// 17. GET FRIENDS (Users I follow - for the Chat Sidebar)
+app.get("/api/users/friends/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const q = `
+      SELECT u.id, u.username, u.profilePic 
+      FROM relationships r
+      JOIN users u ON r.followedUserId = u.id
+      WHERE r.followerUserId = ?
+    `;
+    const [data] = await db.query(q, [userId]);
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// 18. GET MESSAGES (Between Me and Another User)
+app.get("/api/messages", async (req, res) => {
+  try {
+    const { senderId, receiverId } = req.query;
+    
+    // Logic: Get messages where (I sent AND You received) OR (You sent AND I received)
+    // Order by Time ASC (Oldest at top, newest at bottom)
+    const q = `
+      SELECT * FROM messages 
+      WHERE (senderId = ? AND receiverId = ?) 
+      OR (senderId = ? AND receiverId = ?)
+      ORDER BY createdAt ASC
+    `;
+    
+    const [data] = await db.query(q, [senderId, receiverId, receiverId, senderId]);
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// 19. SEND A MESSAGE
+app.post("/api/messages", async (req, res) => {
+  try {
+    const { senderId, receiverId, content } = req.body;
+    
+    const q = "INSERT INTO messages (senderId, receiverId, content) VALUES (?, ?, ?)";
+    await db.query(q, [senderId, receiverId, content]);
+    
+    res.status(200).json("Message sent");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
 app.listen(8800, () => {
   console.log("Backend server running on port 8800!");
 });
