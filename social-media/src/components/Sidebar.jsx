@@ -1,40 +1,20 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
-function Sidebar({ activePage }) {
-  const menuItems = [
-    { icon: "home", label: "Home", href: "/", page: "home" },
-    { icon: "compass", label: "Explore", href: "#", page: "explore" },
-    { icon: "bell", label: "Notifications", href: "#", page: "notifications" },
-    { icon: "message-circle", label: "Messages", href: "/messages", page: "messages" },
-    { icon: "bookmark", label: "Bookmarks", href: "#", page: "bookmarks" },
-    { icon: "user", label: "Profile", href: "/profile", page: "profile" },
-    { icon: "settings", label: "Settings", href: "#", page: "settings" },
-  ];
-
+const Sidebar = () => {
   return (
-    <div
-      className="card p-4"
-      data-name="sidebar"
-      data-file="components/Sidebar.js"
-    >
-      <nav className="space-y-2">
-        {menuItems.map((item) => (
-          <a
-            key={item.page}
-            href={item.href}
-            className={
-              activePage === item.page ? "nav-item-active" : "nav-item"
-            }
-          >
-            <div className={`icon-${item.icon} text-xl`} />
-            <span className="text-base">{item.label}</span>
-          </a>
-        ))}
+    <aside className="w-64 bg-gray-100 p-4">
+      <nav className="flex flex-col space-y-2">
+        <Link to="/" className="hover:text-blue-500">Home</Link>
+        <Link to="/explore" className="hover:text-blue-500">Explore</Link>
+        <Link to="/notifications" className="hover:text-blue-500">Notifications</Link>
+        <Link to="/bookmarks" className="hover:text-blue-500">Bookmarks</Link>
+        <Link to="/profile/1" className="hover:text-blue-500">Profile</Link>
+        <Link to="/settings" className="hover:text-blue-500">Settings</Link>
+        <Link to="/messages" className="hover:text-blue-500">Messages</Link>
       </nav>
-
-      <button className="btn-primary w-full mt-6">Post</button>
-    </div>
+    </aside>
   );
-}
+};
 
 export default Sidebar;
