@@ -4,11 +4,11 @@ import Header from "./components/Header";
 import Sidebar from "./components/Sidebar";
 
 import HomePage from "./pages/HomePage";
-import SettingsPage from "./pages/SettingsPage";
+import ProfilePage from "./pages/ProfilePage";
 import ExplorePage from "./pages/ExplorePage";
 import NotificationsPage from "./pages/NotificationsPage";
 import BookmarksPage from "./pages/BookmarksPage";
-import ProfilePage from "./pages/ProfilePage";
+import SettingsPage from "./pages/SettingsPage";
 import MessagesPage from "./pages/MessagesPage";
 
 const App = () => {
@@ -22,15 +22,15 @@ const App = () => {
           {/* Sidebar */}
           <Sidebar />
 
-          {/* Page Content */}
+          {/* Main content */}
           <main className="flex-1 p-4 overflow-y-auto">
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/profile/:userId" element={<ProfilePage />} />
               <Route path="/explore" element={<ExplorePage />} />
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/bookmarks" element={<BookmarksPage />} />
-              <Route path="/profile/:userId" element={<ProfilePage />} />
+              <Route path="/settings" element={<SettingsPage />} />
               <Route path="/messages" element={<MessagesPage />} />
             </Routes>
           </main>
