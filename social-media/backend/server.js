@@ -228,6 +228,27 @@ app.get("/api/relationships/count/:userId", async (req, res) => {
   }
 });
 
+// 11. GET EXPLORE POSTS (Random posts from everyone)
+app.get("/api/posts/explore", async (req, res) => {
+  try {
+    // We join users to get names/pics
+    // ORDER BY RAND() mixes them up every time you refresh
+    // LIMIT 20 prevents loading too much data at once
+    const q = `
+      SELECT p.*, u.username, u.profilePic 
+      FROM posts p 
+      JOIN users u ON p.userId = u.id 
+      ORDER BY RAND() 
+      LIMIT 20
+    `;
+    
+    const [data] = await db.query(q);
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 
 app.listen(8800, () => {
   console.log("Backend server running on port 8800!");
