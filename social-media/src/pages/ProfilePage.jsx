@@ -4,23 +4,22 @@ import PostsFeed from "../components/PostsFeed";
 
 const ProfilePage = () => {
   const { userId } = useParams();
+  
+  // State for user info, posts, and NOW relationship counts
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
+  const [relationships, setRelationships] = useState({ followers: 0, following: 0 });
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      setError(null);
       try {
         // 1. Fetch User Info
         const userRes = await fetch(`http://localhost:8800/api/users/${userId}`);
-        
-        if (!userRes.ok) {
-            throw new Error("User not found!");
-        }
-
+        if (!userRes.ok) throw new Error("User not found!");
         const userData = await userRes.json();
         setUser(userData);
 
@@ -28,8 +27,13 @@ const ProfilePage = () => {
         const postsRes = await fetch(`http://localhost:8800/api/posts/user/${userId}`);
         const postsData = await postsRes.json();
         setPosts(postsData);
+
+        // 3. Fetch Followers/Following Counts (NEW!)
+        const relRes = await fetch(`http://localhost:8800/api/relationships/count/${userId}`);
+        const relData = await relRes.json();
+        setRelationships(relData);
+
       } catch (err) {
-        console.log(err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -43,10 +47,8 @@ const ProfilePage = () => {
 
   return (
     <div className="profile-page flex flex-col gap-4 p-4">
-      {/* Header Section */}
       <div className="bg-white p-6 rounded shadow border">
         <div className="flex items-center gap-4">
-           {/* Placeholder Avatar */}
            <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center text-2xl font-bold text-white">
               {user.username[0].toUpperCase()}
            </div>
@@ -62,18 +64,19 @@ const ProfilePage = () => {
              <div className="font-bold text-xl">{posts.length}</div>
              <div className="text-gray-600 text-sm">Posts</div>
           </div>
+          
+          {/* REAL DATA HERE */}
           <div className="text-center">
-             <div className="font-bold text-xl">0</div>
+             <div className="font-bold text-xl">{relationships.followers}</div>
              <div className="text-gray-600 text-sm">Followers</div>
           </div>
           <div className="text-center">
-             <div className="font-bold text-xl">0</div>
+             <div className="font-bold text-xl">{relationships.following}</div>
              <div className="text-gray-600 text-sm">Following</div>
           </div>
         </div>
       </div>
 
-      {/* Posts Section */}
       <div className="flex-1">
         <h2 className="text-xl font-bold mb-4">User Posts</h2>
         {posts.length > 0 ? (
