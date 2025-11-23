@@ -125,6 +125,40 @@ app.get("/api/posts/user/:userId", async (req, res) => {
   }
 });
 
+// 5. GET LIKES FOR A POST
+app.get("/api/likes", async (req, res) => {
+  try {
+    const q = "SELECT * FROM likes WHERE postId = ?";
+    const [data] = await db.query(q, [req.query.postId]);
+    // Return list of userIds who liked this post
+    res.status(200).json(data.map(like => like.userId));
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// 6. TOGGLE LIKE (Add or Remove)
+app.post("/api/likes", async (req, res) => {
+  try {
+    const { userId, postId } = req.body;
+
+    // Check if already liked
+    const [existing] = await db.query("SELECT * FROM likes WHERE userId = ? AND postId = ?", [userId, postId]);
+
+    if (existing.length > 0) {
+      // If exists, delete it (Unlike)
+      await db.query("DELETE FROM likes WHERE userId = ? AND postId = ?", [userId, postId]);
+      res.status(200).json("Post has been disliked.");
+    } else {
+      // If not exists, add it (Like)
+      await db.query("INSERT INTO likes (userId, postId) VALUES (?, ?)", [userId, postId]);
+      res.status(200).json("Post has been liked.");
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 
 app.listen(8800, () => {
   console.log("Backend server running on port 8800!");
