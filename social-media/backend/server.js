@@ -54,6 +54,41 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
+
+// 1. GET ALL POSTS (with user details)
+app.get("/api/posts", async (req, res) => {
+  try {
+    // We join the 'users' table so we can show the name of the person who posted
+    const q = `
+      SELECT p.*, u.username, u.profilePic 
+      FROM posts p 
+      JOIN users u ON p.userId = u.id 
+      ORDER BY p.createdAt DESC
+    `;
+    const [data] = await db.query(q);
+    res.status(200).json(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
+
+// 2. CREATE A NEW POST
+app.post("/api/posts", async (req, res) => {
+  try {
+    const { content, userId } = req.body; // We get this from the frontend
+    
+    const q = "INSERT INTO posts (content, userId) VALUES (?, ?)";
+    await db.query(q, [content, userId]);
+    
+    res.status(200).json("Post has been created.");
+  } catch (err) {
+    console.log(err);
+    res.status(500).json(err);
+  }
+});
+
+
 app.listen(8800, () => {
   console.log("Backend server running on port 8800!");
 });
