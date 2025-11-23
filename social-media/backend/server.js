@@ -88,6 +88,43 @@ app.post("/api/posts", async (req, res) => {
   }
 });
 
+// 3. GET SINGLE USER (For Profile Header)
+app.get("/api/users/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const q = "SELECT id, username, email, profilePic, created_at FROM users WHERE id = ?";
+    
+    const [rows] = await db.query(q, [userId]);
+    if (rows.length === 0) return res.status(404).json("User not found");
+    
+    // Return the first user found (without password!)
+    const { password, ...info } = rows[0];
+    res.json(info);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// 4. GET POSTS FOR A SPECIFIC USER
+app.get("/api/posts/user/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    // Join with users table to get username
+    const q = `
+      SELECT p.*, u.username, u.profilePic 
+      FROM posts p 
+      JOIN users u ON p.userId = u.id 
+      WHERE p.userId = ? 
+      ORDER BY p.createdAt DESC
+    `;
+    
+    const [data] = await db.query(q, [userId]);
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 
 app.listen(8800, () => {
   console.log("Backend server running on port 8800!");
