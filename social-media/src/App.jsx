@@ -1,47 +1,43 @@
-import React, { useState } from "react";
-import './App.css'
-import MessageList from "./components/MessageList";
-import ChatWindow from "./components/ChatWindow";
-import ProfileHeader from './components/ProfileHeader.jsx'
-import Header from './components/Header.jsx'
-import CreatePost from "./components/CreatePost";
-import PostsFeed from "./components/PostsFeed";
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Header from "./components/Header";
+import Sidebar from "./components/Sidebar";
 
-function App() {
-  const [activeChat, setActiveChat] = useState(null);
-  const [messages, setMessages] = useState([]);
+import HomePage from "./pages/HomePage";
+import SettingsPage from "./pages/SettingsPage";
+import ExplorePage from "./pages/ExplorePage";
+import NotificationsPage from "./pages/NotificationsPage";
+import BookmarksPage from "./pages/BookmarksPage";
+import ProfilePage from "./pages/ProfilePage";
+import MessagesPage from "./pages/MessagesPage";
 
-  const handleSelectChat = (chat) => {
-    setActiveChat(chat);
-
-    // Example messages
-    setMessages([
-      { sender: "them", text: chat.lastMessage },
-      { sender: "me", text: "Sure, let's do it!" },
-    ]);
-  };
-
-  const handleSend = (text) => {
-    setMessages((prev) => [...prev, { sender: "me", text }]);
-  };
-
+const App = () => {
   return (
-    <div className="h-screen grid grid-cols-1 md:grid-cols-[300px_1fr]">
-      <Header />
-      <ProfileHeader />
-      <CreatePost />
-      <PostsFeed />
-      {/* Chat List */}
-      <MessageList onSelectChat={handleSelectChat} />
+    <Router>
+      <div className="app flex flex-col h-screen">
+        {/* Header */}
+        <Header />
 
-      {/* Chat Window */}
-      <ChatWindow
-        chat={activeChat}
-        messages={messages}
-        onSend={handleSend}
-      />
-    </div>
+        <div className="flex flex-1">
+          {/* Sidebar */}
+          <Sidebar />
+
+          {/* Page Content */}
+          <main className="flex-1 p-4 overflow-y-auto">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/settings" element={<SettingsPage />} />
+              <Route path="/explore" element={<ExplorePage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/bookmarks" element={<BookmarksPage />} />
+              <Route path="/profile/:userId" element={<ProfilePage />} />
+              <Route path="/messages" element={<MessagesPage />} />
+            </Routes>
+          </main>
+        </div>
+      </div>
+    </Router>
   );
-}
+};
 
 export default App;
