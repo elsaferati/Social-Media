@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import React, { createContext, useState, useContext } from "react";
 
 const AuthContext = createContext();
 
@@ -18,8 +18,16 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem("token");
   };
 
+  // --- NEW FUNCTION ADDED HERE ---
+  const updateUser = (userData) => {
+    setCurrentUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
+  };
+  // -------------------------------
+
   return (
-    <AuthContext.Provider value={{ currentUser, login, logout }}>
+    // Add updateUser to the value object below
+    <AuthContext.Provider value={{ currentUser, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
