@@ -342,6 +342,41 @@ app.get("/api/posts/bookmarks/:userId", async (req, res) => {
   }
 });
 
+// 16. UPDATE USER SETTINGS
+app.put("/api/users/:userId", async (req, res) => {
+  const userId = req.params.userId;
+  const { username, email, password } = req.body;
+
+  try {
+    // Scenario 1: User wants to change password
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+
+      const q = "UPDATE users SET username=?, email=?, password=? WHERE id=?";
+      await db.query(q, [username, email, hashedPassword, userId]);
+    } 
+    // Scenario 2: User only changes text info (keep old password)
+    else {
+      const q = "UPDATE users SET username=?, email=? WHERE id=?";
+      await db.query(q, [username, email, userId]);
+    }
+
+    // Return the updated user info (so frontend can update immediately)
+    const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
+    const { password: _, ...updatedUser } = rows[0]; // Remove password from response
+    
+    res.status(200).json(updatedUser);
+
+  } catch (err) {
+    console.log(err);
+    // Handle duplicate email/username error
+    if (err.code === 'ER_DUP_ENTRY') {
+        return res.status(409).json("Username or Email already taken.");
+    }
+    res.status(500).json(err);
+  }
+});
 app.listen(8800, () => {
   console.log("Backend server running on port 8800!");
 });
