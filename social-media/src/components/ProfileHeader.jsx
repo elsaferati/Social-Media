@@ -1,13 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import FollowButton from "./FollowButton";
 
 const ProfileHeader = ({ userId }) => {
-  const [user, setUser] = useState({
-    id: userId,
-    name: "John Doe",
-    bio: "Web developer",
-    isFollowed: false, // Example, can fetch from backend
-  });
+  const user = { name: "John Doe", bio: "Web Developer", isFollowed: false };
 
   return (
     <div className="profile-header p-4 border-b mb-4 flex justify-between items-center">

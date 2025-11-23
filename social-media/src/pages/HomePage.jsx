@@ -6,13 +6,10 @@ import ModalSystem from "../components/ModalSystem";
 const HomePage = () => {
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
 
-  const openCreatePost = () => setIsCreatePostOpen(true);
-  const closeCreatePost = () => setIsCreatePostOpen(false);
-
   return (
     <div className="home-page">
       <button
-        onClick={openCreatePost}
+        onClick={() => setIsCreatePostOpen(true)}
         className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
       >
         Create Post
@@ -21,8 +18,8 @@ const HomePage = () => {
       <PostsFeed />
 
       {isCreatePostOpen && (
-        <ModalSystem onClose={closeCreatePost}>
-          <CreatePost onClose={closeCreatePost} />
+        <ModalSystem onClose={() => setIsCreatePostOpen(false)}>
+          <CreatePost onClose={() => setIsCreatePostOpen(false)} />
         </ModalSystem>
       )}
     </div>

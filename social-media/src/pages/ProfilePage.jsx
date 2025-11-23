@@ -5,7 +5,6 @@ import PostsFeed from "../components/PostsFeed";
 
 const ProfilePage = () => {
   const { userId } = useParams();
-
   return (
     <div className="profile-page">
       <ProfileHeader userId={userId} />

@@ -1,28 +1,33 @@
 import React, { useState } from "react";
 
-function MessageInput({ onSend }) {
+const MessageInput = ({ onSend }) => {
   const [text, setText] = useState("");
 
   const handleSend = () => {
-    if (!text.trim()) return;
+    if (text.trim() === "") return;
     onSend(text);
     setText("");
   };
 
+  const handleKeyPress = (e) => {
+    if (e.key === "Enter") handleSend();
+  };
+
   return (
-    <div className="border-t border-[var(--border-color)] p-3 flex gap-2">
+    <div className="flex p-2 border-t">
       <input
         type="text"
-        placeholder="Type a message..."
         value={text}
         onChange={(e) => setText(e.target.value)}
-        className="flex-1 px-4 py-2 rounded-full border border-[var(--border-color)] focus:outline-none"
+        onKeyPress={handleKeyPress}
+        placeholder="Type a message..."
+        className="flex-1 p-2 border rounded mr-2"
       />
-      <button onClick={handleSend} className="btn-primary px-4">
+      <button onClick={handleSend} className="bg-blue-500 text-white px-4 py-2 rounded">
         Send
       </button>
     </div>
   );
-}
+};
 
 export default MessageInput;
