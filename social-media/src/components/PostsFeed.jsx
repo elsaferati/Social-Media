@@ -1,21 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import PostCard from "./PostCard";
 
-const PostsFeed = ({ filter, userId }) => {
-  const initialPosts = [
-    { id: 1, content: "Hello world!", likes: 5, isLiked: false, userId: 2 },
-    { id: 2, content: "My second post", likes: 2, isLiked: true, userId: 1 },
-  ];
-
-  const [posts] = useState(initialPosts);
-
-  const displayedPosts = posts.filter(post => {
+const PostsFeed = ({ posts, filter, userId }) => {
+  // Apply filter if needed
+  const displayedPosts = posts?.filter(post => {
     if (filter === "user" && userId) return post.userId === parseInt(userId);
+    if (filter === "bookmarks") return post.isBookmarked;
     return true;
-  });
+  }) || [];
 
   return (
-    <div className="posts-feed">
+    <div className="posts-feed flex flex-col gap-4">
       {displayedPosts.map(post => (
         <PostCard key={post.id} post={post} />
       ))}

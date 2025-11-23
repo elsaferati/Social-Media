@@ -6,16 +6,18 @@ const SettingsPage = () => {
   const [password, setPassword] = useState("");
 
   const handleSave = () => {
-    // TODO: Save settings
     alert("Settings saved!");
+    // TODO: connect to backend API
   };
 
   return (
     <div className="settings-page p-4">
       <h1 className="text-2xl font-bold mb-4">Settings</h1>
       
+      {/* Profile info */}
       <ProfileHeader />
 
+      {/* Settings form */}
       <div className="mt-6 flex flex-col gap-4 max-w-md">
         <div>
           <label className="block mb-1 font-semibold">Email</label>

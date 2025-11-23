@@ -1,17 +1,33 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 const Sidebar = () => {
+  const links = [
+    { name: "Home", path: "/" },
+    { name: "Explore", path: "/explore" },
+    { name: "Notifications", path: "/notifications" },
+    { name: "Bookmarks", path: "/bookmarks" },
+    { name: "Profile", path: "/profile/1" },
+    { name: "Settings", path: "/settings" },
+    { name: "Messages", path: "/messages" },
+  ];
+
   return (
-    <aside className="w-64 bg-gray-100 p-4">
+    <aside className="bg-gray-100 p-4 md:w-64 w-full md:flex-shrink-0">
       <nav className="flex flex-col space-y-2">
-        <Link to="/" className="hover:text-blue-500">Home</Link>
-        <Link to="/explore" className="hover:text-blue-500">Explore</Link>
-        <Link to="/notifications" className="hover:text-blue-500">Notifications</Link>
-        <Link to="/bookmarks" className="hover:text-blue-500">Bookmarks</Link>
-        <Link to="/profile/1" className="hover:text-blue-500">Profile</Link>
-        <Link to="/settings" className="hover:text-blue-500">Settings</Link>
-        <Link to="/messages" className="hover:text-blue-500">Messages</Link>
+        {links.map((link) => (
+          <NavLink
+            key={link.path}
+            to={link.path}
+            className={({ isActive }) =>
+              `px-3 py-2 rounded hover:bg-blue-100 ${
+                isActive ? "bg-blue-500 text-white" : "text-gray-700"
+              }`
+            }
+          >
+            {link.name}
+          </NavLink>
+        ))}
       </nav>
     </aside>
   );
