@@ -1,16 +1,32 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 import PostsFeed from "../components/PostsFeed";
 
 const BookmarksPage = () => {
-  const posts = [
-    { id: 1, content: "Bookmarked post 1", likes: 2, isLiked: false, isBookmarked: true, userId: 2 },
-    { id: 2, content: "Bookmarked post 2", likes: 4, isLiked: true, isBookmarked: true, userId: 3 },
-  ];
+  const [posts, setPosts] = useState([]);
+  const { currentUser } = useAuth();
+
+  useEffect(() => {
+    const fetchBookmarks = async () => {
+      try {
+        const res = await fetch(`http://localhost:8800/api/posts/bookmarks/${currentUser.id}`);
+        const data = await res.json();
+        setPosts(data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchBookmarks();
+  }, [currentUser.id]);
 
   return (
     <div className="bookmarks-page p-4">
       <h1 className="text-2xl font-bold mb-4">Bookmarks</h1>
-      <PostsFeed posts={posts} />
+      {posts.length === 0 ? (
+        <p className="text-gray-500">You haven't bookmarked any posts yet.</p>
+      ) : (
+        <PostsFeed posts={posts} />
+      )}
     </div>
   );
 };
