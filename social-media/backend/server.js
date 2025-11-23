@@ -206,6 +206,28 @@ app.get("/api/users/suggestions/:userId", async (req, res) => {
   }
 });
 
+// 10. GET FOLLOWER/FOLLOWING COUNTS
+app.get("/api/relationships/count/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Query 1: Who follows THIS user? (Followers)
+    const qFollowers = "SELECT count(*) as count FROM relationships WHERE followedUserId = ?";
+    const [followersData] = await db.query(qFollowers, [userId]);
+
+    // Query 2: Who does THIS user follow? (Following)
+    const qFollowing = "SELECT count(*) as count FROM relationships WHERE followerUserId = ?";
+    const [followingData] = await db.query(qFollowing, [userId]);
+
+    res.status(200).json({
+      followers: followersData[0].count,
+      following: followingData[0].count
+    });
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 
 app.listen(8800, () => {
   console.log("Backend server running on port 8800!");
