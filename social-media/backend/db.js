@@ -4,11 +4,12 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const db = mysql.createPool({
-  host: 'localhost',
-  user: 'root', // Default MySQL user
-  password: 'your_password', // CHANGE THIS TO YOUR MYSQL PASSWORD
-  database: 'social_app_db',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD, // This pulls from the .env file
+  database: process.env.DB_NAME,
 });
+
 
 db.getConnection((err, connection) => {
   if (err) {
