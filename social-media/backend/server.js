@@ -159,6 +159,53 @@ app.post("/api/likes", async (req, res) => {
   }
 });
 
+// 7. FOLLOW A USER
+app.post("/api/relationships", async (req, res) => {
+  try {
+    const { followerUserId, followedUserId } = req.body;
+    
+    // Prevent following yourself
+    if (followerUserId === followedUserId) return res.status(400).json("Cannot follow yourself");
+
+    const q = "INSERT INTO relationships (followerUserId, followedUserId) VALUES (?, ?)";
+    await db.query(q, [followerUserId, followedUserId]);
+    res.status(200).json("Following");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// 8. UNFOLLOW A USER
+app.delete("/api/relationships", async (req, res) => {
+  try {
+    const { followerUserId, followedUserId } = req.query; // NOTE: using query params for delete
+    
+    const q = "DELETE FROM relationships WHERE followerUserId = ? AND followedUserId = ?";
+    await db.query(q, [followerUserId, followedUserId]);
+    res.status(200).json("Unfollowed");
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+// 9. GET SUGGESTED USERS (Users you don't follow yet)
+app.get("/api/users/suggestions/:userId", async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    // Find users who are NOT me AND NOT in my following list
+    const q = `
+      SELECT * FROM users 
+      WHERE id != ? 
+      AND id NOT IN (SELECT followedUserId FROM relationships WHERE followerUserId = ?)
+      LIMIT 5
+    `;
+    const [data] = await db.query(q, [userId, userId]);
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
 
 app.listen(8800, () => {
   console.log("Backend server running on port 8800!");
