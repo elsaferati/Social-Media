@@ -2,10 +2,6 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
-/* ----------------- Components ----------------- */
-import Header from "./components/Header";
-import Sidebar from "./components/Sidebar";
-
 /* ----------------- Pages ----------------- */
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
@@ -14,10 +10,12 @@ import BookmarksPage from "./pages/BookmarksPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import SettingsPage from "./pages/SettingsPage";
 import MessagesPage from "./pages/MessagesPage";
-import LoginPage from "./pages/LoginPage";       // You created this in the previous step
-import RegisterPage from "./pages/RegisterPage"; // You created this in the previous step
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
-/* ----------------- Protected Layout Wrapper ----------------- */
+/* ----------------- Protected Route Wrapper ----------------- */
+// This component now ONLY handles security. 
+// The Visual Layout (Sidebar/Header) is handled inside each Page component.
 const ProtectedLayout = () => {
   const { currentUser } = useAuth();
 
@@ -26,18 +24,9 @@ const ProtectedLayout = () => {
     return <Navigate to="/login" />;
   }
 
-  // 2. If user IS logged in, show the App (Header + Sidebar + Page)
-  return (
-    <div className="app flex flex-col h-screen bg-gray-50">
-      <Header />
-      <div className="flex flex-1 flex-col md:flex-row overflow-hidden">
-        <Sidebar />
-        <main className="flex-1 overflow-y-auto p-4">
-          <Outlet /> {/* This renders the child route (e.g., HomePage) */}
-        </main>
-      </div>
-    </div>
-  );
+  // 2. If user IS logged in, render the requested page
+  // The pages themselves (HomePage, etc.) now contain the <Layout> wrapper
+  return <Outlet />;
 };
 
 /* ----------------- Main App ----------------- */
@@ -46,7 +35,7 @@ const App = () => {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public Routes (Accessible without login) */}
+          {/* Public Routes (No Sidebar needed) */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
