@@ -1,40 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import Layout from "../components/Layout";
+import ProfileHeader from "../components/ProfileHeader"; // Assuming you saved the component I sent earlier
 import PostsFeed from "../components/PostsFeed";
+import { Grid, Camera } from "lucide-react";
 
 const ProfilePage = () => {
   const { userId } = useParams();
+  const { currentUser } = useAuth();
   
-  // State for user info, posts, and NOW relationship counts
   const [user, setUser] = useState(null);
   const [posts, setPosts] = useState([]);
-  const [relationships, setRelationships] = useState({ followers: 0, following: 0 });
-  
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // 1. Fetch User Info
+        // Fetch User Info (In a real app, ProfileHeader might fetch this itself, but passing props is fine too)
         const userRes = await fetch(`http://localhost:8800/api/users/${userId}`);
-        if (!userRes.ok) throw new Error("User not found!");
         const userData = await userRes.json();
         setUser(userData);
 
-        // 2. Fetch User's Posts
+        // Fetch Posts
         const postsRes = await fetch(`http://localhost:8800/api/posts/user/${userId}`);
         const postsData = await postsRes.json();
         setPosts(postsData);
 
-        // 3. Fetch Followers/Following Counts (NEW!)
-        const relRes = await fetch(`http://localhost:8800/api/relationships/count/${userId}`);
-        const relData = await relRes.json();
-        setRelationships(relData);
-
       } catch (err) {
-        setError(err.message);
+        console.log(err);
       } finally {
         setLoading(false);
       }
@@ -42,50 +37,48 @@ const ProfilePage = () => {
     fetchData();
   }, [userId]);
 
-  if (loading) return <div className="p-8">Loading profile...</div>;
-  if (error) return <div className="p-8 text-red-500 font-bold">Error: {error}</div>;
+  if (loading) return <Layout><div className="w-full flex justify-center py-20">Loading...</div></Layout>;
+  if (!user) return <Layout>User not found</Layout>;
 
   return (
-    <div className="profile-page flex flex-col gap-4 p-4">
-      <div className="bg-white p-6 rounded shadow border">
-        <div className="flex items-center gap-4">
-           <div className="w-20 h-20 bg-gray-300 rounded-full flex items-center justify-center text-2xl font-bold text-white">
-              {user.username[0].toUpperCase()}
-           </div>
-           <div>
-             <h1 className="text-3xl font-bold">{user.username}</h1>
-             <p className="text-gray-500">{user.email}</p>
-             <p className="text-xs text-gray-400 mt-1">Joined: {new Date(user.created_at).toLocaleDateString()}</p>
-           </div>
-        </div>
+    <Layout>
+      <div className="w-full max-w-[935px] mx-auto flex flex-col">
         
-        <div className="mt-6 flex gap-6 border-t pt-4">
-          <div className="text-center">
-             <div className="font-bold text-xl">{posts.length}</div>
-             <div className="text-gray-600 text-sm">Posts</div>
-          </div>
-          
-          {/* REAL DATA HERE */}
-          <div className="text-center">
-             <div className="font-bold text-xl">{relationships.followers}</div>
-             <div className="text-gray-600 text-sm">Followers</div>
-          </div>
-          <div className="text-center">
-             <div className="font-bold text-xl">{relationships.following}</div>
-             <div className="text-gray-600 text-sm">Following</div>
-          </div>
+        {/* The Header Component we built earlier */}
+        <ProfileHeader userId={userId} userProp={user} postCount={posts.length} />
+
+        {/* Post Grid (Instagram Style) */}
+        {/* Usually Profile Grid is 3 columns of images, NOT a vertical feed. 
+            I will create a grid view here. */}
+        <div className="grid grid-cols-3 gap-1 md:gap-7 mt-4">
+           {posts.length > 0 ? (
+               posts.map(post => (
+                   <div key={post.id} className="aspect-square bg-gray-100 relative group cursor-pointer overflow-hidden">
+                       {post.img ? (
+                           <img src={post.img} className="w-full h-full object-cover" alt="post" />
+                       ) : (
+                           <div className="w-full h-full flex items-center justify-center bg-gray-50 text-xs text-gray-500 p-2 text-center">
+                               {post.content.substring(0, 50)}...
+                           </div>
+                       )}
+                       {/* Hover Overlay */}
+                       <div className="absolute inset-0 bg-black/30 hidden group-hover:flex items-center justify-center text-white font-bold gap-4">
+                           <span>❤️ {post.likes || 0}</span>
+                           <span>💬 0</span>
+                       </div>
+                   </div>
+               ))
+           ) : (
+               <div className="col-span-3 flex flex-col items-center py-20 text-gray-500">
+                   <div className="w-16 h-16 rounded-full border-2 border-gray-300 flex items-center justify-center mb-4">
+                       <Camera size={32} />
+                   </div>
+                   <h2 className="text-2xl font-light text-black">No Posts Yet</h2>
+               </div>
+           )}
         </div>
       </div>
-
-      <div className="flex-1">
-        <h2 className="text-xl font-bold mb-4">User Posts</h2>
-        {posts.length > 0 ? (
-           <PostsFeed posts={posts} />
-        ) : (
-           <p className="text-gray-500">This user hasn't posted anything yet.</p>
-        )}
-      </div>
-    </div>
+    </Layout>
   );
 };
 
