@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import Layout from "../components/Layout"; // Import the new Layout
+import Layout from "../components/Layout";
 import PostsFeed from "../components/PostsFeed";
 import SuggestedUsers from "../components/SuggestedUsers";
 import ModalSystem from "../components/ModalSystem";
 import CreatePost from "../components/CreatePost";
+import { Image, Smile } from "lucide-react"; 
 
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
@@ -25,22 +26,31 @@ const HomePage = () => {
   }, []);
 
   const handleCreatePost = async (content) => {
-    // ... your existing logic ...
-    setIsCreatePostOpen(false); 
-    window.location.reload();
+    try {
+      await fetch("http://localhost:8800/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: content,
+          userId: currentUser.id 
+        }),
+      });
+      setIsCreatePostOpen(false);
+      window.location.reload();
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  // Fake Stories Data
   const stories = [1,2,3,4,5,6];
 
   return (
     <Layout>
-      {/* CENTER COLUMN: Stories + Feed */}
+      {/* CENTER COLUMN */}
       <div className="w-full max-w-[630px] flex flex-col gap-6">
         
-        {/* Stories Rail */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4 flex gap-4 overflow-x-auto scrollbar-hide">
-            {/* "Add Story" bubble */}
+        {/* 1. Stories Rail */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 flex gap-4 overflow-x-auto scrollbar-hide shadow-sm">
             <div className="flex flex-col items-center gap-1 min-w-[64px] cursor-pointer">
                 <div className="w-16 h-16 rounded-full border-2 border-white ring-2 ring-gray-200 relative">
                     <img src={"https://i.pravatar.cc/150?u=" + currentUser?.id} className="w-full h-full rounded-full" alt="Me" />
@@ -48,7 +58,6 @@ const HomePage = () => {
                 </div>
                 <span className="text-xs text-gray-500">Your story</span>
             </div>
-            {/* Other Stories */}
             {stories.map((s) => (
                 <div key={s} className="flex flex-col items-center gap-1 min-w-[64px] cursor-pointer">
                     <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 to-pink-600">
@@ -59,14 +68,25 @@ const HomePage = () => {
             ))}
         </div>
 
-        {/* Posts Feed */}
+        {/* 2. Create Post Trigger (New Addition) */}
+        <div className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3 shadow-sm">
+            <img src={"https://i.pravatar.cc/150?u=" + currentUser?.id} className="w-10 h-10 rounded-full bg-gray-200" alt="" />
+            <div 
+                onClick={() => setIsCreatePostOpen(true)}
+                className="flex-1 bg-gray-100 hover:bg-gray-200 transition rounded-full px-4 py-2.5 text-gray-500 text-sm cursor-pointer"
+            >
+                What's on your mind, {currentUser?.username}?
+            </div>
+            <Image size={24} className="text-gray-400 cursor-pointer hover:text-green-500" />
+            <Smile size={24} className="text-gray-400 cursor-pointer hover:text-yellow-500" />
+        </div>
+
+        {/* 3. Feed */}
         <PostsFeed posts={posts} />
       </div>
 
-      {/* RIGHT COLUMN: Suggestions (Hidden on small screens) */}
+      {/* RIGHT COLUMN */}
       <div className="hidden lg:block w-[320px] pl-4">
-        
-        {/* User Switcher Mini Profile */}
         <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
                 <img src={"https://i.pravatar.cc/150?u=" + currentUser?.id} className="w-12 h-12 rounded-full" alt="" />
@@ -78,16 +98,14 @@ const HomePage = () => {
             <button className="text-blue-500 text-xs font-bold hover:text-blue-700">Switch</button>
         </div>
 
-        {/* Suggestions Component */}
         <SuggestedUsers /> 
         
-        {/* Footer Links */}
-        <div className="mt-8 text-xs text-gray-400">
+        <div className="mt-8 text-xs text-gray-400 uppercase">
             <p>© 2025 MY SOCIAL APP</p>
         </div>
       </div>
 
-      {/* Modal Logic */}
+      {/* Modal */}
       {isCreatePostOpen && (
         <ModalSystem onClose={() => setIsCreatePostOpen(false)}>
           <CreatePost onClose={() => setIsCreatePostOpen(false)} onPost={handleCreatePost} />
