@@ -1,18 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
+import Layout from "../components/Layout";
+import { Search, MoreHorizontal, Send, Image } from "lucide-react"; 
 
 const MessagesPage = () => {
   const { currentUser } = useAuth();
   
-  // State
-  const [friends, setFriends] = useState([]); // List of people to chat with
-  const [selectedUser, setSelectedUser] = useState(null); // Who are we chatting with?
-  const [messages, setMessages] = useState([]); // The actual chat history
-  const [newMessage, setNewMessage] = useState(""); // Input box text
+  const [friends, setFriends] = useState([]); 
+  const [selectedUser, setSelectedUser] = useState(null); 
+  const [messages, setMessages] = useState([]); 
+  const [newMessage, setNewMessage] = useState(""); 
+  const scrollRef = useRef(); 
 
-  const scrollRef = useRef(); // To auto-scroll to bottom
-
-  // 1. Fetch Friends (People I follow)
+  // 1. Fetch Friends
   useEffect(() => {
     const fetchFriends = async () => {
       try {
@@ -23,36 +23,27 @@ const MessagesPage = () => {
         console.log(err);
       }
     };
-    fetchFriends();
-  }, [currentUser.id]);
+    if(currentUser) fetchFriends();
+  }, [currentUser]);
 
-  // 2. Fetch Messages (Runs when selectedUser changes, AND every 2 seconds)
+  // 2. Fetch Messages
   useEffect(() => {
     if (!selectedUser) return;
-
     const fetchMessages = async () => {
       try {
-        const res = await fetch(
-          `http://localhost:8800/api/messages?senderId=${currentUser.id}&receiverId=${selectedUser.id}`
-        );
+        const res = await fetch(`http://localhost:8800/api/messages?senderId=${currentUser.id}&receiverId=${selectedUser.id}`);
         const data = await res.json();
         setMessages(data);
       } catch (err) {
         console.log(err);
       }
     };
-
-    fetchMessages(); // Run once immediately
-
-    // Polling: Check for new messages every 2 seconds
+    fetchMessages();
     const intervalId = setInterval(fetchMessages, 2000);
-
-    // Cleanup: Stop checking when we leave the page or change user
     return () => clearInterval(intervalId);
-
   }, [selectedUser, currentUser.id]);
 
-  // 3. Auto-scroll to bottom when messages change
+  // 3. Scroll to bottom
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
@@ -72,104 +63,139 @@ const MessagesPage = () => {
           content: newMessage,
         }),
       });
-
-      // Clear input and refresh messages manually immediately
       setNewMessage("");
-      const res = await fetch(
-        `http://localhost:8800/api/messages?senderId=${currentUser.id}&receiverId=${selectedUser.id}`
-      );
+      // Immediate fetch update
+      const res = await fetch(`http://localhost:8800/api/messages?senderId=${currentUser.id}&receiverId=${selectedUser.id}`);
       const data = await res.json();
       setMessages(data);
-      
     } catch (err) {
       console.log(err);
     }
   };
 
   return (
-    <div className="messages-page h-[calc(100vh-80px)] flex bg-white border rounded shadow overflow-hidden m-4">
-      {/* LEFT SIDE: Friends List */}
-      <div className="w-1/3 border-r bg-gray-50 flex flex-col">
-        <div className="p-4 border-b font-bold text-lg bg-white">Chats</div>
-        <div className="flex-1 overflow-y-auto">
-          {friends.length === 0 ? (
-            <p className="p-4 text-gray-500 text-sm">Follow someone to start chatting!</p>
-          ) : (
-            friends.map((friend) => (
-              <div
-                key={friend.id}
-                onClick={() => setSelectedUser(friend)}
-                className={`p-4 flex items-center gap-3 cursor-pointer hover:bg-gray-200 transition ${
-                  selectedUser?.id === friend.id ? "bg-blue-100" : ""
-                }`}
-              >
-                <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-white font-bold">
-                  {friend.username[0].toUpperCase()}
+    <Layout>
+      {/* Container - Fixed Height for Chat feel */}
+      <div className="w-full h-[85vh] bg-white border border-gray-200 rounded-xl overflow-hidden flex shadow-sm">
+        
+        {/* LEFT: Conversation List */}
+        <div className={`w-full md:w-1/3 border-r border-gray-200 flex flex-col ${selectedUser ? "hidden md:flex" : "flex"}`}>
+          {/* Header */}
+          <div className="p-5 border-b border-gray-200 flex justify-between items-center">
+             <div className="font-bold text-lg flex items-center gap-1">
+                 {currentUser.username} <span className="text-xs">▼</span>
+             </div>
+             <Search size={20} className="text-gray-400" />
+          </div>
+          
+          {/* List */}
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-4 flex items-center justify-between">
+                <span className="font-bold text-base">Messages</span>
+                <span className="text-gray-500 text-sm font-semibold">Requests</span>
+            </div>
+            
+            {friends.length === 0 ? (
+                <div className="p-4 text-center text-gray-400 text-sm">
+                    No friends found. Follow people to chat!
                 </div>
-                <span className="font-semibold">{friend.username}</span>
-              </div>
-            ))
-          )}
+            ) : (
+                friends.map((friend) => (
+                <div
+                    key={friend.id}
+                    onClick={() => setSelectedUser(friend)}
+                    className={`px-5 py-3 flex items-center gap-3 cursor-pointer hover:bg-gray-50 transition ${
+                    selectedUser?.id === friend.id ? "bg-gray-50" : ""
+                    }`}
+                >
+                    <div className="relative">
+                        <div className="w-14 h-14 bg-gradient-to-tr from-yellow-400 to-pink-500 rounded-full p-[2px]">
+                            <img src={friend.img || "https://i.pravatar.cc/150?u=" + friend.id} className="w-full h-full rounded-full border-2 border-white object-cover" alt="" />
+                        </div>
+                    </div>
+                    <div className="flex-1">
+                        <div className="font-normal text-sm">{friend.username}</div>
+                        <div className="text-gray-400 text-xs">Active 1h ago</div>
+                    </div>
+                </div>
+                ))
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT: Chat Window */}
+        <div className={`w-full md:w-2/3 flex flex-col ${!selectedUser ? "hidden md:flex" : "flex"}`}>
+            {selectedUser ? (
+                <>
+                {/* Chat Header */}
+                <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-white">
+                    <div className="flex items-center gap-3">
+                        {/* Back button for Mobile */}
+                        <button onClick={() => setSelectedUser(null)} className="md:hidden text-2xl pr-2">←</button>
+                        
+                        <div className="w-8 h-8 rounded-full overflow-hidden">
+                            <img src={selectedUser.img || "https://i.pravatar.cc/150?u=" + selectedUser.id} className="w-full h-full object-cover" alt="" />
+                        </div>
+                        <div className="font-semibold text-sm">{selectedUser.username}</div>
+                    </div>
+                    <MoreHorizontal size={24} className="text-gray-800" />
+                </div>
+
+                {/* Messages Feed */}
+                <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 bg-white">
+                    {messages.length === 0 && (
+                        <div className="flex flex-col items-center justify-center h-full text-center">
+                            <div className="w-20 h-20 rounded-full bg-gray-100 mb-4 flex items-center justify-center text-4xl">👋</div>
+                            <h3 className="text-lg font-medium">Say Hello!</h3>
+                            <p className="text-gray-500 text-sm">Send a message to start the chat.</p>
+                        </div>
+                    )}
+                    
+                    {messages.map((msg) => {
+                        const isMe = msg.senderId === currentUser.id;
+                        return (
+                            <div
+                                key={msg.id}
+                                ref={scrollRef}
+                                className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${
+                                isMe
+                                    ? "bg-blue-500 text-white self-end rounded-br-sm"
+                                    : "bg-gray-100 text-black self-start rounded-bl-sm border border-gray-200"
+                                }`}
+                            >
+                                {msg.content}
+                            </div>
+                        );
+                    })}
+                </div>
+
+                {/* Input Area */}
+                <form className="p-4 flex items-center gap-3 bg-white" onSubmit={handleSend}>
+                    <button type="button" className="text-gray-400 hover:text-gray-600"><Image size={24} /></button>
+                    <div className="flex-1 relative">
+                        <input
+                            type="text"
+                            className="w-full border border-gray-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:border-gray-400"
+                            placeholder="Message..."
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                        />
+                    </div>
+                    <button disabled={!newMessage.trim()} className="text-blue-500 font-semibold text-sm disabled:opacity-30 hover:text-blue-700">Send</button>
+                </form>
+                </>
+            ) : (
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+                    <div className="w-24 h-24 rounded-full border-2 border-black flex items-center justify-center mb-4">
+                        <Send size={40} className="ml-1 mt-1" />
+                    </div>
+                    <h2 className="text-xl font-light">Your Messages</h2>
+                    <p className="text-gray-500 text-sm mt-2">Send private photos and messages to a friend.</p>
+                </div>
+            )}
         </div>
       </div>
-
-      {/* RIGHT SIDE: Chat Window */}
-      <div className="w-2/3 flex flex-col">
-        {selectedUser ? (
-          <>
-            {/* Chat Header */}
-            <div className="p-4 border-b bg-gray-100 font-bold flex items-center gap-2">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
-                 {selectedUser.username[0].toUpperCase()}
-              </div>
-              {selectedUser.username}
-            </div>
-
-            {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-white">
-              {messages.length === 0 && (
-                <div className="text-center text-gray-400 mt-10">Say Hello! 👋</div>
-              )}
-              
-              {messages.map((msg) => {
-                const isMe = msg.senderId === currentUser.id;
-                return (
-                  <div
-                    key={msg.id}
-                    ref={scrollRef}
-                    className={`max-w-[70%] p-3 rounded-lg text-sm ${
-                      isMe
-                        ? "bg-blue-500 text-white self-end rounded-tr-none"
-                        : "bg-gray-200 text-gray-800 self-start rounded-tl-none"
-                    }`}
-                  >
-                    {msg.content}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Input Area */}
-            <form className="p-4 border-t flex gap-2 bg-gray-50" onSubmit={handleSend}>
-              <input
-                type="text"
-                className="flex-1 border p-2 rounded focus:outline-blue-500"
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-              />
-              <button className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 font-bold">
-                Send
-              </button>
-            </form>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-gray-400">
-            Select a friend to start chatting
-          </div>
-        )}
-      </div>
-    </div>
+    </Layout>
   );
 };
 
