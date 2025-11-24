@@ -1,54 +1,36 @@
-import React, { useState } from "react";
-import { Smile, Image } from "lucide-react"; // install lucide-react if needed
+import React, { useEffect, useRef } from "react";
+import MessageBubble from "./MessageBubble";
 
-const MessageInput = ({ onSend }) => {
-  const [text, setText] = useState("");
+const MessageList = ({ messages, currentUserId }) => {
+  const messagesEndRef = useRef(null);
 
-  const handleSend = () => {
-    if (text.trim() === "") return;
-    onSend(text);
-    setText("");
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") handleSend();
-  };
+  // Scroll to bottom on new message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   return (
-    <div className="flex items-center gap-2 p-3 border-t border-gray-100 bg-white">
-      {/* Cosmetic Icons */}
-      <button className="text-gray-400 hover:text-gray-600 transition">
-        <Smile size={24} />
-      </button>
-      
-      {/* Input Field (Pill Shape) */}
-      <div className="flex-1 relative">
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Message..."
-          className="w-full bg-gray-100 text-gray-800 rounded-full px-4 py-2 outline-none focus:ring-1 focus:ring-gray-300 transition placeholder-gray-500"
-        />
-        {/* Optional Image Icon inside the input logic could go here */}
-      </div>
-
-      {/* Send Button */}
-      {text.trim().length > 0 ? (
-        <button 
-          onClick={handleSend} 
-          className="text-blue-500 font-semibold px-2 hover:text-blue-700 transition"
-        >
-          Send
-        </button>
-      ) : (
-        <button className="text-gray-400 hover:text-gray-600 transition">
-          <Image size={24} />
-        </button>
+    <div className="flex-1 overflow-y-auto p-4 bg-white flex flex-col gap-1">
+      {messages.length === 0 && (
+        <div className="flex-1 flex flex-col items-center justify-center text-gray-400 mt-10">
+            <div className="w-16 h-16 rounded-full border-2 border-gray-200 flex items-center justify-center mb-2">
+                <i className="fa-regular fa-paper-plane text-2xl"></i>
+            </div>
+            <p>No messages yet.</p>
+            <p className="text-xs">Start the conversation!</p>
+        </div>
       )}
+      
+      {messages.map((msg, index) => (
+        <MessageBubble
+          key={index}
+          message={msg}
+          isOwn={msg.userId === currentUserId}
+        />
+      ))}
+      <div ref={messagesEndRef} />
     </div>
   );
 };
 
-export default MessageInput;
+export default MessageList;
