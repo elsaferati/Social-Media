@@ -1,96 +1,72 @@
-import React, { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 
 const PostCard = ({ post }) => {
-  const { currentUser } = useAuth();
-  
-  // Likes State
-  const [likes, setLikes] = useState([]); 
-  const isLiked = likes.includes(currentUser.id);
+  const [liked, setLiked] = useState(false);
 
-  // Bookmark State
-  const [isBookmarked, setIsBookmarked] = useState(false);
-
-  // 1. Fetch Likes AND Bookmark Status
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch Likes
-        const likeRes = await fetch(`http://localhost:8800/api/likes?postId=${post.id}`);
-        const likeData = await likeRes.json();
-        setLikes(likeData);
-
-        // Fetch Bookmark Status
-        const bookRes = await fetch(`http://localhost:8800/api/bookmarks/check?userId=${currentUser.id}&postId=${post.id}`);
-        const bookData = await bookRes.json();
-        setIsBookmarked(bookData); // true or false
-
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchData();
-  }, [post.id, currentUser.id]);
-
-  // 2. Handle Like Click
-  const handleLike = async () => {
-    // ... (Keep your existing like logic here)
-    // For brevity, pasting just the fetch part:
-    if (isLiked) setLikes(likes.filter(id => id !== currentUser.id));
-    else setLikes([...likes, currentUser.id]);
-    
-    await fetch("http://localhost:8800/api/likes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: currentUser.id, postId: post.id }),
-    });
-  };
-
-  // 3. Handle Bookmark Click
-  const handleBookmark = async () => {
-    setIsBookmarked(!isBookmarked); // Optimistic update
-    
-    try {
-      await fetch("http://localhost:8800/api/bookmarks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: currentUser.id, postId: post.id }),
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  // Safe checks for data
+  const userImage = post.userImg || "https://i.pravatar.cc/150?u=" + post.userId;
+  const username = post.username || "user_" + post.userId;
+  const timeAgo = post.createdAt ? formatDistanceToNow(new Date(post.createdAt)) : "just now";
 
   return (
-    <div className="bg-white p-4 rounded shadow mb-4 border relative">
-      <div className="flex items-center justify-between mb-2">
+    <article className="bg-white border border-gray-200 rounded-lg mb-6 shadow-sm">
+      
+      {/* Header */}
+      <div className="flex items-center justify-between p-3">
         <div className="flex items-center gap-3">
-            <Link to={`/profile/${post.userId}`} className="font-bold hover:underline">
-            {post.username}
-            </Link>
-            <div className="text-gray-500 text-xs">
-            {new Date(post.createdAt).toLocaleDateString()}
-            </div>
+          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 to-pink-600 p-[2px]">
+            <img src={userImage} alt="" className="w-full h-full rounded-full border-2 border-white object-cover" />
+          </div>
+          <span className="font-semibold text-sm">{username}</span>
+          <span className="text-gray-400 text-xs">• {timeAgo}</span>
         </div>
-        {/* Bookmark Button */}
-        <button onClick={handleBookmark} className="text-xl">
-            {isBookmarked ? "🔖" : "🏷️"} 
+        <button className="text-gray-500 hover:text-black">
+          <MoreHorizontal size={20} />
         </button>
       </div>
-      
-      <p className="text-gray-800 mb-4">{post.content}</p>
-      
-      <div className="flex items-center gap-2 pt-2 border-t">
-        <button 
-          onClick={handleLike}
-          className={`px-3 py-1 rounded text-sm font-semibold ${isLiked ? 'text-red-500' : 'text-gray-500'}`}
-        >
-          {isLiked ? "❤️ Liked" : "🤍 Like"}
-        </button>
-        <span className="text-gray-500 text-sm">{likes.length} Likes</span>
+
+      {/* Image / Content */}
+      <div className="w-full bg-gray-100 overflow-hidden">
+        {/* If you have an image URL in your post object, use it. Otherwise show text nicely */}
+        {post.img ? (
+          <img src={post.img} alt="Post" className="w-full h-auto object-cover max-h-[600px]" />
+        ) : (
+          <div className="p-8 flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 min-h-[200px]">
+            <p className="text-xl text-center font-medium text-gray-800">{post.content}</p>
+          </div>
+        )}
       </div>
-    </div>
+
+      {/* Action Buttons */}
+      <div className="p-3">
+        <div className="flex justify-between mb-2">
+          <div className="flex gap-4">
+            <button onClick={() => setLiked(!liked)} className="hover:opacity-60 transition">
+              <Heart size={24} className={liked ? "fill-red-500 text-red-500" : "text-black"} />
+            </button>
+            <button className="hover:opacity-60 transition"><MessageCircle size={24} /></button>
+            <button className="hover:opacity-60 transition"><Send size={24} /></button>
+          </div>
+          <button className="hover:opacity-60 transition"><Bookmark size={24} /></button>
+        </div>
+
+        {/* Likes Count */}
+        <div className="font-semibold text-sm mb-1">
+            {liked ? (post.likes || 0) + 1 : (post.likes || 0)} likes
+        </div>
+
+        {/* Caption */}
+        <div className="text-sm">
+          <span className="font-semibold mr-2">{username}</span>
+          {post.img && <span>{post.content}</span>}
+        </div>
+
+        {/* Comments Link */}
+        <button className="text-gray-500 text-sm mt-2">View all 12 comments</button>
+      </div>
+    </article>
   );
 };
 
