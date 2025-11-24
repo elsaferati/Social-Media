@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
+import Layout from "../components/Layout";
 import PostsFeed from "../components/PostsFeed";
 import SuggestedUsers from "../components/SuggestedUsers";
+import { Compass } from "lucide-react";
 
 const ExplorePage = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch random posts when page loads
   useEffect(() => {
     const fetchExplorePosts = async () => {
       try {
@@ -23,23 +24,37 @@ const ExplorePage = () => {
   }, []);
 
   return (
-    <div className="explore-page flex flex-col md:flex-row gap-4">
-      <div className="flex-1">
-        <h1 className="text-2xl font-bold mb-4 text-gray-800">Explore</h1>
-        <p className="text-gray-500 mb-6">Discover new posts from around the community.</p>
+    <Layout>
+      {/* LEFT: Main Explore Feed */}
+      <div className="w-full max-w-[630px] flex flex-col gap-6">
         
+        {/* Header Banner */}
+        <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-6 text-white shadow-md mb-2 flex items-center justify-between">
+           <div>
+              <h1 className="text-2xl font-bold mb-1">Explore</h1>
+              <p className="opacity-90 text-sm">Discover new people and inspiration.</p>
+           </div>
+           <Compass size={48} className="opacity-80" />
+        </div>
+
+        {/* Feed Content */}
         {loading ? (
-          <div className="p-4 text-center text-gray-500">Loading content...</div>
+          <div className="space-y-4">
+             {/* Skeleton Loaders */}
+             {[1,2].map(i => (
+                 <div key={i} className="bg-white h-96 rounded-lg animate-pulse border border-gray-200"></div>
+             ))}
+          </div>
         ) : (
           <PostsFeed posts={posts} />
         )}
       </div>
-      
-      {/* Keep the Suggested Users sidebar here too, it fits the "Explore" theme */}
-      <div className="w-full md:w-64 flex-shrink-0">
-        <SuggestedUsers />
+
+      {/* RIGHT: Suggestions (Hidden on mobile) */}
+      <div className="hidden lg:block w-[320px] pl-4">
+         <SuggestedUsers />
       </div>
-    </div>
+    </Layout>
   );
 };
 
