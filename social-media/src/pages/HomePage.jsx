@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import Layout from "../components/Layout"; // Import the new Layout
 import PostsFeed from "../components/PostsFeed";
 import SuggestedUsers from "../components/SuggestedUsers";
 import ModalSystem from "../components/ModalSystem";
-import CreatePost from "../components/CreatePost"; // Assuming you have this component
+import CreatePost from "../components/CreatePost";
 
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
   const [isCreatePostOpen, setIsCreatePostOpen] = useState(false);
-  const { currentUser } = useAuth(); // Get the logged-in user
+  const { currentUser } = useAuth();
 
-  // 1. Fetch Posts from Database
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -22,61 +22,78 @@ const HomePage = () => {
       }
     };
     fetchPosts();
-  }, []); // Empty brackets means run once on load
+  }, []);
 
-  // 2. Handle Creating a Post
   const handleCreatePost = async (content) => {
-    try {
-      await fetch("http://localhost:8800/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          content: content,
-          userId: currentUser.id // Attach the logged-in user's ID
-        }),
-      });
-      
-      // Refresh posts immediately after posting
-      setIsCreatePostOpen(false);
-      window.location.reload(); // Simple reload to show new post
-    } catch (err) {
-      console.log(err);
-    }
+    // ... your existing logic ...
+    setIsCreatePostOpen(false); 
+    window.location.reload();
   };
 
-  // Dummy suggested users (we can make this real later)
-  const suggestedUsers = [
-    { id: 1, name: "Alice", username: "@alice" },
-    { id: 2, name: "Bob", username: "@bob" },
-  ];
+  // Fake Stories Data
+  const stories = [1,2,3,4,5,6];
 
   return (
-    <div className="home-page flex flex-col md:flex-row gap-4">
-      <div className="flex-1">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">Home</h1>
-          <button
-            onClick={() => setIsCreatePostOpen(true)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-          >
-            Create Post
-          </button>
+    <Layout>
+      {/* CENTER COLUMN: Stories + Feed */}
+      <div className="w-full max-w-[630px] flex flex-col gap-6">
+        
+        {/* Stories Rail */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 flex gap-4 overflow-x-auto scrollbar-hide">
+            {/* "Add Story" bubble */}
+            <div className="flex flex-col items-center gap-1 min-w-[64px] cursor-pointer">
+                <div className="w-16 h-16 rounded-full border-2 border-white ring-2 ring-gray-200 relative">
+                    <img src={"https://i.pravatar.cc/150?u=" + currentUser?.id} className="w-full h-full rounded-full" alt="Me" />
+                    <div className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs border border-white">+</div>
+                </div>
+                <span className="text-xs text-gray-500">Your story</span>
+            </div>
+            {/* Other Stories */}
+            {stories.map((s) => (
+                <div key={s} className="flex flex-col items-center gap-1 min-w-[64px] cursor-pointer">
+                    <div className="w-16 h-16 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 to-pink-600">
+                        <img src={`https://i.pravatar.cc/150?img=${s + 10}`} className="w-full h-full rounded-full border-2 border-white" alt="story" />
+                    </div>
+                    <span className="text-xs text-gray-700 truncate w-16 text-center">user_{s}</span>
+                </div>
+            ))}
         </div>
 
-        {/* Pass the REAL posts to your feed */}
+        {/* Posts Feed */}
         <PostsFeed posts={posts} />
       </div>
 
-      <div className="w-full md:w-64 flex-shrink-0">
-        <SuggestedUsers users={suggestedUsers} />
+      {/* RIGHT COLUMN: Suggestions (Hidden on small screens) */}
+      <div className="hidden lg:block w-[320px] pl-4">
+        
+        {/* User Switcher Mini Profile */}
+        <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+                <img src={"https://i.pravatar.cc/150?u=" + currentUser?.id} className="w-12 h-12 rounded-full" alt="" />
+                <div>
+                    <p className="font-semibold text-sm">{currentUser?.username}</p>
+                    <p className="text-gray-500 text-sm">{currentUser?.name}</p>
+                </div>
+            </div>
+            <button className="text-blue-500 text-xs font-bold hover:text-blue-700">Switch</button>
+        </div>
+
+        {/* Suggestions Component */}
+        <SuggestedUsers /> 
+        
+        {/* Footer Links */}
+        <div className="mt-8 text-xs text-gray-400">
+            <p>© 2025 MY SOCIAL APP</p>
+        </div>
       </div>
 
+      {/* Modal Logic */}
       {isCreatePostOpen && (
         <ModalSystem onClose={() => setIsCreatePostOpen(false)}>
           <CreatePost onClose={() => setIsCreatePostOpen(false)} onPost={handleCreatePost} />
         </ModalSystem>
       )}
-    </div>
+    </Layout>
   );
 };
 
