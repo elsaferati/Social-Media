@@ -1,434 +1,82 @@
-import express from "express";
-import cors from "cors";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
-import db from "./db.js"; // <--- Note the .js extension, it is required now!
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
+
+// Import routes
+import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import postRoutes from './routes/postRoutes.js';
+import commentRoutes from './routes/commentRoutes.js';
+import messageRoutes from './routes/messageRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import searchRoutes from './routes/searchRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import relationshipRoutes from './routes/relationshipRoutes.js';
 
 const app = express();
-app.use(express.json());
+
+// Middleware
 app.use(cors());
+app.use(express.json());
 
-const JWT_SECRET = "supersecretkey123";
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/comments', commentRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/relationships', relationshipRoutes);
 
-// REGISTER ROUTE
-app.post("/api/auth/register", async (req, res) => {
-  const { username, email, password } = req.body;
-
-  try {
-    const [rows] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
-    if (rows.length > 0) return res.status(400).json({ message: "User already exists" });
-
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    await db.query("INSERT INTO users (username, email, password) VALUES (?, ?, ?)", 
-      [username, email, hashedPassword]);
-
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
+// Legacy routes for backward compatibility
+// These redirect to the new route structure
+app.get('/api/likes', async (req, res) => {
+  // Forward to post routes
+  const postRoutes = await import('./routes/postRoutes.js');
+  req.url = '/likes';
+  postRoutes.default(req, res);
 });
 
-// LOGIN ROUTE
-app.post("/api/auth/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    const [users] = await db.query("SELECT * FROM users WHERE email = ?", [email]);
-    if (users.length === 0) return res.status(400).json({ message: "Invalid credentials" });
-
-    const user = users[0];
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
-
-    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "1h" });
-
-    const { password: _, ...userData } = user;
-    res.json({ token, user: userData });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
-  }
+app.post('/api/likes', async (req, res, next) => {
+  req.url = '/likes';
+  const { toggleLike } = await import('./controllers/postController.js');
+  toggleLike(req, res);
 });
 
-
-// 1. GET ALL POSTS (with user details)
-app.get("/api/posts", async (req, res) => {
-  try {
-    // We join the 'users' table so we can show the name of the person who posted
-    const q = `
-      SELECT p.*, u.username, u.profilePic 
-      FROM posts p 
-      JOIN users u ON p.userId = u.id 
-      ORDER BY p.createdAt DESC
-    `;
-    const [data] = await db.query(q);
-    res.status(200).json(data);
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
-  }
+app.post('/api/bookmarks', async (req, res) => {
+  const { toggleBookmark } = await import('./controllers/postController.js');
+  toggleBookmark(req, res);
 });
 
-// 2. CREATE A NEW POST
-app.post("/api/posts", async (req, res) => {
-  try {
-    const { content, userId } = req.body; // We get this from the frontend
-    
-    const q = "INSERT INTO posts (content, userId) VALUES (?, ?)";
-    await db.query(q, [content, userId]);
-    
-    res.status(200).json("Post has been created.");
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
-  }
+app.get('/api/bookmarks/check', async (req, res) => {
+  const { checkBookmark } = await import('./controllers/postController.js');
+  checkBookmark(req, res);
 });
 
-// 3. GET SINGLE USER (For Profile Header)
-app.get("/api/users/:userId", async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const q = "SELECT id, username, email, profilePic, created_at FROM users WHERE id = ?";
-    
-    const [rows] = await db.query(q, [userId]);
-    if (rows.length === 0) return res.status(404).json("User not found");
-    
-    // Return the first user found (without password!)
-    const { password, ...info } = rows[0];
-    res.json(info);
-  } catch (err) {
-    res.status(500).json(err);
-  }
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: 'Server is running' });
 });
 
-// 4. GET POSTS FOR A SPECIFIC USER
-app.get("/api/posts/user/:userId", async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    // Join with users table to get username
-    const q = `
-      SELECT p.*, u.username, u.profilePic 
-      FROM posts p 
-      JOIN users u ON p.userId = u.id 
-      WHERE p.userId = ? 
-      ORDER BY p.createdAt DESC
-    `;
-    
-    const [data] = await db.query(q, [userId]);
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json(err);
-  }
+// 404 handler
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
-// 5. GET LIKES FOR A POST
-app.get("/api/likes", async (req, res) => {
-  try {
-    const q = "SELECT * FROM likes WHERE postId = ?";
-    const [data] = await db.query(q, [req.query.postId]);
-    // Return list of userIds who liked this post
-    res.status(200).json(data.map(like => like.userId));
-  } catch (err) {
-    res.status(500).json(err);
-  }
+// Error handler
+app.use((err, req, res, next) => {
+  console.error('Server error:', err);
+  res.status(500).json({ message: 'Internal server error' });
 });
 
-// 6. TOGGLE LIKE (UPDATED WITH NOTIFICATION)
-app.post("/api/likes", async (req, res) => {
-  try {
-    const { userId, postId } = req.body;
+const PORT = process.env.PORT || 8800;
 
-    const [existing] = await db.query("SELECT * FROM likes WHERE userId = ? AND postId = ?", [userId, postId]);
-
-    if (existing.length > 0) {
-      // Unlike
-      await db.query("DELETE FROM likes WHERE userId = ? AND postId = ?", [userId, postId]);
-      // Optional: Delete the notification if they unlike? For now, let's keep it simple.
-      res.status(200).json("Post has been disliked.");
-    } else {
-      // Like
-      await db.query("INSERT INTO likes (userId, postId) VALUES (?, ?)", [userId, postId]);
-
-      // --- NEW: Create Notification ---
-      // 1. First, find out who owns the post (so we know who to notify)
-      const [postData] = await db.query("SELECT userId FROM posts WHERE id = ?", [postId]);
-      const postOwnerId = postData[0].userId;
-
-      // 2. Only notify if you are not liking your own post
-      if (postOwnerId !== userId) {
-         const notifQ = "INSERT INTO notifications (receiverUserId, senderUserId, type, postId) VALUES (?, ?, 'like', ?)";
-         await db.query(notifQ, [postOwnerId, userId, postId]);
-      }
-      // -------------------------------
-
-      res.status(200).json("Post has been liked.");
-    }
-  } catch (err) {
-    console.log(err);
-    res.status(500).json(err);
-  }
-});
-
-// 7. FOLLOW A USER (UPDATED WITH NOTIFICATION)
-app.post("/api/relationships", async (req, res) => {
-  try {
-    const { followerUserId, followedUserId } = req.body;
-    if (followerUserId === followedUserId) return res.status(400).json("Cannot follow yourself");
-
-    const q = "INSERT INTO relationships (followerUserId, followedUserId) VALUES (?, ?)";
-    await db.query(q, [followerUserId, followedUserId]);
-
-    // --- NEW: Create Notification ---
-    const notifQ = "INSERT INTO notifications (receiverUserId, senderUserId, type) VALUES (?, ?, 'follow')";
-    await db.query(notifQ, [followedUserId, followerUserId]);
-    // -------------------------------
-
-    res.status(200).json("Following");
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// 8. UNFOLLOW A USER
-app.delete("/api/relationships", async (req, res) => {
-  try {
-    const { followerUserId, followedUserId } = req.query; // NOTE: using query params for delete
-    
-    const q = "DELETE FROM relationships WHERE followerUserId = ? AND followedUserId = ?";
-    await db.query(q, [followerUserId, followedUserId]);
-    res.status(200).json("Unfollowed");
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// 9. GET SUGGESTED USERS (Users you don't follow yet)
-app.get("/api/users/suggestions/:userId", async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    // Find users who are NOT me AND NOT in my following list
-    const q = `
-      SELECT * FROM users 
-      WHERE id != ? 
-      AND id NOT IN (SELECT followedUserId FROM relationships WHERE followerUserId = ?)
-      LIMIT 5
-    `;
-    const [data] = await db.query(q, [userId, userId]);
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// 10. GET FOLLOWER/FOLLOWING COUNTS
-app.get("/api/relationships/count/:userId", async (req, res) => {
-  try {
-    const userId = req.params.userId;
-
-    // Query 1: Who follows THIS user? (Followers)
-    const qFollowers = "SELECT count(*) as count FROM relationships WHERE followedUserId = ?";
-    const [followersData] = await db.query(qFollowers, [userId]);
-
-    // Query 2: Who does THIS user follow? (Following)
-    const qFollowing = "SELECT count(*) as count FROM relationships WHERE followerUserId = ?";
-    const [followingData] = await db.query(qFollowing, [userId]);
-
-    res.status(200).json({
-      followers: followersData[0].count,
-      following: followingData[0].count
-    });
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// 11. GET EXPLORE POSTS (Random posts from everyone)
-app.get("/api/posts/explore", async (req, res) => {
-  try {
-    // We join users to get names/pics
-    // ORDER BY RAND() mixes them up every time you refresh
-    // LIMIT 20 prevents loading too much data at once
-    const q = `
-      SELECT p.*, u.username, u.profilePic 
-      FROM posts p 
-      JOIN users u ON p.userId = u.id 
-      ORDER BY RAND() 
-      LIMIT 20
-    `;
-    
-    const [data] = await db.query(q);
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// 12. GET NOTIFICATIONS
-app.get("/api/notifications", async (req, res) => {
-  try {
-    const userId = req.query.userId;
-    
-    // Get notifications AND the sender's info (username/pic)
-    const q = `
-      SELECT n.*, u.username, u.profilePic 
-      FROM notifications n
-      JOIN users u ON n.senderUserId = u.id
-      WHERE n.receiverUserId = ?
-      ORDER BY n.createdAt DESC
-    `;
-    
-    const [data] = await db.query(q, [userId]);
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// 13. TOGGLE BOOKMARK (Save or Unsave)
-app.post("/api/bookmarks", async (req, res) => {
-  try {
-    const { userId, postId } = req.body;
-
-    const [existing] = await db.query("SELECT * FROM bookmarks WHERE userId = ? AND postId = ?", [userId, postId]);
-
-    if (existing.length > 0) {
-      // Already bookmarked -> Delete it
-      await db.query("DELETE FROM bookmarks WHERE userId = ? AND postId = ?", [userId, postId]);
-      res.status(200).json("Bookmark removed");
-    } else {
-      // Not bookmarked -> Add it
-      await db.query("INSERT INTO bookmarks (userId, postId) VALUES (?, ?)", [userId, postId]);
-      res.status(200).json("Bookmark saved");
-    }
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// 14. CHECK IF BOOKMARKED (For the button color)
-app.get("/api/bookmarks/check", async (req, res) => {
-  try {
-    const { userId, postId } = req.query;
-    const [data] = await db.query("SELECT * FROM bookmarks WHERE userId = ? AND postId = ?", [userId, postId]);
-    // Returns true if array length > 0
-    res.status(200).json(data.length > 0); 
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// 15. GET ALL BOOKMARKED POSTS (For Bookmarks Page)
-app.get("/api/posts/bookmarks/:userId", async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    // Join bookmarks -> posts -> users (to get post details and author info)
-    const q = `
-      SELECT p.*, u.username, u.profilePic 
-      FROM bookmarks b
-      JOIN posts p ON b.postId = p.id
-      JOIN users u ON p.userId = u.id
-      WHERE b.userId = ?
-      ORDER BY b.createdAt DESC
-    `;
-    
-    const [data] = await db.query(q, [userId]);
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// 16. UPDATE USER SETTINGS
-app.put("/api/users/:userId", async (req, res) => {
-  const userId = req.params.userId;
-  const { username, email, password } = req.body;
-
-  try {
-    // Scenario 1: User wants to change password
-    if (password) {
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-
-      const q = "UPDATE users SET username=?, email=?, password=? WHERE id=?";
-      await db.query(q, [username, email, hashedPassword, userId]);
-    } 
-    // Scenario 2: User only changes text info (keep old password)
-    else {
-      const q = "UPDATE users SET username=?, email=? WHERE id=?";
-      await db.query(q, [username, email, userId]);
-    }
-
-    // Return the updated user info (so frontend can update immediately)
-    const [rows] = await db.query("SELECT * FROM users WHERE id = ?", [userId]);
-    const { password: _, ...updatedUser } = rows[0]; // Remove password from response
-    
-    res.status(200).json(updatedUser);
-
-  } catch (err) {
-    console.log(err);
-    // Handle duplicate email/username error
-    if (err.code === 'ER_DUP_ENTRY') {
-        return res.status(409).json("Username or Email already taken.");
-    }
-    res.status(500).json(err);
-  }
-});
-
-// 17. GET FRIENDS (Users I follow - for the Chat Sidebar)
-app.get("/api/users/friends/:userId", async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const q = `
-      SELECT u.id, u.username, u.profilePic 
-      FROM relationships r
-      JOIN users u ON r.followedUserId = u.id
-      WHERE r.followerUserId = ?
-    `;
-    const [data] = await db.query(q, [userId]);
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// 18. GET MESSAGES (Between Me and Another User)
-app.get("/api/messages", async (req, res) => {
-  try {
-    const { senderId, receiverId } = req.query;
-    
-    // Logic: Get messages where (I sent AND You received) OR (You sent AND I received)
-    // Order by Time ASC (Oldest at top, newest at bottom)
-    const q = `
-      SELECT * FROM messages 
-      WHERE (senderId = ? AND receiverId = ?) 
-      OR (senderId = ? AND receiverId = ?)
-      ORDER BY createdAt ASC
-    `;
-    
-    const [data] = await db.query(q, [senderId, receiverId, receiverId, senderId]);
-    res.status(200).json(data);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-// 19. SEND A MESSAGE
-app.post("/api/messages", async (req, res) => {
-  try {
-    const { senderId, receiverId, content } = req.body;
-    
-    const q = "INSERT INTO messages (senderId, receiverId, content) VALUES (?, ?, ?)";
-    await db.query(q, [senderId, receiverId, content]);
-    
-    res.status(200).json("Message sent");
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-app.listen(8800, () => {
-  console.log("Backend server running on port 8800!");
+app.listen(PORT, () => {
+  console.log(`Backend server running on port ${PORT}!`);
+  console.log(`API available at http://localhost:${PORT}/api`);
 });

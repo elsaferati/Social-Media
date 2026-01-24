@@ -12,20 +12,41 @@ import SettingsPage from "./pages/SettingsPage";
 import MessagesPage from "./pages/MessagesPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import SearchPage from "./pages/SearchPage";
+
+/* ----------------- Admin Pages ----------------- */
+import AdminLayout from "./pages/admin/AdminLayout";
+import DashboardPage from "./pages/admin/DashboardPage";
+import AdminUsersPage from "./pages/admin/UsersPage";
+import AdminPostsPage from "./pages/admin/PostsPage";
+import AdminCommentsPage from "./pages/admin/CommentsPage";
+import AdminMessagesPage from "./pages/admin/MessagesPage";
 
 /* ----------------- Protected Route Wrapper ----------------- */
-// This component now ONLY handles security. 
-// The Visual Layout (Sidebar/Header) is handled inside each Page component.
 const ProtectedLayout = () => {
   const { currentUser } = useAuth();
 
-  // 1. If user is NOT logged in, redirect to Login
   if (!currentUser) {
     return <Navigate to="/login" />;
   }
 
-  // 2. If user IS logged in, render the requested page
-  // The pages themselves (HomePage, etc.) now contain the <Layout> wrapper
+  return <Outlet />;
+};
+
+/* ----------------- Admin Protected Route Wrapper ----------------- */
+const AdminProtectedLayout = () => {
+  const { currentUser, isAdmin } = useAuth();
+
+  // Not logged in - redirect to login
+  if (!currentUser) {
+    return <Navigate to="/login" />;
+  }
+
+  // Logged in but not admin - redirect to home
+  if (!isAdmin) {
+    return <Navigate to="/" />;
+  }
+
   return <Outlet />;
 };
 
@@ -35,7 +56,7 @@ const App = () => {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* Public Routes (No Sidebar needed) */}
+          {/* Public Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
 
@@ -48,6 +69,18 @@ const App = () => {
             <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
+            <Route path="/search" element={<SearchPage />} />
+          </Route>
+
+          {/* Admin Routes (Requires Admin Role) */}
+          <Route element={<AdminProtectedLayout />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<DashboardPage />} />
+              <Route path="users" element={<AdminUsersPage />} />
+              <Route path="posts" element={<AdminPostsPage />} />
+              <Route path="comments" element={<AdminCommentsPage />} />
+              <Route path="messages" element={<AdminMessagesPage />} />
+            </Route>
           </Route>
 
           {/* Fallback for unknown routes */}

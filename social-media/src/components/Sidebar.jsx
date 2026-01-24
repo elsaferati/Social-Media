@@ -1,11 +1,17 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Home, Search, Compass, Heart, Bookmark, User, PlusSquare, MessageCircle, Settings, LogOut } from "lucide-react";
+import { Home, Search, Compass, Heart, Bookmark, User, PlusSquare, MessageCircle, Settings, LogOut, Shield } from "lucide-react";
 
 const Sidebar = () => {
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const userId = currentUser?.id;
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
 
   const menuItems = [
     { name: "Home", path: "/", icon: <Home size={24} /> },
@@ -13,7 +19,7 @@ const Sidebar = () => {
     { name: "Explore", path: "/explore", icon: <Compass size={24} /> },
     { name: "Messages", path: "/messages", icon: <MessageCircle size={24} /> },
     { name: "Notifications", path: "/notifications", icon: <Heart size={24} /> },
-    { name: "Create", path: "#", icon: <PlusSquare size={24} />, action: "create" }, // We will handle this in parent
+    { name: "Create", path: "#", icon: <PlusSquare size={24} />, action: "create" },
     { name: "Profile", path: `/profile/${userId}`, icon: <User size={24} /> },
   ];
 
@@ -49,11 +55,22 @@ const Sidebar = () => {
 
       {/* Bottom Actions */}
       <div className="px-2 space-y-2">
+         {/* Admin Panel Link - Only visible for admins */}
+         {isAdmin && (
+           <NavLink 
+             to="/admin" 
+             className="flex items-center gap-4 px-4 py-3 text-purple-600 hover:bg-purple-50 rounded-lg"
+           >
+              <Shield size={24} />
+              <span className="hidden md:block">Admin Panel</span>
+           </NavLink>
+         )}
+         
          <NavLink to="/settings" className="flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg">
             <Settings size={24} />
             <span className="hidden md:block">Settings</span>
          </NavLink>
-         <button onClick={logout} className="w-full flex items-center gap-4 px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg text-left">
+         <button onClick={handleLogout} className="w-full flex items-center gap-4 px-4 py-3 text-red-500 hover:bg-red-50 rounded-lg text-left">
             <LogOut size={24} />
             <span className="hidden md:block">Logout</span>
          </button>
