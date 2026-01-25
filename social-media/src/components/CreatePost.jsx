@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Image, MapPin, Smile, X } from "lucide-react";
+import { Image, MapPin, Smile, X, Upload, Sparkles } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const CreatePost = ({ onClose, onPost }) => {
@@ -8,19 +8,18 @@ const CreatePost = ({ onClose, onPost }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleImageSelect = (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0] || e.dataTransfer?.files?.[0];
     if (file) {
-      // Validate file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
         alert('Please select a valid image file (JPEG, PNG, GIF, or WebP)');
         return;
       }
       
-      // Validate file size (10MB max)
       if (file.size > 10 * 1024 * 1024) {
         alert('Image size must be less than 10MB');
         return;
@@ -28,13 +27,28 @@ const CreatePost = ({ onClose, onPost }) => {
 
       setSelectedImage(file);
       
-      // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    handleImageSelect(e);
   };
 
   const removeImage = () => {
@@ -85,76 +99,119 @@ const CreatePost = ({ onClose, onPost }) => {
   };
 
   return (
-    <div className="w-full max-w-lg bg-white rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="w-full max-w-lg bg-white rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl animate-scaleIn">
       
       {/* Header */}
-      <div className="border-b border-gray-200 p-3 flex justify-between items-center bg-white">
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-700">Cancel</button>
-        <span className="font-semibold text-gray-700">Create new post</span>
+      <div className="border-b border-gray-100 p-4 flex justify-between items-center bg-gradient-to-r from-indigo-500 to-pink-500">
+        <button 
+          onClick={onClose} 
+          className="text-white/80 hover:text-white font-medium transition-colors"
+        >
+          Cancel
+        </button>
+        <div className="flex items-center gap-2 text-white">
+          <Sparkles size={18} />
+          <span className="font-semibold">Create Post</span>
+        </div>
         <button 
           onClick={handleSubmit} 
           disabled={isSubmitting || (content.trim() === "" && !selectedImage)}
-          className="text-blue-500 font-bold hover:text-blue-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          className="text-white font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform"
         >
-          {isSubmitting ? 'Sharing...' : 'Share'}
+          {isSubmitting ? 'Posting...' : 'Share'}
         </button>
       </div>
 
       {/* Body */}
       <div className="flex flex-col flex-1 overflow-y-auto">
-        {/* User Info Row */}
-        <div className="flex items-center gap-3 p-4 pb-2">
-          <div className="w-10 h-10 bg-gray-200 rounded-full overflow-hidden">
+        {/* User Info */}
+        <div className="flex items-center gap-3 p-4 pb-3">
+          <div className="avatar-ring">
             <img 
-              src={currentUser?.profilePic || "https://i.pravatar.cc/150?u=" + currentUser?.id} 
+              src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
               alt="" 
-              className="w-full h-full object-cover"
+              className="w-11 h-11 rounded-full object-cover"
             />
           </div>
-          <span className="font-semibold text-sm text-gray-800">{currentUser?.username}</span>
+          <div>
+            <p className="font-semibold text-gray-900">{currentUser?.username}</p>
+            <p className="text-xs text-gray-400">Sharing to Feed</p>
+          </div>
         </div>
 
-        {/* Image Preview */}
-        {imagePreview && (
-          <div className="relative mx-4 mb-3">
-            <img 
-              src={imagePreview} 
-              alt="Preview" 
-              className="w-full max-h-[300px] object-contain rounded-lg bg-gray-100"
-            />
-            <button
-              onClick={removeImage}
-              className="absolute top-2 right-2 bg-black bg-opacity-60 text-white rounded-full p-1 hover:bg-opacity-80"
-            >
-              <X size={20} />
-            </button>
-          </div>
-        )}
-
         {/* Text Area */}
-        <div className="px-4 flex-1">
+        <div className="px-4">
           <textarea
-            className="w-full min-h-[120px] resize-none outline-none text-base placeholder-gray-400"
-            placeholder="Write a caption..."
+            className="w-full min-h-[100px] resize-none outline-none text-gray-800 placeholder-gray-400 text-[15px] leading-relaxed"
+            placeholder="What's on your mind?"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             autoFocus
           />
         </div>
 
+        {/* Image Preview or Upload Zone */}
+        <div className="px-4 pb-4">
+          {imagePreview ? (
+            <div className="relative rounded-2xl overflow-hidden bg-gray-100 animate-fadeIn">
+              <img 
+                src={imagePreview} 
+                alt="Preview" 
+                className="w-full max-h-[300px] object-contain"
+              />
+              <button
+                onClick={removeImage}
+                className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          ) : (
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 ${
+                isDragging 
+                  ? 'border-indigo-500 bg-indigo-50' 
+                  : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+              }`}
+            >
+              <div className={`w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center transition-colors ${
+                isDragging ? 'bg-indigo-100' : 'bg-gray-100'
+              }`}>
+                <Upload className={`w-7 h-7 ${isDragging ? 'text-indigo-500' : 'text-gray-400'}`} />
+              </div>
+              <p className="text-gray-600 font-medium mb-1">
+                {isDragging ? 'Drop your image here' : 'Add photos to your post'}
+              </p>
+              <p className="text-gray-400 text-sm">
+                Drag and drop or click to upload
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Tools Row */}
-        <div className="flex justify-between items-center p-4 border-t border-gray-100">
-          <div className="flex gap-4 text-gray-400">
-            <Smile size={24} className="cursor-pointer hover:text-gray-600"/>
+        <div className="flex justify-between items-center px-4 py-3 border-t border-gray-100 bg-gray-50">
+          <div className="flex items-center gap-1">
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="hover:text-gray-600"
+              className="p-2.5 hover:bg-white rounded-xl text-gray-500 hover:text-green-500 transition-all"
             >
-              <Image size={24} />
+              <Image size={22} />
             </button>
-            <MapPin size={24} className="cursor-pointer hover:text-gray-600"/>
+            <button className="p-2.5 hover:bg-white rounded-xl text-gray-500 hover:text-yellow-500 transition-all">
+              <Smile size={22} />
+            </button>
+            <button className="p-2.5 hover:bg-white rounded-xl text-gray-500 hover:text-red-500 transition-all">
+              <MapPin size={22} />
+            </button>
           </div>
-          <span className="text-xs text-gray-400">{content.length}/2200</span>
+          <span className={`text-xs font-medium ${content.length > 2000 ? 'text-red-500' : 'text-gray-400'}`}>
+            {content.length}/2200
+          </span>
         </div>
 
         {/* Hidden file input */}

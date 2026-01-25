@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import { Link } from "react-router-dom";
-import { Heart, UserPlus, MessageCircle, Bell } from "lucide-react";
+import { Heart, UserPlus, MessageCircle, Bell, CheckCheck } from "lucide-react";
 import { notificationAPI } from "../services/api";
 import { formatDistanceToNow } from "date-fns";
 
@@ -22,7 +22,6 @@ const NotificationsPage = () => {
       setLoading(true);
       const data = await notificationAPI.getAll(currentUser.id);
       setNotifications(data);
-      // Mark all as read when viewing
       await notificationAPI.markAllAsRead(currentUser.id);
     } catch (err) {
       console.error('Error fetching notifications:', err);
@@ -34,98 +33,203 @@ const NotificationsPage = () => {
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'like':
-        return <Heart size={16} className="text-red-500 fill-red-500" />;
+        return <Heart size={16} className="text-white fill-white" />;
       case 'follow':
-        return <UserPlus size={16} className="text-blue-500" />;
+        return <UserPlus size={16} className="text-white" />;
       case 'comment':
-        return <MessageCircle size={16} className="text-green-500" />;
+        return <MessageCircle size={16} className="text-white" />;
       default:
-        return <Bell size={16} className="text-gray-500" />;
+        return <Bell size={16} className="text-white" />;
+    }
+  };
+
+  const getNotificationBg = (type) => {
+    switch (type) {
+      case 'like':
+        return 'bg-gradient-to-br from-red-500 to-pink-500';
+      case 'follow':
+        return 'bg-gradient-to-br from-indigo-500 to-purple-500';
+      case 'comment':
+        return 'bg-gradient-to-br from-green-500 to-emerald-500';
+      default:
+        return 'bg-gradient-to-br from-gray-500 to-gray-600';
     }
   };
 
   const getNotificationText = (type) => {
     switch (type) {
       case 'like':
-        return 'liked your post.';
+        return 'liked your post';
       case 'follow':
-        return 'started following you.';
+        return 'started following you';
       case 'comment':
-        return 'commented on your post.';
+        return 'commented on your post';
       default:
-        return 'interacted with your content.';
+        return 'interacted with your content';
     }
   };
 
+  const todayNotifications = notifications.filter(n => {
+    const date = new Date(n.createdAt);
+    const today = new Date();
+    return date.toDateString() === today.toDateString();
+  });
+
+  const earlierNotifications = notifications.filter(n => {
+    const date = new Date(n.createdAt);
+    const today = new Date();
+    return date.toDateString() !== today.toDateString();
+  });
+
   return (
     <Layout>
-      <div className="w-full max-w-[600px] mx-auto bg-white md:bg-transparent rounded-lg md:p-0">
-        <h1 className="text-2xl font-bold mb-6 px-4 md:px-0 pt-4 md:pt-0">Notifications</h1>
-        
-        <div className="flex flex-col bg-white rounded-lg border border-gray-200 md:border-0">
-          {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            </div>
-          ) : notifications.length === 0 ? (
-             <div className="flex flex-col items-center justify-center py-20 text-center">
-                 <div className="w-16 h-16 rounded-full border border-gray-300 flex items-center justify-center mb-4">
-                     <Heart size={32} className="text-gray-300" />
-                 </div>
-                 <p className="text-gray-500">Activity On Your Posts</p>
-                 <p className="text-xs text-gray-400 mt-1">When someone likes or comments on your posts, you'll see it here.</p>
-             </div>
-          ) : (
-            notifications.map((n) => (
-              <div 
-                key={n.id} 
-                className={`p-4 flex items-center justify-between hover:bg-gray-50 transition border-b border-gray-100 last:border-0 ${!n.isRead ? 'bg-blue-50' : ''}`}
-              >
-                <div className="flex items-center gap-3">
-                    {/* Avatar */}
-                    <Link to={`/profile/${n.senderUserId}`}>
-                       <div className="w-11 h-11 rounded-full overflow-hidden bg-gray-200 relative">
-                           <img 
-                             src={n.profilePic || "https://i.pravatar.cc/150?u=" + n.senderUserId} 
-                             className="w-full h-full object-cover" 
-                             alt="" 
-                           />
-                           <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center">
-                             {getNotificationIcon(n.type)}
-                           </div>
-                       </div>
-                    </Link>
-
-                    {/* Text */}
-                    <div className="text-sm">
-                       <Link to={`/profile/${n.senderUserId}`} className="font-semibold text-black mr-1 hover:underline">
-                         {n.username}
-                       </Link>
-                       <span className="text-gray-800">
-                         {getNotificationText(n.type)}
-                       </span>
-                       <div className="text-xs text-gray-400 mt-0.5">
-                         {n.createdAt ? formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }) : ''}
-                       </div>
-                    </div>
-                </div>
-
-                {/* Right Action */}
-                {n.type === 'follow' ? (
-                    <Link to={`/profile/${n.senderUserId}`}>
-                      <button className="bg-blue-500 text-white text-xs font-bold px-4 py-1.5 rounded-lg hover:bg-blue-600 transition">
-                          View Profile
-                      </button>
-                    </Link>
-                ) : n.postId && (
-                    <Link to={`/`} className="w-10 h-10 bg-gray-100 rounded overflow-hidden flex items-center justify-center">
-                        <Heart size={16} className="text-gray-400" />
-                    </Link>
-                )}
-              </div>
-            ))
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
+            <p className="text-gray-500">Stay updated with your activity</p>
+          </div>
+          {notifications.length > 0 && (
+            <button className="flex items-center gap-2 text-indigo-600 font-medium hover:text-indigo-700">
+              <CheckCheck size={18} />
+              Mark all read
+            </button>
           )}
         </div>
+        
+        {loading ? (
+          <div className="card-flat p-12">
+            <div className="flex flex-col items-center justify-center">
+              <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-gray-500">Loading notifications...</p>
+            </div>
+          </div>
+        ) : notifications.length === 0 ? (
+          <div className="card-flat p-12 text-center">
+            <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+              <Bell size={36} className="text-gray-300" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">No notifications yet</h3>
+            <p className="text-gray-500 max-w-sm mx-auto">
+              When someone likes or comments on your posts, you'll see it here.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Today */}
+            {todayNotifications.length > 0 && (
+              <div>
+                <h2 className="text-sm font-semibold text-gray-500 mb-3 px-1">Today</h2>
+                <div className="card-flat overflow-hidden divide-y divide-gray-100">
+                  {todayNotifications.map((n, index) => (
+                    <div 
+                      key={n.id} 
+                      className={`p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors animate-fadeIn ${!n.isRead ? 'bg-indigo-50/50' : ''}`}
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      {/* Avatar */}
+                      <Link to={`/profile/${n.senderUserId}`} className="relative flex-shrink-0">
+                        <div className="avatar-ring">
+                          <img 
+                            src={n.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${n.senderUserId}`} 
+                            className="w-12 h-12 rounded-full object-cover" 
+                            alt="" 
+                          />
+                        </div>
+                        <div className={`absolute -bottom-1 -right-1 w-6 h-6 ${getNotificationBg(n.type)} rounded-full flex items-center justify-center shadow-lg`}>
+                          {getNotificationIcon(n.type)}
+                        </div>
+                      </Link>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900">
+                          <Link to={`/profile/${n.senderUserId}`} className="font-semibold hover:text-indigo-600">
+                            {n.username}
+                          </Link>
+                          {' '}{getNotificationText(n.type)}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {n.createdAt ? formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }) : ''}
+                        </p>
+                      </div>
+
+                      {/* Action */}
+                      {n.type === 'follow' ? (
+                        <Link to={`/profile/${n.senderUserId}`}>
+                          <button className="btn-primary text-xs py-2 px-4">
+                            View Profile
+                          </button>
+                        </Link>
+                      ) : n.postId && (
+                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Heart size={18} className="text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Earlier */}
+            {earlierNotifications.length > 0 && (
+              <div>
+                <h2 className="text-sm font-semibold text-gray-500 mb-3 px-1">Earlier</h2>
+                <div className="card-flat overflow-hidden divide-y divide-gray-100">
+                  {earlierNotifications.map((n, index) => (
+                    <div 
+                      key={n.id} 
+                      className={`p-4 flex items-center gap-4 hover:bg-gray-50 transition-colors animate-fadeIn ${!n.isRead ? 'bg-indigo-50/50' : ''}`}
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      {/* Avatar */}
+                      <Link to={`/profile/${n.senderUserId}`} className="relative flex-shrink-0">
+                        <div className="avatar-ring">
+                          <img 
+                            src={n.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${n.senderUserId}`} 
+                            className="w-12 h-12 rounded-full object-cover" 
+                            alt="" 
+                          />
+                        </div>
+                        <div className={`absolute -bottom-1 -right-1 w-6 h-6 ${getNotificationBg(n.type)} rounded-full flex items-center justify-center shadow-lg`}>
+                          {getNotificationIcon(n.type)}
+                        </div>
+                      </Link>
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900">
+                          <Link to={`/profile/${n.senderUserId}`} className="font-semibold hover:text-indigo-600">
+                            {n.username}
+                          </Link>
+                          {' '}{getNotificationText(n.type)}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {n.createdAt ? formatDistanceToNow(new Date(n.createdAt), { addSuffix: true }) : ''}
+                        </p>
+                      </div>
+
+                      {/* Action */}
+                      {n.type === 'follow' ? (
+                        <Link to={`/profile/${n.senderUserId}`}>
+                          <button className="btn-secondary text-xs py-2 px-4">
+                            View
+                          </button>
+                        </Link>
+                      ) : n.postId && (
+                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                          <Heart size={18} className="text-gray-400" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </Layout>
   );

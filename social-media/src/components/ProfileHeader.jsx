@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import FollowButton from "./FollowButton";
-import { Settings, Grid, Bookmark } from "lucide-react";
+import { Settings, MessageCircle, UserPlus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { userAPI, relationshipAPI, postAPI } from "../services/api";
 
@@ -22,7 +22,6 @@ const ProfileHeader = ({ userId }) => {
     try {
       setLoading(true);
       
-      // Fetch user data, relationship counts, and posts count in parallel
       const [userData, relationshipData, userPosts] = await Promise.all([
         userAPI.getUser(userId),
         relationshipAPI.getCounts(userId),
@@ -36,14 +35,11 @@ const ProfileHeader = ({ userId }) => {
         posts: userPosts?.length || 0
       });
 
-      // Check if current user follows this profile
       if (currentUser && !isOwnProfile) {
         try {
           const followData = await relationshipAPI.checkFollowing(currentUser.id, userId);
           setIsFollowing(followData.isFollowing);
-        } catch (e) {
-          // Might fail if endpoint doesn't exist, that's ok
-        }
+        } catch (e) {}
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -62,17 +58,17 @@ const ProfileHeader = ({ userId }) => {
 
   if (loading) {
     return (
-      <div className="flex flex-col w-full bg-white md:bg-transparent animate-pulse">
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 px-4 py-6 md:px-0">
-          <div className="w-20 h-20 md:w-36 md:h-36 rounded-full bg-gray-200"></div>
-          <div className="flex-1 flex flex-col items-center md:items-start gap-4">
-            <div className="h-6 w-32 bg-gray-200 rounded"></div>
-            <div className="flex gap-8">
-              <div className="h-5 w-16 bg-gray-200 rounded"></div>
-              <div className="h-5 w-16 bg-gray-200 rounded"></div>
-              <div className="h-5 w-16 bg-gray-200 rounded"></div>
+      <div className="card-flat p-6 md:p-8 animate-pulse">
+        <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
+          <div className="w-28 h-28 md:w-36 md:h-36 rounded-full skeleton" />
+          <div className="flex-1 space-y-4 w-full">
+            <div className="h-7 skeleton rounded-lg w-40 mx-auto md:mx-0" />
+            <div className="flex justify-center md:justify-start gap-6">
+              <div className="h-5 skeleton rounded w-20" />
+              <div className="h-5 skeleton rounded w-20" />
+              <div className="h-5 skeleton rounded w-20" />
             </div>
-            <div className="h-4 w-48 bg-gray-200 rounded"></div>
+            <div className="h-4 skeleton rounded w-64 mx-auto md:mx-0" />
           </div>
         </div>
       </div>
@@ -80,120 +76,147 @@ const ProfileHeader = ({ userId }) => {
   }
 
   if (!user) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <p className="text-gray-500">User not found</p>
-      </div>
-    );
+    return null;
   }
 
-  const userImage = user.profilePic || `https://i.pravatar.cc/150?u=${userId}`;
+  const userImage = user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`;
 
   return (
-    <div className="flex flex-col w-full bg-white md:bg-transparent">
-      
-      {/* Top Section: Avatar & Info */}
-      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 md:gap-10 px-4 py-6 md:px-0">
-        
-        {/* Avatar - Large */}
-        <div className="flex-shrink-0">
-          <div className="w-20 h-20 md:w-36 md:h-36 rounded-full p-[2px] bg-gradient-to-tr from-yellow-400 to-pink-600">
-             <img 
-               src={userImage} 
-               alt={user.username} 
-               className="w-full h-full rounded-full object-cover border-2 border-white"
-             />
+    <div className="card-flat overflow-hidden">
+      {/* Cover Image */}
+      <div className="h-32 md:h-48 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative">
+        <div className="absolute inset-0 bg-black/10" />
+      </div>
+
+      {/* Profile Content */}
+      <div className="px-4 md:px-8 pb-6">
+        {/* Avatar */}
+        <div className="flex flex-col md:flex-row md:items-end gap-4 -mt-16 md:-mt-20">
+          <div className="mx-auto md:mx-0">
+            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-white shadow-xl">
+              <div className="w-full h-full rounded-full p-1 gradient-bg">
+                <img 
+                  src={userImage} 
+                  alt={user.username} 
+                  className="w-full h-full rounded-full object-cover border-4 border-white"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Actions - Desktop */}
+          <div className="hidden md:flex flex-1 justify-end gap-3 pb-2">
+            {isOwnProfile ? (
+              <>
+                <Link 
+                  to="/settings"
+                  className="btn-secondary"
+                >
+                  Edit Profile
+                </Link>
+                <Link 
+                  to="/settings" 
+                  className="p-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                >
+                  <Settings size={20} className="text-gray-700" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <FollowButton 
+                  userId={parseInt(userId)} 
+                  initialFollowed={isFollowing}
+                  onFollowChange={handleFollowChange}
+                />
+                <Link 
+                  to="/messages"
+                  className="btn-secondary"
+                >
+                  <MessageCircle size={18} />
+                  Message
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Info Column */}
-        <div className="flex-1 flex flex-col items-center md:items-start gap-4">
-            
-            {/* Row 1: Username & Buttons */}
-            <div className="flex flex-col md:flex-row items-center gap-4">
-                <h2 className="text-xl md:text-2xl font-normal text-gray-800">{user.username}</h2>
-                
-                <div className="flex gap-2">
-                    {isOwnProfile ? (
-                        <>
-                            <Link 
-                              to="/settings"
-                              className="bg-gray-100 hover:bg-gray-200 px-4 py-1.5 rounded-lg text-sm font-semibold text-black transition"
-                            >
-                                Edit profile
-                            </Link>
-                            <Link 
-                              to="/bookmarks"
-                              className="bg-gray-100 hover:bg-gray-200 px-4 py-1.5 rounded-lg text-sm font-semibold text-black transition"
-                            >
-                                View archive
-                            </Link>
-                            <Link to="/settings" className="p-1.5 text-gray-700 hover:text-black">
-                              <Settings size={20} />
-                            </Link>
-                        </>
-                    ) : (
-                        <FollowButton 
-                          userId={parseInt(userId)} 
-                          initialFollowed={isFollowing}
-                          onFollowChange={handleFollowChange}
-                        />
-                    )}
-                </div>
-            </div>
-
-            {/* Row 2: Stats */}
-            <div className="flex gap-8 text-base">
-                <div className="flex md:gap-1 flex-col md:flex-row items-center">
-                    <span className="font-bold text-black">{stats.posts}</span> 
-                    <span className="text-gray-600">posts</span>
-                </div>
-                <button className="flex md:gap-1 flex-col md:flex-row items-center hover:opacity-70">
-                    <span className="font-bold text-black">{stats.followers}</span> 
-                    <span className="text-gray-600">followers</span>
-                </button>
-                <button className="flex md:gap-1 flex-col md:flex-row items-center hover:opacity-70">
-                    <span className="font-bold text-black">{stats.following}</span> 
-                    <span className="text-gray-600">following</span>
-                </button>
-            </div>
-
-            {/* Row 3: Name & Bio */}
-            <div className="text-center md:text-left text-sm">
-                <div className="font-bold text-gray-900">{user.username}</div>
-                {user.bio && (
-                  <div className="whitespace-pre-line text-gray-700 mt-1">{user.bio}</div>
-                )}
-                {user.email && (
-                  <div className="text-gray-400 text-xs mt-1">{user.email}</div>
-                )}
-            </div>
-        </div>
-      </div>
-
-      {/* Profile Highlights (Optional Visual Flair) */}
-      <div className="flex gap-6 overflow-x-auto px-4 pb-4 md:px-0 scrollbar-hide">
-         {[1,2,3].map(i => (
-             <div key={i} className="flex flex-col items-center gap-1 min-w-[64px]">
-                 <div className="w-16 h-16 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center text-gray-400 text-2xl">+</div>
-                 <span className="text-xs text-gray-500 font-medium">New</span>
-             </div>
-         ))}
-      </div>
-
-      {/* Tabs Divider */}
-      <div className="border-t border-gray-200 flex justify-center gap-12 text-xs font-semibold tracking-wide text-gray-500 uppercase mt-4">
-          <div className="flex items-center gap-2 py-3 border-t-2 border-black text-black cursor-pointer">
-              <Grid size={12} /> Posts
-          </div>
-          {isOwnProfile && (
-            <Link 
-              to="/bookmarks"
-              className="flex items-center gap-2 py-3 border-t-2 border-transparent hover:text-gray-700 cursor-pointer"
-            >
-                <Bookmark size={12} /> Saved
-            </Link>
+        {/* Info */}
+        <div className="mt-4 text-center md:text-left">
+          <h1 className="text-2xl font-bold text-gray-900">{user.username}</h1>
+          {user.email && (
+            <p className="text-gray-500 text-sm mt-0.5">@{user.email.split('@')[0]}</p>
           )}
+          {user.bio && (
+            <p className="text-gray-700 mt-3 max-w-lg whitespace-pre-line">{user.bio}</p>
+          )}
+        </div>
+
+        {/* Stats */}
+        <div className="flex justify-center md:justify-start gap-6 mt-6">
+          <div className="text-center">
+            <p className="text-2xl font-bold text-gray-900">{stats.posts.toLocaleString()}</p>
+            <p className="text-sm text-gray-500">Posts</p>
+          </div>
+          <div className="w-px bg-gray-200" />
+          <button className="text-center hover:opacity-70 transition-opacity">
+            <p className="text-2xl font-bold text-gray-900">{stats.followers.toLocaleString()}</p>
+            <p className="text-sm text-gray-500">Followers</p>
+          </button>
+          <div className="w-px bg-gray-200" />
+          <button className="text-center hover:opacity-70 transition-opacity">
+            <p className="text-2xl font-bold text-gray-900">{stats.following.toLocaleString()}</p>
+            <p className="text-sm text-gray-500">Following</p>
+          </button>
+        </div>
+
+        {/* Actions - Mobile */}
+        <div className="flex md:hidden gap-3 mt-6">
+          {isOwnProfile ? (
+            <>
+              <Link 
+                to="/settings"
+                className="flex-1 btn-secondary justify-center"
+              >
+                Edit Profile
+              </Link>
+              <Link 
+                to="/settings" 
+                className="p-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+              >
+                <Settings size={20} className="text-gray-700" />
+              </Link>
+            </>
+          ) : (
+            <>
+              <div className="flex-1">
+                <FollowButton 
+                  userId={parseInt(userId)} 
+                  initialFollowed={isFollowing}
+                  onFollowChange={handleFollowChange}
+                  fullWidth
+                />
+              </div>
+              <Link 
+                to="/messages"
+                className="p-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+              >
+                <MessageCircle size={20} className="text-gray-700" />
+              </Link>
+            </>
+          )}
+        </div>
+
+        {/* Story Highlights */}
+        <div className="flex gap-4 mt-6 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="flex flex-col items-center gap-2 flex-shrink-0">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:scale-105 transition-transform cursor-pointer">
+                <span className="text-2xl">+</span>
+              </div>
+              <span className="text-xs text-gray-500 font-medium">New</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

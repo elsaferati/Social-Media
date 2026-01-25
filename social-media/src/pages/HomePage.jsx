@@ -6,7 +6,7 @@ import SuggestedUsers from "../components/SuggestedUsers";
 import ModalSystem from "../components/ModalSystem";
 import CreatePost from "../components/CreatePost";
 import StoriesBar from "../components/StoriesBar";
-import { Image, Smile } from "lucide-react"; 
+import { Image, Smile, Sparkles, TrendingUp } from "lucide-react"; 
 import { postAPI } from "../services/api";
 
 const HomePage = () => {
@@ -24,12 +24,10 @@ const HomePage = () => {
     
     try {
       setLoading(true);
-      // Get feed posts (from followed users + own posts)
       const data = await postAPI.getFeed(currentUser.id);
       setPosts(data);
     } catch (err) {
       console.error('Error fetching feed:', err);
-      // Fallback to all posts if feed fails
       try {
         const allPosts = await postAPI.getAll();
         setPosts(allPosts);
@@ -42,8 +40,6 @@ const HomePage = () => {
   };
 
   const handleCreatePost = async (newPost) => {
-    // The CreatePost component now handles the API call directly
-    // and returns the new post, so we just need to add it to the feed
     if (newPost && newPost.id) {
       setPosts(prevPosts => [newPost, ...prevPosts]);
     }
@@ -56,61 +52,128 @@ const HomePage = () => {
 
   return (
     <Layout>
-      {/* CENTER COLUMN */}
-      <div className="w-full max-w-[630px] flex flex-col gap-6">
-        
-        {/* 1. Stories Rail */}
-        <StoriesBar />
+      <div className="flex gap-8">
+        {/* CENTER COLUMN */}
+        <div className="w-full max-w-[630px] flex flex-col gap-5">
+          
+          {/* Stories */}
+          <StoriesBar />
 
-        {/* 2. Create Post Trigger */}
-        <div className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3 shadow-sm">
-            <img src={currentUser?.profilePic || "https://i.pravatar.cc/150?u=" + currentUser?.id} className="w-10 h-10 rounded-full bg-gray-200 object-cover" alt="" />
-            <div 
+          {/* Create Post Card */}
+          <div className="card-flat p-4">
+            <div className="flex items-center gap-4">
+              <div className="avatar-ring">
+                <img 
+                  src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
+                  className="w-12 h-12 rounded-full object-cover" 
+                  alt="" 
+                />
+              </div>
+              <div 
                 onClick={() => setIsCreatePostOpen(true)}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 transition rounded-full px-4 py-2.5 text-gray-500 text-sm cursor-pointer"
-            >
+                className="flex-1 bg-gray-50 hover:bg-gray-100 transition-colors rounded-2xl px-5 py-3.5 text-gray-500 cursor-pointer border-2 border-transparent hover:border-gray-200"
+              >
                 What's on your mind, {currentUser?.username}?
+              </div>
             </div>
-            <Image size={24} className="text-gray-400 cursor-pointer hover:text-green-500" />
-            <Smile size={24} className="text-gray-400 cursor-pointer hover:text-yellow-500" />
+            <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-100">
+              <button 
+                onClick={() => setIsCreatePostOpen(true)}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-gray-600 hover:bg-green-50 hover:text-green-600 transition-colors"
+              >
+                <Image size={20} />
+                <span className="font-medium text-sm">Photo</span>
+              </button>
+              <button 
+                onClick={() => setIsCreatePostOpen(true)}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-gray-600 hover:bg-yellow-50 hover:text-yellow-600 transition-colors"
+              >
+                <Smile size={20} />
+                <span className="font-medium text-sm">Feeling</span>
+              </button>
+              <button 
+                onClick={() => setIsCreatePostOpen(true)}
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
+              >
+                <Sparkles size={20} />
+                <span className="font-medium text-sm">Story</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Feed */}
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16 gap-4">
+              <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-gray-500 font-medium">Loading your feed...</p>
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="card-flat p-12 text-center">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-indigo-100 to-pink-100 rounded-full flex items-center justify-center">
+                <TrendingUp className="w-10 h-10 text-indigo-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Your feed is empty</h3>
+              <p className="text-gray-500 mb-6 max-w-sm mx-auto">
+                Follow some users to see their posts here, or create your own post to get started!
+              </p>
+              <button
+                onClick={() => setIsCreatePostOpen(true)}
+                className="btn-primary"
+              >
+                Create your first post
+              </button>
+            </div>
+          ) : (
+            <PostsFeed posts={posts} onDelete={handleDeletePost} />
+          )}
         </div>
 
-        {/* 3. Feed */}
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-            <p className="text-gray-500 mb-2">No posts in your feed yet</p>
-            <p className="text-sm text-gray-400">Follow some users to see their posts here, or create your own!</p>
-          </div>
-        ) : (
-          <PostsFeed posts={posts} onDelete={handleDeletePost} />
-        )}
-      </div>
-
-      {/* RIGHT COLUMN */}
-      <div className="hidden lg:block w-[320px] pl-4">
-        <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-                <img src={currentUser?.profilePic || "https://i.pravatar.cc/150?u=" + currentUser?.id} className="w-12 h-12 rounded-full object-cover" alt="" />
-                <div>
-                    <p className="font-semibold text-sm">{currentUser?.username}</p>
-                    <p className="text-gray-500 text-sm">{currentUser?.email}</p>
+        {/* RIGHT COLUMN */}
+        <div className="hidden lg:block w-[320px] flex-shrink-0">
+          <div className="sticky top-6 space-y-6">
+            {/* User Card */}
+            <div className="card-flat p-4">
+              <div className="flex items-center gap-4">
+                <div className="avatar-ring">
+                  <img 
+                    src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
+                    className="w-14 h-14 rounded-full object-cover" 
+                    alt="" 
+                  />
                 </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 truncate">{currentUser?.username}</p>
+                  <p className="text-gray-500 text-sm truncate">{currentUser?.email}</p>
+                </div>
+                <button className="text-indigo-600 text-sm font-semibold hover:text-indigo-700">
+                  Switch
+                </button>
+              </div>
             </div>
-            <button className="text-blue-500 text-xs font-bold hover:text-blue-700">Switch</button>
-        </div>
 
-        <SuggestedUsers /> 
-        
-        <div className="mt-8 text-xs text-gray-400 uppercase">
-            <p>© 2026 MY SOCIAL APP</p>
+            {/* Suggested Users */}
+            <SuggestedUsers /> 
+
+            {/* Footer Links */}
+            <div className="px-2 space-y-4">
+              <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-400">
+                <a href="#" className="hover:underline">About</a>
+                <span>-</span>
+                <a href="#" className="hover:underline">Help</a>
+                <span>-</span>
+                <a href="#" className="hover:underline">Privacy</a>
+                <span>-</span>
+                <a href="#" className="hover:underline">Terms</a>
+              </div>
+              <p className="text-xs text-gray-400">
+                © 2026 Socialix. Made with love.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Modal */}
+      {/* Create Post Modal */}
       {isCreatePostOpen && (
         <ModalSystem onClose={() => setIsCreatePostOpen(false)}>
           <CreatePost onClose={() => setIsCreatePostOpen(false)} onPost={handleCreatePost} />

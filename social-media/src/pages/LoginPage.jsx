@@ -2,19 +2,20 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { authAPI } from "../services/api";
-import { Facebook } from "lucide-react";
+import { Mail, Lock, Sparkles, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 const LoginPage = () => {
   const [inputs, setInputs] = useState({ email: "", password: "" });
   const [err, setErr] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   
   const navigate = useNavigate();
   const { login } = useAuth();
 
   const handleChange = (e) => {
     setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-    setErr(null); // Clear error on input change
+    setErr(null);
   };
 
   const handleLogin = async (e) => {
@@ -34,84 +35,155 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-      
-      {/* Main Login Card */}
-      <div className="bg-white border border-gray-300 w-full max-w-[350px] p-8 flex flex-col items-center mb-3">
-        {/* Logo */}
-        <h1 className="text-4xl font-bold font-[cursive] mb-8 mt-2">My Social App</h1>
+    <div className="min-h-screen flex">
+      {/* Left Side - Gradient Background with Illustration */}
+      <div className="hidden lg:flex lg:w-1/2 gradient-bg relative overflow-hidden">
+        <div className="absolute inset-0 bg-black/10"></div>
         
-        <form className="flex flex-col gap-2 w-full" onSubmit={handleLogin}>
-          <input 
-            type="email" 
-            placeholder="Email address" 
-            name="email" 
-            value={inputs.email}
-            onChange={handleChange} 
-            className="text-xs bg-gray-50 border border-gray-200 p-3 rounded-sm focus:outline-none focus:border-gray-400 w-full" 
-            required 
-          />
-          <input 
-            type="password" 
-            placeholder="Password" 
-            name="password" 
-            value={inputs.password}
-            onChange={handleChange} 
-            className="text-xs bg-gray-50 border border-gray-200 p-3 rounded-sm focus:outline-none focus:border-gray-400 w-full" 
-            required 
-          />
-          
-          <button 
-            type="submit"
-            disabled={loading}
-            className="bg-[#0095f6] text-white text-sm font-semibold py-2 rounded-lg mt-2 hover:bg-blue-600 transition disabled:opacity-70 flex items-center justify-center gap-2"
-          >
-            {loading && (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            )}
-            {loading ? 'Logging in...' : 'Log in'}
-          </button>
+        {/* Decorative Elements */}
+        <div className="absolute top-20 left-20 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 bg-pink-400/20 rounded-full blur-3xl"></div>
         
-          {err && <p className="text-red-500 text-xs text-center mt-2">{err}</p>}
-        </form>
-
-        {/* Divider */}
-        <div className="flex items-center w-full my-5">
-            <div className="h-[1px] bg-gray-300 flex-1"></div>
-            <span className="px-4 text-xs font-semibold text-gray-500">OR</span>
-            <div className="h-[1px] bg-gray-300 flex-1"></div>
-        </div>
-
-        {/* Social Login */}
-        <div className="flex flex-col items-center gap-4 w-full">
-            <button className="flex items-center gap-2 text-[#385185] font-semibold text-sm hover:text-blue-700">
-                <Facebook size={20} />
-                Log in with Facebook
-            </button>
-            <span className="text-xs text-[#00376b] cursor-pointer hover:underline">Forgot password?</span>
-        </div>
-      </div>
-
-      {/* Sign Up Link Container */}
-      <div className="bg-white border border-gray-300 w-full max-w-[350px] p-5 text-center text-sm">
-        <p>
-          Don't have an account? <Link to="/register" className="text-[#0095f6] font-semibold ml-1 hover:underline">Sign up</Link>
-        </p>
-      </div>
-
-      {/* App Store Badges */}
-      <div className="mt-5 text-center">
-          <p className="text-sm text-gray-600 mb-3">Get the app.</p>
-          <div className="flex gap-2 justify-center">
-             <div className="h-10 w-32 bg-black rounded-lg flex items-center justify-center text-white text-xs font-bold cursor-pointer hover:bg-gray-800">
-                Google Play
-             </div>
-             <div className="h-10 w-32 bg-black rounded-lg flex items-center justify-center text-white text-xs font-bold cursor-pointer hover:bg-gray-800">
-                Microsoft
-             </div>
+        <div className="relative z-10 flex flex-col justify-center items-center w-full p-12 text-white">
+          <div className="w-20 h-20 bg-white/20 backdrop-blur-lg rounded-3xl flex items-center justify-center mb-8 shadow-2xl">
+            <Sparkles className="w-10 h-10" />
           </div>
+          <h1 className="text-5xl font-bold mb-4 text-center">Welcome to Socialix</h1>
+          <p className="text-xl text-white/80 text-center max-w-md">
+            Connect with friends, share moments, and discover amazing content from around the world.
+          </p>
+          
+          {/* Feature Pills */}
+          <div className="flex flex-wrap gap-3 mt-12 justify-center">
+            {['Share Stories', 'Connect Friends', 'Discover Content', 'Stay Updated'].map((feature, i) => (
+              <span key={i} className="px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium">
+                {feature}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
+      {/* Right Side - Login Form */}
+      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 bg-gray-50">
+        <div className="w-full max-w-md">
+          {/* Mobile Logo */}
+          <div className="lg:hidden flex justify-center mb-8">
+            <div className="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-200">
+              <Sparkles className="w-8 h-8 text-white" />
+            </div>
+          </div>
+
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h2>
+            <p className="text-gray-500">Sign in to continue to Socialix</p>
+          </div>
+
+          {/* Login Form */}
+          <form onSubmit={handleLogin} className="space-y-5">
+            {/* Email Input */}
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="email"
+                name="email"
+                placeholder="Email address"
+                value={inputs.email}
+                onChange={handleChange}
+                className="w-full pl-12 pr-4 py-4 bg-white border-2 border-gray-100 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:bg-white focus:outline-none transition-all"
+                required
+              />
+            </div>
+
+            {/* Password Input */}
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type={showPassword ? "text" : "password"}
+                name="password"
+                placeholder="Password"
+                value={inputs.password}
+                onChange={handleChange}
+                className="w-full pl-12 pr-12 py-4 bg-white border-2 border-gray-100 rounded-xl text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:bg-white focus:outline-none transition-all"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
+            </div>
+
+            {/* Error Message */}
+            {err && (
+              <div className="p-4 bg-red-50 border border-red-100 rounded-xl animate-scaleIn">
+                <p className="text-red-600 text-sm text-center">{err}</p>
+              </div>
+            )}
+
+            {/* Forgot Password */}
+            <div className="text-right">
+              <Link to="#" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                Forgot password?
+              </Link>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-4 gradient-bg text-white font-semibold rounded-xl shadow-lg shadow-indigo-200 hover:shadow-xl hover:shadow-indigo-300 hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            >
+              {loading ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Sign in
+                  <ArrowRight size={20} />
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center my-8">
+            <div className="flex-1 h-px bg-gray-200"></div>
+            <span className="px-4 text-sm text-gray-400">or continue with</span>
+            <div className="flex-1 h-px bg-gray-200"></div>
+          </div>
+
+          {/* Social Login */}
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { name: 'Google', icon: '🔵' },
+              { name: 'Apple', icon: '🍎' },
+              { name: 'Facebook', icon: '📘' }
+            ].map((provider) => (
+              <button
+                key={provider.name}
+                type="button"
+                className="flex items-center justify-center gap-2 py-3 px-4 bg-white border-2 border-gray-100 rounded-xl hover:border-gray-200 hover:bg-gray-50 transition-all"
+              >
+                <span className="text-xl">{provider.icon}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Sign Up Link */}
+          <p className="text-center mt-8 text-gray-500">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-indigo-600 font-semibold hover:text-indigo-700">
+              Sign up for free
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

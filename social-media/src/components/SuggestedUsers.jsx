@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
 import { userAPI, relationshipAPI } from "../services/api";
+import { UserPlus, Users } from "lucide-react";
 
 const SuggestedUsers = () => {
   const [users, setUsers] = useState([]);
@@ -17,7 +18,6 @@ const SuggestedUsers = () => {
         setUsers(data);
       } catch (err) {
         console.error('Error fetching suggestions:', err);
-        // Fallback dummy data if API fails
         setUsers([
           { id: 99, username: "design_daily", profilePic: "https://i.pravatar.cc/150?img=12" },
           { id: 98, username: "travel_mike", profilePic: "https://i.pravatar.cc/150?img=15" },
@@ -34,12 +34,10 @@ const SuggestedUsers = () => {
   }, [currentUser]);
 
   const handleFollow = async (followedUserId) => {
-    // Optimistic update - add to following set
     setFollowingIds(prev => new Set([...prev, followedUserId]));
     
     try {
       await relationshipAPI.follow(currentUser.id, followedUserId);
-      // Remove from suggestions after successful follow
       setTimeout(() => {
         setUsers(users.filter((u) => u.id !== followedUserId));
         setFollowingIds(prev => {
@@ -50,7 +48,6 @@ const SuggestedUsers = () => {
       }, 1000);
     } catch (err) {
       console.error('Error following user:', err);
-      // Revert on error
       setFollowingIds(prev => {
         const newSet = new Set(prev);
         newSet.delete(followedUserId);
@@ -61,18 +58,20 @@ const SuggestedUsers = () => {
 
   if (loading) {
     return (
-      <div className="w-full">
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-sm font-bold text-gray-500">Suggested for you</span>
+      <div className="card-flat p-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Users size={18} className="text-gray-400" />
+          <span className="font-semibold text-gray-600">Suggested for you</span>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-4">
           {[1, 2, 3].map((i) => (
             <div key={i} className="flex items-center gap-3 animate-pulse">
-              <div className="w-11 h-11 rounded-full bg-gray-200" />
+              <div className="w-12 h-12 rounded-full skeleton" />
               <div className="flex-1">
-                <div className="h-3 bg-gray-200 rounded w-24 mb-2" />
-                <div className="h-2 bg-gray-200 rounded w-16" />
+                <div className="h-4 skeleton rounded-lg w-24 mb-2" />
+                <div className="h-3 skeleton rounded-lg w-16" />
               </div>
+              <div className="w-20 h-8 skeleton rounded-lg" />
             </div>
           ))}
         </div>
@@ -81,69 +80,71 @@ const SuggestedUsers = () => {
   }
 
   return (
-    <div className="w-full">
+    <div className="card-flat p-4">
       {/* Header */}
       <div className="flex justify-between items-center mb-4">
-        <span className="text-sm font-bold text-gray-500">Suggested for you</span>
-        <button className="text-xs font-semibold text-gray-900 hover:text-gray-600">See All</button>
+        <div className="flex items-center gap-2">
+          <Users size={18} className="text-indigo-500" />
+          <span className="font-semibold text-gray-800">Suggested for you</span>
+        </div>
+        <button className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
+          See All
+        </button>
       </div>
 
       {/* List */}
-      <div className="flex flex-col gap-3">
-        {users.map((user) => (
-          <div key={user.id} className="flex items-center justify-between">
-            
-            <Link to={`/profile/${user.id}`} className="flex items-center gap-3 group">
-              {/* Avatar */}
-              <div className="w-11 h-11 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center">
-                {user.profilePic || user.img ? (
-                  <img 
-                    src={user.profilePic || user.img || `https://i.pravatar.cc/150?u=${user.id}`} 
-                    alt={user.username} 
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-lg font-medium text-gray-600">
-                    {user.username?.charAt(0).toUpperCase()}
-                  </span>
-                )}
+      <div className="space-y-3">
+        {users.map((user, index) => (
+          <div 
+            key={user.id} 
+            className="flex items-center justify-between p-2 -mx-2 rounded-xl hover:bg-gray-50 transition-colors animate-fadeIn"
+            style={{ animationDelay: `${index * 50}ms` }}
+          >
+            <Link to={`/profile/${user.id}`} className="flex items-center gap-3 group flex-1 min-w-0">
+              <div className="avatar-ring flex-shrink-0">
+                <img 
+                  src={user.profilePic || user.img || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} 
+                  alt={user.username} 
+                  className="w-11 h-11 rounded-full object-cover"
+                />
               </div>
-              
-              {/* Text */}
-              <div className="flex flex-col">
-                <span className="font-semibold text-sm text-gray-800 group-hover:text-gray-600">
+              <div className="min-w-0">
+                <p className="font-semibold text-sm text-gray-900 group-hover:text-indigo-600 transition-colors truncate">
                   {user.username}
-                </span>
-                <span className="text-xs text-gray-400">Suggested for you</span>
+                </p>
+                <p className="text-xs text-gray-400 truncate">Suggested for you</p>
               </div>
             </Link>
 
-            {/* Action */}
             <button
               onClick={() => handleFollow(user.id)}
               disabled={followingIds.has(user.id)}
-              className={`text-xs font-bold transition ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${
                 followingIds.has(user.id)
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-blue-500 hover:text-blue-700'
+                  ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                  : 'bg-indigo-500 text-white hover:bg-indigo-600 shadow-md shadow-indigo-200 hover:shadow-lg'
               }`}
             >
-              {followingIds.has(user.id) ? 'Following' : 'Follow'}
+              {followingIds.has(user.id) ? (
+                'Following'
+              ) : (
+                <>
+                  <UserPlus size={14} />
+                  Follow
+                </>
+              )}
             </button>
           </div>
         ))}
+        
         {users.length === 0 && (
-          <p className="text-gray-400 text-xs text-center py-4">No suggestions available</p>
+          <div className="text-center py-6">
+            <div className="w-12 h-12 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+              <Users className="w-6 h-6 text-gray-400" />
+            </div>
+            <p className="text-gray-500 text-sm">No suggestions available</p>
+          </div>
         )}
-      </div>
-
-      {/* Footer Links */}
-      <div className="mt-8 flex flex-wrap gap-2 text-[11px] text-gray-300">
-        <span>About</span> <span>•</span> <span>Help</span> <span>•</span> 
-        <span>API</span> <span>•</span> <span>Privacy</span>
-      </div>
-      <div className="mt-4 text-[11px] text-gray-300">
-        © 2026 MY SOCIAL APP
       </div>
     </div>
   );

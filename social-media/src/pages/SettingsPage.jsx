@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import { userAPI } from "../services/api";
+import { User, Lock, Bell, Shield, Camera, Check, AlertCircle } from "lucide-react";
 
 const SettingsPage = () => {
   const { currentUser, updateUser } = useAuth();
@@ -88,230 +89,262 @@ const SettingsPage = () => {
     }
   };
 
+  const tabs = [
+    { id: 'profile', label: 'Edit Profile', icon: User },
+    { id: 'password', label: 'Password', icon: Lock },
+    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'privacy', label: 'Privacy', icon: Shield },
+  ];
+
   const renderContent = () => {
     switch (activeTab) {
       case 'password':
         return (
-          <form className="flex flex-col gap-6 max-w-md" onSubmit={handlePasswordSave}>
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
-              <label className="font-bold w-40 text-right hidden md:block">Current Password</label>
-              <label className="font-bold md:hidden">Current Password</label>
-              <input 
-                type="password" 
-                name="currentPassword" 
-                value={passwordInputs.currentPassword} 
-                onChange={handlePasswordChange} 
-                className="border border-gray-300 rounded px-3 py-2 flex-1 focus:border-black outline-none" 
-                placeholder="Enter current password"
-              />
-            </div>
+          <div className="animate-fadeIn">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Change Password</h2>
+            <p className="text-gray-500 mb-8">Update your password to keep your account secure</p>
 
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
-              <label className="font-bold w-40 text-right hidden md:block">New Password</label>
-              <label className="font-bold md:hidden">New Password</label>
-              <input 
-                type="password" 
-                name="newPassword" 
-                value={passwordInputs.newPassword} 
-                onChange={handlePasswordChange} 
-                className="border border-gray-300 rounded px-3 py-2 flex-1 focus:border-black outline-none" 
-                placeholder="Enter new password"
-              />
-            </div>
+            <form className="space-y-6 max-w-lg" onSubmit={handlePasswordSave}>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+                <input 
+                  type="password" 
+                  name="currentPassword" 
+                  value={passwordInputs.currentPassword} 
+                  onChange={handlePasswordChange} 
+                  className="input"
+                  placeholder="Enter current password"
+                />
+              </div>
 
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
-              <label className="font-bold w-40 text-right hidden md:block">Confirm Password</label>
-              <label className="font-bold md:hidden">Confirm Password</label>
-              <input 
-                type="password" 
-                name="confirmPassword" 
-                value={passwordInputs.confirmPassword} 
-                onChange={handlePasswordChange} 
-                className="border border-gray-300 rounded px-3 py-2 flex-1 focus:border-black outline-none" 
-                placeholder="Confirm new password"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+                <input 
+                  type="password" 
+                  name="newPassword" 
+                  value={passwordInputs.newPassword} 
+                  onChange={handlePasswordChange} 
+                  className="input"
+                  placeholder="Enter new password"
+                />
+              </div>
 
-            <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8 mt-4">
-              <div className="w-40 hidden md:block"></div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+                <input 
+                  type="password" 
+                  name="confirmPassword" 
+                  value={passwordInputs.confirmPassword} 
+                  onChange={handlePasswordChange} 
+                  className="input"
+                  placeholder="Confirm new password"
+                />
+              </div>
+
               <button 
                 type="submit" 
                 disabled={status === 'loading'}
-                className="bg-blue-500 text-white font-semibold px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+                className="btn-primary w-full sm:w-auto"
               >
                 {status === 'loading' ? 'Saving...' : 'Change Password'}
               </button>
-            </div>
-
-            {message && (
-              <div className={`mt-4 text-center text-sm ${status === 'error' ? 'text-red-500' : 'text-green-500'}`}>
-                {message}
-              </div>
-            )}
-          </form>
+            </form>
+          </div>
         );
 
       case 'notifications':
         return (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Push Notifications</h3>
-            <div className="space-y-4">
-              <label className="flex items-center justify-between">
-                <span>Likes</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 accent-blue-500" />
-              </label>
-              <label className="flex items-center justify-between">
-                <span>Comments</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 accent-blue-500" />
-              </label>
-              <label className="flex items-center justify-between">
-                <span>New Followers</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 accent-blue-500" />
-              </label>
-              <label className="flex items-center justify-between">
-                <span>Direct Messages</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 accent-blue-500" />
-              </label>
+          <div className="animate-fadeIn">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Notifications</h2>
+            <p className="text-gray-500 mb-8">Manage how you receive notifications</p>
+
+            <div className="space-y-4 max-w-lg">
+              {[
+                { label: 'Likes', desc: 'When someone likes your post' },
+                { label: 'Comments', desc: 'When someone comments on your post' },
+                { label: 'New Followers', desc: 'When someone follows you' },
+                { label: 'Direct Messages', desc: 'When you receive a new message' },
+                { label: 'Mentions', desc: 'When someone mentions you' },
+              ].map((item) => (
+                <label key={item.label} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
+                  <div>
+                    <p className="font-semibold text-gray-900">{item.label}</p>
+                    <p className="text-sm text-gray-500">{item.desc}</p>
+                  </div>
+                  <div className="relative">
+                    <input type="checkbox" defaultChecked className="sr-only peer" />
+                    <div className="w-11 h-6 bg-gray-300 peer-checked:bg-indigo-500 rounded-full transition-colors"></div>
+                    <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full peer-checked:translate-x-5 transition-transform shadow-sm"></div>
+                  </div>
+                </label>
+              ))}
             </div>
-            <p className="text-sm text-gray-500">
-              Note: Push notification settings are stored locally in this demo.
-            </p>
           </div>
         );
 
       case 'privacy':
         return (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold">Privacy and Security</h3>
-            <div className="space-y-4">
-              <label className="flex items-center justify-between">
-                <span>Private Account</span>
-                <input type="checkbox" className="w-5 h-5 accent-blue-500" />
-              </label>
-              <label className="flex items-center justify-between">
-                <span>Show Activity Status</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 accent-blue-500" />
-              </label>
-              <label className="flex items-center justify-between">
-                <span>Allow Tagging</span>
-                <input type="checkbox" defaultChecked className="w-5 h-5 accent-blue-500" />
-              </label>
+          <div className="animate-fadeIn">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Privacy & Security</h2>
+            <p className="text-gray-500 mb-8">Control your account privacy settings</p>
+
+            <div className="space-y-4 max-w-lg">
+              {[
+                { label: 'Private Account', desc: 'Only followers can see your posts', checked: false },
+                { label: 'Activity Status', desc: 'Show when you\'re active', checked: true },
+                { label: 'Allow Tagging', desc: 'Let others tag you in posts', checked: true },
+                { label: 'Show Online Status', desc: 'Let others see when you\'re online', checked: true },
+              ].map((item) => (
+                <label key={item.label} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
+                  <div>
+                    <p className="font-semibold text-gray-900">{item.label}</p>
+                    <p className="text-sm text-gray-500">{item.desc}</p>
+                  </div>
+                  <div className="relative">
+                    <input type="checkbox" defaultChecked={item.checked} className="sr-only peer" />
+                    <div className="w-11 h-6 bg-gray-300 peer-checked:bg-indigo-500 rounded-full transition-colors"></div>
+                    <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full peer-checked:translate-x-5 transition-transform shadow-sm"></div>
+                  </div>
+                </label>
+              ))}
             </div>
-            <p className="text-sm text-gray-500">
-              Note: Privacy settings are stored locally in this demo.
-            </p>
+
+            <div className="mt-8 p-4 bg-red-50 rounded-xl max-w-lg">
+              <h3 className="font-semibold text-red-700 mb-2">Danger Zone</h3>
+              <p className="text-sm text-red-600 mb-4">Once you delete your account, there is no going back.</p>
+              <button className="px-4 py-2 bg-red-100 text-red-700 font-semibold rounded-lg hover:bg-red-200 transition-colors">
+                Delete Account
+              </button>
+            </div>
           </div>
         );
 
       default:
         return (
-          <>
-            <div className="flex items-center gap-6 mb-8">
-              <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                <img src={currentUser?.profilePic || "https://i.pravatar.cc/150?u=" + currentUser?.id} className="w-full h-full object-cover" alt=""/>
+          <div className="animate-fadeIn">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Edit Profile</h2>
+            <p className="text-gray-500 mb-8">Update your profile information</p>
+
+            {/* Avatar Section */}
+            <div className="flex items-center gap-6 mb-8 p-4 bg-gray-50 rounded-2xl max-w-lg">
+              <div className="relative">
+                <div className="avatar-ring">
+                  <img 
+                    src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
+                    className="w-20 h-20 rounded-full object-cover" 
+                    alt=""
+                  />
+                </div>
+                <button className="absolute -bottom-1 -right-1 w-8 h-8 gradient-bg rounded-full flex items-center justify-center shadow-lg">
+                  <Camera size={16} className="text-white" />
+                </button>
               </div>
               <div>
-                <div className="font-semibold text-lg leading-tight">{currentUser?.username}</div>
-                <button className="text-blue-500 text-sm font-bold">Change Profile Photo</button>
+                <p className="font-bold text-gray-900">{currentUser?.username}</p>
+                <button className="text-indigo-600 text-sm font-semibold hover:text-indigo-700">
+                  Change Profile Photo
+                </button>
               </div>
             </div>
 
-            <form className="flex flex-col gap-6 max-w-md" onSubmit={handleSave}>
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
-                <label className="font-bold w-32 text-right hidden md:block">Username</label>
-                <label className="font-bold md:hidden">Username</label>
+            <form className="space-y-6 max-w-lg" onSubmit={handleSave}>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
                 <input 
                   type="text" 
                   name="username" 
                   value={inputs.username} 
                   onChange={handleChange} 
-                  className="border border-gray-300 rounded px-3 py-2 flex-1 focus:border-black outline-none" 
+                  className="input"
                 />
               </div>
 
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8">
-                <label className="font-bold w-32 text-right hidden md:block">Email</label>
-                <label className="font-bold md:hidden">Email</label>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
                 <input 
                   type="email" 
                   name="email" 
                   value={inputs.email} 
                   onChange={handleChange} 
-                  className="border border-gray-300 rounded px-3 py-2 flex-1 focus:border-black outline-none" 
+                  className="input"
                 />
               </div>
 
-              <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-8">
-                <label className="font-bold w-32 text-right hidden md:block pt-2">Bio</label>
-                <label className="font-bold md:hidden">Bio</label>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Bio</label>
                 <textarea 
                   name="bio"
                   value={inputs.bio}
                   onChange={handleChange}
-                  rows="3"
-                  className="border border-gray-300 rounded px-3 py-2 flex-1 focus:border-black outline-none resize-none"
+                  rows="4"
+                  className="input resize-none"
                   placeholder="Tell us about yourself..."
                 />
+                <p className="text-xs text-gray-400 mt-1">{inputs.bio.length}/150</p>
               </div>
 
-              <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8 mt-4">
-                <div className="w-32 hidden md:block"></div>
-                <button 
-                  type="submit" 
-                  disabled={status === 'loading'}
-                  className="bg-blue-500 text-white font-semibold px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
-                >
-                  {status === 'loading' ? 'Saving...' : 'Submit'}
-                </button>
-              </div>
-
-              {message && (
-                <div className={`mt-4 text-center text-sm ${status === 'error' ? 'text-red-500' : 'text-green-500'}`}>
-                  {message}
-                </div>
-              )}
+              <button 
+                type="submit" 
+                disabled={status === 'loading'}
+                className="btn-primary w-full sm:w-auto"
+              >
+                {status === 'loading' ? 'Saving...' : 'Save Changes'}
+              </button>
             </form>
-          </>
+          </div>
         );
     }
   };
 
   return (
     <Layout>
-      <div className="w-full max-w-[800px] bg-white border border-gray-200 rounded-lg flex overflow-hidden min-h-[500px] mt-4">
-        
-        {/* Left Sidebar (Settings Menu) */}
-        <div className="w-1/4 border-r border-gray-200 hidden md:block">
-          <div 
-            onClick={() => { setActiveTab('profile'); setMessage(''); }}
-            className={`p-4 cursor-pointer ${activeTab === 'profile' ? 'font-bold border-l-2 border-black' : 'text-gray-500 hover:bg-gray-50'}`}
-          >
-            Edit Profile
-          </div>
-          <div 
-            onClick={() => { setActiveTab('password'); setMessage(''); }}
-            className={`p-4 cursor-pointer ${activeTab === 'password' ? 'font-bold border-l-2 border-black' : 'text-gray-500 hover:bg-gray-50'}`}
-          >
-            Change Password
-          </div>
-          <div 
-            onClick={() => { setActiveTab('notifications'); setMessage(''); }}
-            className={`p-4 cursor-pointer ${activeTab === 'notifications' ? 'font-bold border-l-2 border-black' : 'text-gray-500 hover:bg-gray-50'}`}
-          >
-            Push Notifications
-          </div>
-          <div 
-            onClick={() => { setActiveTab('privacy'); setMessage(''); }}
-            className={`p-4 cursor-pointer ${activeTab === 'privacy' ? 'font-bold border-l-2 border-black' : 'text-gray-500 hover:bg-gray-50'}`}
-          >
-            Privacy and Security
-          </div>
-        </div>
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
 
-        {/* Right Content */}
-        <div className="flex-1 p-8">
-          <h2 className="text-xl mb-6 md:hidden capitalize">{activeTab === 'profile' ? 'Edit Profile' : activeTab.replace('_', ' ')}</h2>
-          {renderContent()}
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar */}
+          <div className="md:w-64 flex-shrink-0">
+            <div className="card-flat p-2 space-y-1">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => { setActiveTab(tab.id); setMessage(''); }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
+                      activeTab === tab.id
+                        ? 'gradient-bg text-white shadow-lg shadow-indigo-200'
+                        : 'text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Icon size={20} />
+                    <span className="font-medium">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 card-flat p-6 md:p-8">
+            {/* Status Message */}
+            {message && (
+              <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 animate-fadeIn ${
+                status === 'error' 
+                  ? 'bg-red-50 text-red-700' 
+                  : 'bg-green-50 text-green-700'
+              }`}>
+                {status === 'error' ? (
+                  <AlertCircle size={20} />
+                ) : (
+                  <Check size={20} />
+                )}
+                <span className="font-medium">{message}</span>
+              </div>
+            )}
+
+            {renderContent()}
+          </div>
         </div>
       </div>
     </Layout>

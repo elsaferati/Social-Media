@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { relationshipAPI } from "../services/api";
+import { UserPlus, UserCheck } from "lucide-react";
 
-const FollowButton = ({ userId, initialFollowed = false, onFollowChange }) => {
+const FollowButton = ({ userId, initialFollowed = false, onFollowChange, fullWidth = false }) => {
   const { currentUser } = useAuth();
   const [isFollowed, setIsFollowed] = useState(initialFollowed);
   const [loading, setLoading] = useState(false);
 
-  // Don't show button for own profile
   if (currentUser?.id === userId) {
     return null;
   }
@@ -38,16 +38,21 @@ const FollowButton = ({ userId, initialFollowed = false, onFollowChange }) => {
       onClick={toggleFollow}
       disabled={loading}
       className={`
-        px-5 py-1.5 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2
+        px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2
+        ${fullWidth ? 'w-full' : ''}
         ${isFollowed 
-            ? "bg-gray-100 text-black hover:bg-gray-200 border border-gray-200"
-            : "bg-blue-500 text-white hover:bg-blue-600"
+          ? "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200"
+          : "gradient-bg text-white shadow-lg shadow-indigo-200 hover:shadow-xl hover:-translate-y-0.5"
         }
         ${loading ? "opacity-70 cursor-not-allowed" : ""}
       `}
     >
-      {loading && (
-        <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      {loading ? (
+        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+      ) : isFollowed ? (
+        <UserCheck size={18} />
+      ) : (
+        <UserPlus size={18} />
       )}
       {isFollowed ? "Following" : "Follow"}
     </button>
