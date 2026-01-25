@@ -223,6 +223,50 @@ export const searchAPI = {
     fetchWithAuth(`/search?q=${encodeURIComponent(query)}`),
 };
 
+// ==================== STORIES ====================
+export const storyAPI = {
+  getFeed: (userId) => fetchWithAuth(`/stories/feed/${userId}`),
+
+  getByUser: (userId) => fetchWithAuth(`/stories/user/${userId}`),
+
+  getById: (id) => fetchWithAuth(`/stories/${id}`),
+
+  getViewers: (id) => fetchWithAuth(`/stories/${id}/viewers`),
+
+  view: (storyId, userId) =>
+    fetchWithAuth(`/stories/${storyId}/view`, {
+      method: 'POST',
+      body: JSON.stringify({ userId }),
+    }),
+
+  delete: (id) =>
+    fetchWithAuth(`/stories/${id}`, {
+      method: 'DELETE',
+    }),
+};
+
+// ==================== HASHTAGS ====================
+export const hashtagAPI = {
+  getTrending: (limit = 10) => fetchWithAuth(`/hashtags/trending?limit=${limit}`),
+
+  search: (query, limit = 10) =>
+    fetchWithAuth(`/hashtags/search?q=${encodeURIComponent(query)}&limit=${limit}`),
+
+  getByName: (name) => fetchWithAuth(`/hashtags/name/${encodeURIComponent(name)}`),
+
+  getPosts: (hashtagId, page = 1, limit = 20) =>
+    fetchWithAuth(`/hashtags/${hashtagId}/posts?page=${page}&limit=${limit}`),
+};
+
+// ==================== REPORTS ====================
+export const reportAPI = {
+  create: (reporterUserId, data) =>
+    fetchWithAuth('/reports', {
+      method: 'POST',
+      body: JSON.stringify({ reporterUserId, ...data }),
+    }),
+};
+
 // ==================== ADMIN ====================
 export const adminAPI = {
   getStats: () => fetchWithAuth('/admin/stats'),
@@ -270,6 +314,87 @@ export const adminAPI = {
     fetchWithAuth(`/admin/messages/${id}`, {
       method: 'DELETE',
     }),
+
+  // Stories
+  getStories: (page = 1, limit = 10, includeExpired = false) =>
+    fetchWithAuth(`/admin/stories?page=${page}&limit=${limit}&includeExpired=${includeExpired}`),
+
+  getStory: (id) => fetchWithAuth(`/admin/stories/${id}`),
+
+  updateStory: (id, data) =>
+    fetchWithAuth(`/admin/stories/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  deleteStory: (id) =>
+    fetchWithAuth(`/admin/stories/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Reports
+  getReports: (page = 1, limit = 10, status = '', reportType = '') =>
+    fetchWithAuth(`/admin/reports?page=${page}&limit=${limit}${status ? `&status=${status}` : ''}${reportType ? `&reportType=${reportType}` : ''}`),
+
+  getReport: (id) => fetchWithAuth(`/admin/reports/${id}`),
+
+  updateReport: (id, data) =>
+    fetchWithAuth(`/admin/reports/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  deleteReport: (id) =>
+    fetchWithAuth(`/admin/reports/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Hashtags
+  getHashtags: (page = 1, limit = 10, search = '') =>
+    fetchWithAuth(`/admin/hashtags?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`),
+
+  getHashtag: (id) => fetchWithAuth(`/admin/hashtags/${id}`),
+
+  createHashtag: (data) =>
+    fetchWithAuth('/admin/hashtags', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  updateHashtag: (id, data) =>
+    fetchWithAuth(`/admin/hashtags/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  deleteHashtag: (id) =>
+    fetchWithAuth(`/admin/hashtags/${id}`, {
+      method: 'DELETE',
+    }),
+
+  // Activity Logs
+  getActivityLogs: (params = {}) => {
+    const queryParams = new URLSearchParams();
+    if (params.page) queryParams.append('page', params.page);
+    if (params.limit) queryParams.append('limit', params.limit);
+    if (params.userId) queryParams.append('userId', params.userId);
+    if (params.action) queryParams.append('action', params.action);
+    if (params.entityType) queryParams.append('entityType', params.entityType);
+    return fetchWithAuth(`/admin/activity-logs?${queryParams.toString()}`);
+  },
+
+  getActivityLog: (id) => fetchWithAuth(`/admin/activity-logs/${id}`),
+
+  updateActivityLog: (id, data) =>
+    fetchWithAuth(`/admin/activity-logs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    }),
+
+  deleteActivityLog: (id) =>
+    fetchWithAuth(`/admin/activity-logs/${id}`, {
+      method: 'DELETE',
+    }),
 };
 
 export default {
@@ -283,5 +408,8 @@ export default {
   message: messageAPI,
   notification: notificationAPI,
   search: searchAPI,
+  story: storyAPI,
+  hashtag: hashtagAPI,
+  report: reportAPI,
   admin: adminAPI,
 };

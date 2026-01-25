@@ -7,7 +7,11 @@ import {
   MessageCircle, 
   MessageSquare,
   ArrowLeft,
-  LogOut
+  LogOut,
+  CircleDot,
+  Flag,
+  Hash,
+  Activity
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -26,6 +30,10 @@ const AdminSidebar = () => {
     { path: '/admin/posts', icon: FileText, label: 'Posts' },
     { path: '/admin/comments', icon: MessageCircle, label: 'Comments' },
     { path: '/admin/messages', icon: MessageSquare, label: 'Messages' },
+    { path: '/admin/stories', icon: CircleDot, label: 'Stories' },
+    { path: '/admin/reports', icon: Flag, label: 'Reports' },
+    { path: '/admin/hashtags', icon: Hash, label: 'Hashtags' },
+    { path: '/admin/activity-logs', icon: Activity, label: 'Activity Logs' },
   ];
 
   return (

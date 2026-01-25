@@ -157,13 +157,17 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
         <div className="w-full">
           {post.img ? (
             <div className="bg-black flex items-center justify-center overflow-hidden max-h-[600px]">
-              <img src={post.img} alt="Post" className="w-full object-contain" />
+              <img 
+                src={post.img.startsWith('http') ? post.img : `http://localhost:8800${post.img}`} 
+                alt="Post" 
+                className="w-full object-contain" 
+              />
             </div>
-          ) : (
+          ) : post.content ? (
             <div className="w-full py-6 px-4 bg-white border-t border-b border-gray-100">
               <p className="text-gray-900 whitespace-pre-wrap text-base">{post.content}</p>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Footer Content */}

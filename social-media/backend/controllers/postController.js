@@ -81,13 +81,29 @@ export const getBookmarkedPosts = async (req, res) => {
 // Create post
 export const createPost = async (req, res) => {
   try {
-    const { content, userId } = req.body;
+    const content = req.body?.content || '';
+    const userId = req.body?.userId;
 
-    if (!content || !userId) {
-      return res.status(400).json({ message: 'Content and userId are required' });
+    if (!userId) {
+      return res.status(400).json({ message: 'userId is required' });
     }
 
-    const postId = await Post.create({ content, userId });
+    // Check if there's content or an image
+    if (!content && !req.file) {
+      return res.status(400).json({ message: 'Content or image is required' });
+    }
+
+    // Get image URL if file was uploaded
+    let imgUrl = null;
+    if (req.file) {
+      imgUrl = `/uploads/${req.file.filename}`;
+    }
+
+    const postId = await Post.create({ 
+      content: content, 
+      userId: parseInt(userId), 
+      img: imgUrl 
+    });
     const post = await Post.findById(postId);
 
     res.status(201).json(post);

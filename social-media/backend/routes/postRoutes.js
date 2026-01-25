@@ -15,6 +15,7 @@ import {
   checkBookmark
 } from '../controllers/postController.js';
 import { authenticateToken, optionalAuth } from '../middleware/auth.js';
+import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -36,8 +37,8 @@ router.get('/bookmarks/:userId', getBookmarkedPosts);
 // Base route
 router.get('/', getAllPosts);
 
-// Create post
-router.post('/', createPost);
+// Create post (with optional image upload)
+router.post('/', upload.single('image'), createPost);
 
 // Single post by ID (this catches any other pattern, so must be last for GET)
 router.get('/:id', getPost);

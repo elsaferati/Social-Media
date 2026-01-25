@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, FileText, MessageCircle, MessageSquare, Heart } from 'lucide-react';
+import { Users, FileText, MessageCircle, MessageSquare, Heart, CircleDot, Flag, Hash, Activity } from 'lucide-react';
 import StatsCard from '../../components/admin/StatsCard';
 import { adminAPI } from '../../services/api';
 
@@ -10,6 +10,10 @@ const DashboardPage = () => {
     comments: 0,
     messages: 0,
     likes: 0,
+    stories: 0,
+    pendingReports: 0,
+    hashtags: 0,
+    activityLogs: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -88,6 +92,34 @@ const DashboardPage = () => {
         />
       </div>
 
+      {/* New Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatsCard
+          title="Active Stories"
+          value={stats.stories}
+          icon={CircleDot}
+          color="cyan"
+        />
+        <StatsCard
+          title="Pending Reports"
+          value={stats.pendingReports}
+          icon={Flag}
+          color="red"
+        />
+        <StatsCard
+          title="Hashtags"
+          value={stats.hashtags}
+          icon={Hash}
+          color="indigo"
+        />
+        <StatsCard
+          title="Activity Logs"
+          value={stats.activityLogs}
+          icon={Activity}
+          color="gray"
+        />
+      </div>
+
       {/* Quick Actions */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
@@ -107,18 +139,18 @@ const DashboardPage = () => {
             <span className="font-medium text-gray-700">Manage Posts</span>
           </a>
           <a
-            href="/admin/comments"
+            href="/admin/reports"
             className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <MessageCircle className="w-5 h-5 text-purple-600" />
-            <span className="font-medium text-gray-700">Manage Comments</span>
+            <Flag className="w-5 h-5 text-red-600" />
+            <span className="font-medium text-gray-700">Review Reports</span>
           </a>
           <a
-            href="/admin/messages"
+            href="/admin/activity-logs"
             className="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
-            <MessageSquare className="w-5 h-5 text-orange-600" />
-            <span className="font-medium text-gray-700">View Messages</span>
+            <Activity className="w-5 h-5 text-gray-600" />
+            <span className="font-medium text-gray-700">Activity Logs</span>
           </a>
         </div>
       </div>

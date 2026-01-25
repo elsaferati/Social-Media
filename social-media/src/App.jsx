@@ -21,6 +21,10 @@ import AdminUsersPage from "./pages/admin/UsersPage";
 import AdminPostsPage from "./pages/admin/PostsPage";
 import AdminCommentsPage from "./pages/admin/CommentsPage";
 import AdminMessagesPage from "./pages/admin/MessagesPage";
+import AdminStoriesPage from "./pages/admin/StoriesPage";
+import AdminReportsPage from "./pages/admin/ReportsPage";
+import AdminHashtagsPage from "./pages/admin/HashtagsPage";
+import AdminActivityLogsPage from "./pages/admin/ActivityLogsPage";
 
 /* ----------------- Protected Route Wrapper ----------------- */
 const ProtectedLayout = () => {
@@ -80,6 +84,10 @@ const App = () => {
               <Route path="posts" element={<AdminPostsPage />} />
               <Route path="comments" element={<AdminCommentsPage />} />
               <Route path="messages" element={<AdminMessagesPage />} />
+              <Route path="stories" element={<AdminStoriesPage />} />
+              <Route path="reports" element={<AdminReportsPage />} />
+              <Route path="hashtags" element={<AdminHashtagsPage />} />
+              <Route path="activity-logs" element={<AdminActivityLogsPage />} />
             </Route>
           </Route>
 

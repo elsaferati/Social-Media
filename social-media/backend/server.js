@@ -1,9 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Load environment variables
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Import routes
 import authRoutes from './routes/authRoutes.js';
@@ -17,12 +22,19 @@ import adminRoutes from './routes/adminRoutes.js';
 import relationshipRoutes from './routes/relationshipRoutes.js';
 import likeRoutes from './routes/likeRoutes.js';
 import bookmarkRoutes from './routes/bookmarkRoutes.js';
+import storyRoutes from './routes/storyRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
+import hashtagRoutes from './routes/hashtagRoutes.js';
+import activityLogRoutes from './routes/activityLogRoutes.js';
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes
 app.use('/api/auth', authRoutes);
@@ -36,6 +48,10 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/relationships', relationshipRoutes);
 app.use('/api/likes', likeRoutes);
 app.use('/api/bookmarks', bookmarkRoutes);
+app.use('/api/stories', storyRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/hashtags', hashtagRoutes);
+app.use('/api/activity-logs', activityLogRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

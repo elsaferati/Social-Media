@@ -118,10 +118,10 @@ const Post = {
   },
 
   // Create new post
-  create: async ({ content, userId }) => {
+  create: async ({ content, userId, img = null }) => {
     const [result] = await db.query(
-      'INSERT INTO posts (content, userId) VALUES (?, ?)',
-      [content, userId]
+      'INSERT INTO posts (content, userId, img) VALUES (?, ?, ?)',
+      [content, userId, img]
     );
     return result.insertId;
   },

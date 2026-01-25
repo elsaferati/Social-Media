@@ -152,6 +152,98 @@ const setupDatabase = async () => {
     `);
     console.log('✓ Messages table ready');
 
+    // Create stories table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS stories (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        userId INT NOT NULL,
+        img VARCHAR(255) DEFAULT NULL,
+        content TEXT DEFAULT NULL,
+        expiresAt TIMESTAMP NOT NULL,
+        views INT DEFAULT 0,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('✓ Stories table ready');
+
+    // Create story_views table (track who viewed stories)
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS story_views (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        storyId INT NOT NULL,
+        userId INT NOT NULL,
+        viewedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_view (storyId, userId),
+        FOREIGN KEY (storyId) REFERENCES stories(id) ON DELETE CASCADE,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('✓ Story views table ready');
+
+    // Create reports table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS reports (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        reporterUserId INT NOT NULL,
+        reportedUserId INT DEFAULT NULL,
+        reportedPostId INT DEFAULT NULL,
+        reportType ENUM('user', 'post', 'comment', 'story') NOT NULL,
+        reason ENUM('spam', 'harassment', 'hate_speech', 'violence', 'nudity', 'false_info', 'other') NOT NULL,
+        description TEXT DEFAULT NULL,
+        status ENUM('pending', 'reviewed', 'resolved', 'dismissed') DEFAULT 'pending',
+        adminNotes TEXT DEFAULT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        resolvedAt TIMESTAMP NULL,
+        FOREIGN KEY (reporterUserId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (reportedUserId) REFERENCES users(id) ON DELETE SET NULL,
+        FOREIGN KEY (reportedPostId) REFERENCES posts(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('✓ Reports table ready');
+
+    // Create hashtags table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS hashtags (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        usageCount INT DEFAULT 0,
+        isBlocked TINYINT(1) DEFAULT 0,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✓ Hashtags table ready');
+
+    // Create post_hashtags junction table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS post_hashtags (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        postId INT NOT NULL,
+        hashtagId INT NOT NULL,
+        UNIQUE KEY unique_post_hashtag (postId, hashtagId),
+        FOREIGN KEY (postId) REFERENCES posts(id) ON DELETE CASCADE,
+        FOREIGN KEY (hashtagId) REFERENCES hashtags(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('✓ Post hashtags table ready');
+
+    // Create activity_logs table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS activity_logs (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        userId INT DEFAULT NULL,
+        action VARCHAR(100) NOT NULL,
+        entityType ENUM('user', 'post', 'comment', 'story', 'report', 'hashtag', 'system') NOT NULL,
+        entityId INT DEFAULT NULL,
+        details JSON DEFAULT NULL,
+        ipAddress VARCHAR(45) DEFAULT NULL,
+        userAgent TEXT DEFAULT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE SET NULL
+      )
+    `);
+    console.log('✓ Activity logs table ready');
+
     // Create indexes for better performance
     const indexes = [
       'CREATE INDEX IF NOT EXISTS idx_posts_userId ON posts(userId)',
@@ -160,6 +252,12 @@ const setupDatabase = async () => {
       'CREATE INDEX IF NOT EXISTS idx_notifications_receiver ON notifications(receiverUserId)',
       'CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(senderId)',
       'CREATE INDEX IF NOT EXISTS idx_messages_receiver ON messages(receiverId)',
+      'CREATE INDEX IF NOT EXISTS idx_stories_userId ON stories(userId)',
+      'CREATE INDEX IF NOT EXISTS idx_stories_expiresAt ON stories(expiresAt)',
+      'CREATE INDEX IF NOT EXISTS idx_reports_status ON reports(status)',
+      'CREATE INDEX IF NOT EXISTS idx_hashtags_name ON hashtags(name)',
+      'CREATE INDEX IF NOT EXISTS idx_activity_logs_userId ON activity_logs(userId)',
+      'CREATE INDEX IF NOT EXISTS idx_activity_logs_action ON activity_logs(action)',
     ];
 
     for (const idx of indexes) {
@@ -176,7 +274,7 @@ const setupDatabase = async () => {
     console.log('========================================\n');
 
     // Show table counts
-    const tables = ['users', 'posts', 'comments', 'likes', 'relationships', 'bookmarks', 'notifications', 'messages'];
+    const tables = ['users', 'posts', 'comments', 'likes', 'relationships', 'bookmarks', 'notifications', 'messages', 'stories', 'reports', 'hashtags', 'activity_logs'];
     console.log('Current table counts:');
     for (const table of tables) {
       const [rows] = await connection.query(`SELECT COUNT(*) as count FROM ${table}`);
