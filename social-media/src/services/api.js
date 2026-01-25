@@ -101,6 +101,9 @@ export const postAPI = {
   getAll: (page = 1, limit = 20) => 
     fetchWithAuth(`/posts?page=${page}&limit=${limit}`),
 
+  getFeed: (userId, page = 1, limit = 20) => 
+    fetchWithAuth(`/posts/feed/${userId}?page=${page}&limit=${limit}`),
+
   getById: (id) => fetchWithAuth(`/posts/${id}`),
 
   getByUser: (userId) => fetchWithAuth(`/posts/user/${userId}`),

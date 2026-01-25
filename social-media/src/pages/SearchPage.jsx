@@ -11,6 +11,7 @@ const SearchPage = () => {
   const [activeTab, setActiveTab] = useState('all');
   const [results, setResults] = useState({ users: [], posts: [] });
   const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
     const q = searchParams.get('q');
@@ -18,17 +19,19 @@ const SearchPage = () => {
       setQuery(q);
       handleSearch(q);
     }
-  }, [searchParams]);
+  }, []);
 
   const handleSearch = async (searchQuery) => {
     if (!searchQuery.trim()) return;
 
     try {
       setLoading(true);
+      setHasSearched(true);
       const data = await searchAPI.all(searchQuery);
       setResults(data);
     } catch (err) {
       console.error('Search error:', err);
+      setResults({ users: [], posts: [] });
     } finally {
       setLoading(false);
     }
@@ -39,6 +42,16 @@ const SearchPage = () => {
     if (query.trim()) {
       setSearchParams({ q: query });
       handleSearch(query);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (query.trim()) {
+        setSearchParams({ q: query });
+        handleSearch(query);
+      }
     }
   };
 
@@ -64,14 +77,22 @@ const SearchPage = () => {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Search users or posts..."
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg"
+              autoFocus
             />
+            <button
+              type="submit"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-500 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-600"
+            >
+              Search
+            </button>
           </form>
         </div>
 
         {/* Tabs */}
-        {(results.users.length > 0 || results.posts.length > 0) && (
+        {hasSearched && (results.users.length > 0 || results.posts.length > 0) && (
           <div className="flex gap-1 mb-6 border-b border-gray-200">
             {['all', 'users', 'posts'].map((tab) => (
               <button
@@ -107,7 +128,7 @@ const SearchPage = () => {
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
                   <User className="w-5 h-5" />
-                  Users
+                  Users ({users.length})
                 </h2>
                 <div className="space-y-2">
                   {users.map((user) => (
@@ -142,7 +163,7 @@ const SearchPage = () => {
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
                   <FileText className="w-5 h-5" />
-                  Posts
+                  Posts ({posts.length})
                 </h2>
                 <div className="space-y-4">
                   {posts.map((post) => (
@@ -153,7 +174,7 @@ const SearchPage = () => {
             )}
 
             {/* No Results */}
-            {query && !loading && users.length === 0 && posts.length === 0 && (
+            {hasSearched && !loading && users.length === 0 && posts.length === 0 && (
               <div className="text-center py-12">
                 <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500">No results found for "{query}"</p>
@@ -162,10 +183,11 @@ const SearchPage = () => {
             )}
 
             {/* Initial State */}
-            {!query && (
+            {!hasSearched && !query && (
               <div className="text-center py-12">
                 <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                 <p className="text-gray-500">Search for users or posts</p>
+                <p className="text-sm text-gray-400 mt-1">Enter a search term and press Enter or click Search</p>
               </div>
             )}
           </div>

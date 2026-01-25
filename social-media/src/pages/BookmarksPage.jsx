@@ -4,25 +4,34 @@ import Layout from "../components/Layout";
 import PostsFeed from "../components/PostsFeed";
 import { Bookmark, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { postAPI } from "../services/api";
 
 const BookmarksPage = () => {
   const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { currentUser } = useAuth();
 
   useEffect(() => {
-    const fetchBookmarks = async () => {
-      try {
-        const res = await fetch(`http://localhost:8800/api/posts/bookmarks/${currentUser.id}`);
-        const data = await res.json();
-        setPosts(data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    if (currentUser?.id) {
-        fetchBookmarks();
-    }
+    fetchBookmarks();
   }, [currentUser]);
+
+  const fetchBookmarks = async () => {
+    if (!currentUser?.id) return;
+    
+    try {
+      setLoading(true);
+      const data = await postAPI.getBookmarked(currentUser.id);
+      setPosts(data);
+    } catch (err) {
+      console.error('Error fetching bookmarks:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRemoveBookmark = (postId) => {
+    setPosts(posts.filter(p => p.id !== postId));
+  };
 
   return (
     <Layout>
@@ -40,7 +49,11 @@ const BookmarksPage = () => {
         </div>
 
         {/* Content */}
-        {posts.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        ) : posts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
              <div className="w-24 h-24 rounded-full border-2 border-gray-300 flex items-center justify-center mb-6">
                 <Bookmark size={48} className="text-gray-300" />
@@ -51,7 +64,11 @@ const BookmarksPage = () => {
              </p>
           </div>
         ) : (
-          <PostsFeed posts={posts} filter="bookmarks" />
+          <PostsFeed 
+            posts={posts} 
+            filter="bookmarks" 
+            onBookmarkRemoved={handleRemoveBookmark}
+          />
         )}
       </div>
     </Layout>

@@ -16,6 +16,20 @@ export const getAllPosts = async (req, res) => {
   }
 };
 
+// Get feed posts (posts from followed users + own posts)
+export const getFeedPosts = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const posts = await Post.getFeed(userId, page, limit);
+    res.json(posts);
+  } catch (error) {
+    console.error('Get feed posts error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Get single post
 export const getPost = async (req, res) => {
   try {
@@ -136,6 +150,9 @@ export const deletePost = async (req, res) => {
 export const getLikes = async (req, res) => {
   try {
     const postId = req.query.postId;
+    if (!postId) {
+      return res.status(400).json({ message: 'postId is required' });
+    }
     const likes = await Like.getByPostId(postId);
     res.json(likes);
   } catch (error) {
@@ -148,6 +165,10 @@ export const getLikes = async (req, res) => {
 export const toggleLike = async (req, res) => {
   try {
     const { userId, postId } = req.body;
+
+    if (!userId || !postId) {
+      return res.status(400).json({ message: 'userId and postId are required' });
+    }
 
     // Get post owner for notification
     const post = await Post.findById(postId);
@@ -177,6 +198,10 @@ export const toggleBookmark = async (req, res) => {
   try {
     const { userId, postId } = req.body;
 
+    if (!userId || !postId) {
+      return res.status(400).json({ message: 'userId and postId are required' });
+    }
+
     const bookmarked = await Bookmark.toggle(userId, postId);
 
     res.json({ 
@@ -193,6 +218,9 @@ export const toggleBookmark = async (req, res) => {
 export const checkBookmark = async (req, res) => {
   try {
     const { userId, postId } = req.query;
+    if (!userId || !postId) {
+      return res.status(400).json({ message: 'userId and postId are required' });
+    }
     const isBookmarked = await Bookmark.exists(userId, postId);
     res.json(isBookmarked);
   } catch (error) {

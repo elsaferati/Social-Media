@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   getAllPosts,
+  getFeedPosts,
   getPost,
   getUserPosts,
   getExplorePosts,
@@ -17,23 +18,29 @@ import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Public routes
-router.get('/', getAllPosts);
+// IMPORTANT: Specific routes MUST come before parameterized routes
+
+// Feed route (posts from followed users)
+router.get('/feed/:userId', getFeedPosts);
+
+// Explore route (must be before /:id)
 router.get('/explore', getExplorePosts);
+
+// User posts route (must be before /:id)
 router.get('/user/:userId', getUserPosts);
-router.get('/bookmarks/:userId', getBookmarkedPosts);
-router.get('/:id', getPost);
 
-// Likes routes
-router.get('/likes', getLikes);
-router.post('/likes', toggleLike);
-
-// Bookmarks routes
+// Bookmarks routes (must be before /:id)
 router.get('/bookmarks/check', checkBookmark);
-router.post('/bookmarks', toggleBookmark);
+router.get('/bookmarks/:userId', getBookmarkedPosts);
 
-// Protected routes
+// Base route
+router.get('/', getAllPosts);
+
+// Create post
 router.post('/', createPost);
+
+// Single post by ID (this catches any other pattern, so must be last for GET)
+router.get('/:id', getPost);
 router.put('/:id', optionalAuth, updatePost);
 router.delete('/:id', optionalAuth, deletePost);
 

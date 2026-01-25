@@ -15,6 +15,8 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import relationshipRoutes from './routes/relationshipRoutes.js';
+import likeRoutes from './routes/likeRoutes.js';
+import bookmarkRoutes from './routes/bookmarkRoutes.js';
 
 const app = express();
 
@@ -32,31 +34,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/relationships', relationshipRoutes);
-
-// Legacy routes for backward compatibility
-// These redirect to the new route structure
-app.get('/api/likes', async (req, res) => {
-  // Forward to post routes
-  const postRoutes = await import('./routes/postRoutes.js');
-  req.url = '/likes';
-  postRoutes.default(req, res);
-});
-
-app.post('/api/likes', async (req, res, next) => {
-  req.url = '/likes';
-  const { toggleLike } = await import('./controllers/postController.js');
-  toggleLike(req, res);
-});
-
-app.post('/api/bookmarks', async (req, res) => {
-  const { toggleBookmark } = await import('./controllers/postController.js');
-  toggleBookmark(req, res);
-});
-
-app.get('/api/bookmarks/check', async (req, res) => {
-  const { checkBookmark } = await import('./controllers/postController.js');
-  checkBookmark(req, res);
-});
+app.use('/api/likes', likeRoutes);
+app.use('/api/bookmarks', bookmarkRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

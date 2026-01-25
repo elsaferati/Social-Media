@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import { Search, MoreHorizontal, Send, Image } from "lucide-react"; 
+import { userAPI, messageAPI } from "../services/api";
 
 const MessagesPage = () => {
   const { currentUser } = useAuth();
@@ -10,38 +11,45 @@ const MessagesPage = () => {
   const [selectedUser, setSelectedUser] = useState(null); 
   const [messages, setMessages] = useState([]); 
   const [newMessage, setNewMessage] = useState(""); 
+  const [loading, setLoading] = useState(false);
+  const [sending, setSending] = useState(false);
   const scrollRef = useRef(); 
 
   // 1. Fetch Friends
   useEffect(() => {
     const fetchFriends = async () => {
+      if (!currentUser?.id) return;
+      
       try {
-        const res = await fetch(`http://localhost:8800/api/users/friends/${currentUser.id}`);
-        const data = await res.json();
+        const data = await userAPI.getFriends(currentUser.id);
         setFriends(data);
       } catch (err) {
-        console.log(err);
+        console.error('Error fetching friends:', err);
       }
     };
-    if(currentUser) fetchFriends();
+    fetchFriends();
   }, [currentUser]);
 
   // 2. Fetch Messages
   useEffect(() => {
-    if (!selectedUser) return;
+    if (!selectedUser || !currentUser?.id) return;
+    
     const fetchMessages = async () => {
       try {
-        const res = await fetch(`http://localhost:8800/api/messages?senderId=${currentUser.id}&receiverId=${selectedUser.id}`);
-        const data = await res.json();
+        setLoading(true);
+        const data = await messageAPI.getMessages(currentUser.id, selectedUser.id);
         setMessages(data);
       } catch (err) {
-        console.log(err);
+        console.error('Error fetching messages:', err);
+      } finally {
+        setLoading(false);
       }
     };
+    
     fetchMessages();
-    const intervalId = setInterval(fetchMessages, 2000);
+    const intervalId = setInterval(fetchMessages, 3000);
     return () => clearInterval(intervalId);
-  }, [selectedUser, currentUser.id]);
+  }, [selectedUser, currentUser?.id]);
 
   // 3. Scroll to bottom
   useEffect(() => {
@@ -51,25 +59,20 @@ const MessagesPage = () => {
   // 4. Send Message
   const handleSend = async (e) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || sending) return;
 
     try {
-      await fetch("http://localhost:8800/api/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          senderId: currentUser.id,
-          receiverId: selectedUser.id,
-          content: newMessage,
-        }),
-      });
+      setSending(true);
+      await messageAPI.send(currentUser.id, selectedUser.id, newMessage);
       setNewMessage("");
+      
       // Immediate fetch update
-      const res = await fetch(`http://localhost:8800/api/messages?senderId=${currentUser.id}&receiverId=${selectedUser.id}`);
-      const data = await res.json();
+      const data = await messageAPI.getMessages(currentUser.id, selectedUser.id);
       setMessages(data);
     } catch (err) {
-      console.log(err);
+      console.error('Error sending message:', err);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -83,7 +86,7 @@ const MessagesPage = () => {
           {/* Header */}
           <div className="p-5 border-b border-gray-200 flex justify-between items-center">
              <div className="font-bold text-lg flex items-center gap-1">
-                 {currentUser.username} <span className="text-xs">▼</span>
+                 {currentUser?.username} <span className="text-xs">▼</span>
              </div>
              <Search size={20} className="text-gray-400" />
           </div>
@@ -110,12 +113,16 @@ const MessagesPage = () => {
                 >
                     <div className="relative">
                         <div className="w-14 h-14 bg-gradient-to-tr from-yellow-400 to-pink-500 rounded-full p-[2px]">
-                            <img src={friend.img || "https://i.pravatar.cc/150?u=" + friend.id} className="w-full h-full rounded-full border-2 border-white object-cover" alt="" />
+                            <img 
+                              src={friend.profilePic || "https://i.pravatar.cc/150?u=" + friend.id} 
+                              className="w-full h-full rounded-full border-2 border-white object-cover" 
+                              alt="" 
+                            />
                         </div>
                     </div>
                     <div className="flex-1">
                         <div className="font-normal text-sm">{friend.username}</div>
-                        <div className="text-gray-400 text-xs">Active 1h ago</div>
+                        <div className="text-gray-400 text-xs">Active recently</div>
                     </div>
                 </div>
                 ))
@@ -134,7 +141,11 @@ const MessagesPage = () => {
                         <button onClick={() => setSelectedUser(null)} className="md:hidden text-2xl pr-2">←</button>
                         
                         <div className="w-8 h-8 rounded-full overflow-hidden">
-                            <img src={selectedUser.img || "https://i.pravatar.cc/150?u=" + selectedUser.id} className="w-full h-full object-cover" alt="" />
+                            <img 
+                              src={selectedUser.profilePic || "https://i.pravatar.cc/150?u=" + selectedUser.id} 
+                              className="w-full h-full object-cover" 
+                              alt="" 
+                            />
                         </div>
                         <div className="font-semibold text-sm">{selectedUser.username}</div>
                     </div>
@@ -143,34 +154,38 @@ const MessagesPage = () => {
 
                 {/* Messages Feed */}
                 <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-2 bg-white">
-                    {messages.length === 0 && (
+                    {loading && messages.length === 0 ? (
+                        <div className="flex justify-center py-8">
+                            <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    ) : messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-center">
                             <div className="w-20 h-20 rounded-full bg-gray-100 mb-4 flex items-center justify-center text-4xl">👋</div>
                             <h3 className="text-lg font-medium">Say Hello!</h3>
                             <p className="text-gray-500 text-sm">Send a message to start the chat.</p>
                         </div>
+                    ) : (
+                        messages.map((msg) => {
+                            const isMe = msg.senderId === currentUser.id;
+                            return (
+                                <div
+                                    key={msg.id}
+                                    ref={scrollRef}
+                                    className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${
+                                    isMe
+                                        ? "bg-blue-500 text-white self-end rounded-br-sm"
+                                        : "bg-gray-100 text-black self-start rounded-bl-sm border border-gray-200"
+                                    }`}
+                                >
+                                    {msg.content}
+                                </div>
+                            );
+                        })
                     )}
-                    
-                    {messages.map((msg) => {
-                        const isMe = msg.senderId === currentUser.id;
-                        return (
-                            <div
-                                key={msg.id}
-                                ref={scrollRef}
-                                className={`max-w-[70%] px-4 py-2 rounded-2xl text-sm ${
-                                isMe
-                                    ? "bg-blue-500 text-white self-end rounded-br-sm"
-                                    : "bg-gray-100 text-black self-start rounded-bl-sm border border-gray-200"
-                                }`}
-                            >
-                                {msg.content}
-                            </div>
-                        );
-                    })}
                 </div>
 
                 {/* Input Area */}
-                <form className="p-4 flex items-center gap-3 bg-white" onSubmit={handleSend}>
+                <form className="p-4 flex items-center gap-3 bg-white border-t border-gray-100" onSubmit={handleSend}>
                     <button type="button" className="text-gray-400 hover:text-gray-600"><Image size={24} /></button>
                     <div className="flex-1 relative">
                         <input
@@ -181,7 +196,13 @@ const MessagesPage = () => {
                             onChange={(e) => setNewMessage(e.target.value)}
                         />
                     </div>
-                    <button disabled={!newMessage.trim()} className="text-blue-500 font-semibold text-sm disabled:opacity-30 hover:text-blue-700">Send</button>
+                    <button 
+                      type="submit"
+                      disabled={!newMessage.trim() || sending} 
+                      className="text-blue-500 font-semibold text-sm disabled:opacity-30 hover:text-blue-700"
+                    >
+                      {sending ? 'Sending...' : 'Send'}
+                    </button>
                 </form>
                 </>
             ) : (

@@ -2,20 +2,34 @@ import React from "react";
 import PostCard from "./PostCard";
 import { Camera } from "lucide-react";
 
-const PostsFeed = ({ posts, filter, userId }) => {
+const PostsFeed = ({ posts, filter, userId, onDelete, onBookmarkRemoved }) => {
   // Apply filter if needed
   const displayedPosts = posts?.filter(post => {
     if (filter === "user" && userId) return post.userId === parseInt(userId);
-    if (filter === "bookmarks") return post.isBookmarked;
     return true;
   }) || [];
+
+  const handleDelete = (postId) => {
+    if (onDelete) onDelete(postId);
+  };
+
+  const handleBookmarkChange = (postId, isBookmarked) => {
+    // If in bookmarks view and post is unbookmarked, remove it from list
+    if (filter === "bookmarks" && !isBookmarked && onBookmarkRemoved) {
+      onBookmarkRemoved(postId);
+    }
+  };
 
   return (
     <div className="w-full flex flex-col items-center">
       {displayedPosts.length > 0 ? (
         displayedPosts.map(post => (
-          <div key={post.id} className="w-full max-w-[470px]"> {/* Limit width of posts */}
-             <PostCard post={post} />
+          <div key={post.id} className="w-full max-w-[470px]">
+             <PostCard 
+               post={post} 
+               onDelete={handleDelete}
+               onBookmarkChange={handleBookmarkChange}
+             />
           </div>
         ))
       ) : (

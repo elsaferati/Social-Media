@@ -15,6 +15,22 @@ const Post = {
     return rows;
   },
 
+  // Get feed posts (from followed users + own posts)
+  getFeed: async (userId, page = 1, limit = 20) => {
+    const offset = (page - 1) * limit;
+    const [rows] = await db.query(
+      `SELECT p.*, u.username, u.profilePic 
+       FROM posts p 
+       JOIN users u ON p.userId = u.id 
+       WHERE p.userId = ? 
+       OR p.userId IN (SELECT followedUserId FROM relationships WHERE followerUserId = ?)
+       ORDER BY p.createdAt DESC
+       LIMIT ? OFFSET ?`,
+      [userId, userId, limit, offset]
+    );
+    return rows;
+  },
+
   // Get all posts for admin (paginated with search)
   getAllAdmin: async (page = 1, limit = 10, search = '') => {
     const offset = (page - 1) * limit;

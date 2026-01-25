@@ -15,18 +15,26 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Public routes
-router.get('/suggestions/:userId', getSuggestions);
-router.get('/friends/:userId', getFriends);
-router.get('/:userId', getUser);
+// IMPORTANT: Specific routes MUST come before parameterized routes
 
-// Relationship routes
+// Relationship routes (must be before /:userId)
 router.get('/relationships/count/:userId', getRelationshipCounts);
 router.get('/relationships/check', checkFollowing);
+
+// Suggestions route (must be before /:userId)
+router.get('/suggestions/:userId', getSuggestions);
+
+// Friends route (must be before /:userId)
+router.get('/friends/:userId', getFriends);
+
+// Followers/Following routes (must be before /:userId)
 router.get('/followers/:userId', getFollowers);
 router.get('/following/:userId', getFollowing);
 
-// Protected routes
+// Single user by ID (must be LAST for GET requests)
+router.get('/:userId', getUser);
+
+// Update user
 router.put('/:userId', updateUser);
 
 export default router;
