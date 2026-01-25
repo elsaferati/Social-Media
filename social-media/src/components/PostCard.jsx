@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Trash2, Share2 } from "lucide-react";
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -15,11 +15,10 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
-  const [isLikeAnimating, setIsLikeAnimating] = useState(false);
 
   const userImage = post.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`;
   const username = post.username || "user_" + post.userId;
-  const timeAgo = post.createdAt ? formatDistanceToNow(new Date(post.createdAt)) : "just now";
+  const timeAgo = post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : "just now";
 
   useEffect(() => {
     if (currentUser) {
@@ -34,7 +33,6 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
       setLikesCount(Array.isArray(likes) ? likes.length : 0);
       setLiked(Array.isArray(likes) && likes.includes(currentUser?.id));
     } catch (err) {
-      console.error('Error fetching likes:', err);
       setLikesCount(0);
       setLiked(false);
     }
@@ -45,17 +43,12 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
       const isBookmarked = await bookmarkAPI.check(currentUser?.id, post.id);
       setBookmarked(Boolean(isBookmarked));
     } catch (err) {
-      console.error('Error checking bookmark:', err);
       setBookmarked(false);
     }
   };
 
   const handleLike = async () => {
     if (likeLoading || !currentUser) return;
-    
-    // Trigger animation
-    setIsLikeAnimating(true);
-    setTimeout(() => setIsLikeAnimating(false), 300);
     
     try {
       setLikeLoading(true);
@@ -76,10 +69,7 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
       setBookmarkLoading(true);
       const result = await bookmarkAPI.toggle(currentUser.id, post.id);
       setBookmarked(result.bookmarked);
-      
-      if (onBookmarkChange) {
-        onBookmarkChange(post.id, result.bookmarked);
-      }
+      if (onBookmarkChange) onBookmarkChange(post.id, result.bookmarked);
     } catch (err) {
       console.error('Error toggling bookmark:', err);
     } finally {
@@ -103,59 +93,55 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
 
   return (
     <>
-      <article className="card-flat overflow-hidden mb-5 animate-fadeIn">
+      <article className="card overflow-hidden animate-fadeIn">
         {/* Header */}
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
-            <Link to={`/profile/${post.userId}`} className="avatar-ring">
+            <Link to={`/profile/${post.userId}`}>
               <img 
                 src={userImage} 
                 alt={username} 
-                className="w-11 h-11 rounded-full object-cover"
+                className="w-11 h-11 rounded-full object-cover bg-[#F3F4F6]"
               />
             </Link>
             <div>
               <Link 
                 to={`/profile/${post.userId}`} 
-                className="font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
+                className="font-semibold text-[#1F2937] hover:text-[#6366F1] transition-colors text-sm"
               >
                 {username}
               </Link>
-              <p className="text-xs text-gray-400">{timeAgo}</p>
+              <p className="text-xs text-[#9CA3AF]">{timeAgo}</p>
             </div>
           </div>
           
-          {/* Menu Button */}
+          {/* Menu */}
           <div className="relative">
             <button 
               onClick={() => setShowMenu(!showMenu)} 
-              className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              className="p-2 hover:bg-[#F3F4F6] rounded-full transition-colors"
             >
-              <MoreHorizontal size={20} className="text-gray-500" />
+              <MoreHorizontal size={20} className="text-[#6B7280]" />
             </button>
             
             {showMenu && (
               <>
-                <div 
-                  className="fixed inset-0 z-10" 
-                  onClick={() => setShowMenu(false)}
-                />
-                <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-xl border border-gray-100 z-20 py-2 min-w-[160px] animate-scaleIn">
+                <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+                <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-lg border border-[#E5E7EB] z-20 py-2 min-w-[160px] animate-scaleIn">
                   {isOwnPost && (
                     <button
                       onClick={handleDelete}
                       className="w-full px-4 py-2.5 text-left text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors"
                     >
                       <Trash2 size={16} />
-                      <span className="font-medium">Delete Post</span>
+                      <span className="font-medium">Delete</span>
                     </button>
                   )}
                   <button
                     onClick={() => setShowMenu(false)}
-                    className="w-full px-4 py-2.5 text-left text-gray-600 hover:bg-gray-50 flex items-center gap-3 transition-colors"
+                    className="w-full px-4 py-2.5 text-left text-[#4B5563] hover:bg-[#F3F4F6] transition-colors"
                   >
-                    <Share2 size={16} />
-                    <span className="font-medium">Share</span>
+                    Cancel
                   </button>
                 </div>
               </>
@@ -166,7 +152,7 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
         {/* Content */}
         {post.content && !post.img && (
           <div className="px-4 pb-3">
-            <p className="text-gray-800 text-[15px] leading-relaxed whitespace-pre-wrap">
+            <p className="text-[#374151] text-[15px] leading-relaxed whitespace-pre-wrap">
               {post.content}
             </p>
           </div>
@@ -174,101 +160,76 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
 
         {/* Image */}
         {post.img && (
-          <div className="relative bg-gray-100">
+          <div className="bg-[#F9FAFB]">
             <img 
               src={post.img.startsWith('http') ? post.img : `http://localhost:8800${post.img}`} 
               alt="Post" 
               className="w-full object-cover max-h-[500px]"
               onDoubleClick={handleLike}
             />
-            {/* Double-tap like animation */}
-            {isLikeAnimating && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <Heart 
-                  size={80} 
-                  className="fill-white text-white animate-ping opacity-80" 
-                />
-              </div>
-            )}
           </div>
         )}
 
         {/* Footer */}
         <div className="p-4">
-          {/* Action Buttons */}
+          {/* Actions */}
           <div className="flex justify-between mb-3">
             <div className="flex gap-1">
               <button 
                 onClick={handleLike} 
                 disabled={likeLoading}
-                className={`p-2 rounded-full transition-all duration-200 ${
-                  liked 
-                    ? 'text-red-500 bg-red-50' 
-                    : 'text-gray-600 hover:bg-gray-100'
-                } disabled:opacity-50`}
+                className={`p-2 rounded-full transition-all ${
+                  liked ? 'text-red-500 bg-red-50' : 'text-[#6B7280] hover:bg-[#F3F4F6]'
+                }`}
               >
-                <Heart 
-                  size={24} 
-                  className={`transition-transform duration-200 ${
-                    isLikeAnimating ? 'scale-125' : ''
-                  } ${liked ? 'fill-current' : ''}`}
-                />
+                <Heart size={22} className={liked ? 'fill-current' : ''} />
               </button>
               <button 
                 onClick={() => setShowComments(true)} 
-                className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 text-[#6B7280] hover:bg-[#F3F4F6] rounded-full transition-colors"
               >
-                <MessageCircle size={24} />
+                <MessageCircle size={22} />
               </button>
-              <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
-                <Send size={24} />
+              <button className="p-2 text-[#6B7280] hover:bg-[#F3F4F6] rounded-full transition-colors">
+                <Send size={22} />
               </button>
             </div>
             <button 
               onClick={handleBookmark} 
               disabled={bookmarkLoading}
-              className={`p-2 rounded-full transition-all duration-200 ${
-                bookmarked 
-                  ? 'text-indigo-600 bg-indigo-50' 
-                  : 'text-gray-600 hover:bg-gray-100'
-              } disabled:opacity-50`}
+              className={`p-2 rounded-full transition-all ${
+                bookmarked ? 'text-[#6366F1] bg-[#EEF2FF]' : 'text-[#6B7280] hover:bg-[#F3F4F6]'
+              }`}
             >
-              <Bookmark 
-                size={24} 
-                className={bookmarked ? 'fill-current' : ''} 
-              />
+              <Bookmark size={22} className={bookmarked ? 'fill-current' : ''} />
             </button>
           </div>
 
-          {/* Likes Count */}
-          <p className="font-semibold text-sm text-gray-900 mb-2">
+          {/* Likes */}
+          <p className="font-semibold text-sm text-[#1F2937] mb-2">
             {likesCount.toLocaleString()} {likesCount === 1 ? 'like' : 'likes'}
           </p>
 
           {/* Caption */}
           {post.content && post.img && (
             <div className="mb-2">
-              <Link 
-                to={`/profile/${post.userId}`} 
-                className="font-semibold text-gray-900 hover:text-indigo-600 mr-2"
-              >
+              <Link to={`/profile/${post.userId}`} className="font-semibold text-[#1F2937] text-sm mr-2">
                 {username}
               </Link>
-              <span className="text-gray-700">{post.content}</span>
+              <span className="text-[#374151] text-sm">{post.content}</span>
             </div>
           )}
 
           {/* View Comments */}
           <button 
             onClick={() => setShowComments(true)} 
-            className="text-gray-400 text-sm hover:text-gray-600 transition-colors"
+            className="text-[#6B7280] text-sm hover:text-[#4B5563] transition-colors"
           >
             View comments
           </button>
         </div>
       </article>
 
-      {/* Comments Modal */}
       <CommentsModal
         isOpen={showComments}
         onClose={() => setShowComments(false)}

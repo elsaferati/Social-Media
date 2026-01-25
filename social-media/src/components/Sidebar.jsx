@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { Home, Search, Compass, Heart, Bookmark, User, PlusSquare, MessageCircle, Settings, LogOut, Shield, Sparkles } from "lucide-react";
+import { Home, Search, Compass, Heart, User, PlusSquare, MessageCircle, Settings, LogOut, Shield } from "lucide-react";
 
 const Sidebar = () => {
   const { currentUser, logout, isAdmin } = useAuth();
@@ -19,121 +19,108 @@ const Sidebar = () => {
     { name: "Explore", path: "/explore", icon: Compass },
     { name: "Messages", path: "/messages", icon: MessageCircle },
     { name: "Notifications", path: "/notifications", icon: Heart },
-    { name: "Create", path: "#", icon: PlusSquare, action: "create" },
+    { name: "Create", path: "#", icon: PlusSquare },
     { name: "Profile", path: `/profile/${userId}`, icon: User },
   ];
 
   return (
-    <div className="fixed left-0 top-0 h-screen w-20 lg:w-72 bg-white/80 backdrop-blur-xl border-r border-gray-100 z-50 flex flex-col justify-between py-6 transition-all duration-300">
-      {/* Logo Area */}
-      <div>
-        <div className="px-4 lg:px-6 mb-8">
-          {/* Mobile Logo */}
-          <div className="lg:hidden flex justify-center">
-            <div className="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center shadow-lg shadow-indigo-200">
-              <Sparkles className="w-6 h-6 text-white" />
-            </div>
+    <div className="h-full flex flex-col bg-white">
+      {/* Logo */}
+      <div className="px-6 py-6 border-b border-[#E5E7EB]">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
+            <span className="text-white font-bold text-lg">S</span>
           </div>
-          {/* Desktop Logo */}
-          <div className="hidden lg:flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center shadow-lg shadow-indigo-200">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <span className="text-xl font-bold gradient-text">Socialix</span>
-          </div>
+          <span className="text-xl font-bold text-[#1F2937]">Socialix</span>
         </div>
-
-        {/* Navigation Links */}
-        <nav className="flex flex-col gap-1 px-3">
-          {menuItems.map((item, index) => {
-            const Icon = item.icon;
-            return (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group relative
-                  ${isActive 
-                    ? "bg-gradient-to-r from-indigo-500 to-pink-500 text-white shadow-lg shadow-indigo-200" 
-                    : "text-gray-600 hover:bg-gray-50"
-                  }`
-                }
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                {({ isActive }) => (
-                  <>
-                    <Icon 
-                      size={22} 
-                      className={`transition-transform duration-200 ${isActive ? '' : 'group-hover:scale-110'}`}
-                      strokeWidth={isActive ? 2.5 : 2}
-                    />
-                    <span className="hidden lg:block text-[15px] font-medium">{item.name}</span>
-                    {!isActive && (
-                      <span className="lg:hidden absolute left-full ml-3 px-3 py-1.5 bg-gray-900 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
-                        {item.name}
-                      </span>
-                    )}
-                  </>
-                )}
-              </NavLink>
-            );
-          })}
-        </nav>
       </div>
 
-      {/* Bottom Actions */}
-      <div className="px-3 space-y-1">
-        {/* Admin Panel Link */}
+      {/* Navigation */}
+      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        {menuItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group
+                ${isActive 
+                  ? "bg-[#EEF2FF] text-[#6366F1] font-semibold" 
+                  : "text-[#4B5563] hover:bg-[#F3F4F6] hover:text-[#1F2937]"
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  <Icon 
+                    size={22} 
+                    strokeWidth={isActive ? 2.5 : 2}
+                    className="flex-shrink-0"
+                  />
+                  <span className="text-[15px]">{item.name}</span>
+                </>
+              )}
+            </NavLink>
+          );
+        })}
+      </nav>
+
+      {/* Bottom Section */}
+      <div className="px-4 pb-6 space-y-1 border-t border-[#E5E7EB] pt-4">
+        {/* Admin Panel */}
         {isAdmin && (
           <NavLink 
             to="/admin" 
             className={({ isActive }) =>
-              `flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
               ${isActive 
-                ? "bg-purple-500 text-white shadow-lg shadow-purple-200" 
+                ? "bg-purple-50 text-purple-600 font-semibold" 
                 : "text-purple-600 hover:bg-purple-50"
               }`
             }
           >
             <Shield size={22} />
-            <span className="hidden lg:block text-[15px] font-medium">Admin Panel</span>
+            <span className="text-[15px]">Admin Panel</span>
           </NavLink>
         )}
         
+        {/* Settings */}
         <NavLink 
           to="/settings" 
           className={({ isActive }) =>
-            `flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-200 group
+            `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
             ${isActive 
-              ? "bg-gray-100 text-gray-900" 
-              : "text-gray-600 hover:bg-gray-50"
+              ? "bg-[#F3F4F6] text-[#1F2937] font-semibold" 
+              : "text-[#4B5563] hover:bg-[#F3F4F6]"
             }`
           }
         >
           <Settings size={22} />
-          <span className="hidden lg:block text-[15px] font-medium">Settings</span>
+          <span className="text-[15px]">Settings</span>
         </NavLink>
         
+        {/* Logout */}
         <button 
           onClick={handleLogout} 
-          className="w-full flex items-center gap-4 px-4 py-3.5 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 group"
+          className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200"
         >
-          <LogOut size={22} className="group-hover:translate-x-1 transition-transform" />
-          <span className="hidden lg:block text-[15px] font-medium">Logout</span>
+          <LogOut size={22} />
+          <span className="text-[15px] font-medium">Logout</span>
         </button>
 
-        {/* User Card */}
-        <div className="hidden lg:flex items-center gap-3 mt-4 p-3 bg-gray-50 rounded-xl">
-          <div className="avatar-ring">
+        {/* User Profile Card */}
+        <div className="mt-4 p-4 bg-[#F9FAFB] rounded-xl border border-[#E5E7EB]">
+          <div className="flex items-center gap-3">
             <img 
               src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username}`} 
               alt={currentUser?.username}
-              className="w-10 h-10 rounded-full object-cover"
+              className="w-10 h-10 rounded-full object-cover bg-[#E5E7EB]"
             />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">{currentUser?.username}</p>
-            <p className="text-xs text-gray-500 truncate">{currentUser?.email}</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-[#1F2937] truncate">{currentUser?.username}</p>
+              <p className="text-xs text-[#6B7280] truncate">{currentUser?.email}</p>
+            </div>
           </div>
         </div>
       </div>

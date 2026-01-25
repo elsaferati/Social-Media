@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { NavLink, useNavigate } from "react-router-dom";
-import { Menu, Heart, Send, Home, Search, Compass, MessageCircle, User, Settings, LogOut, Sparkles, Shield, X, PlusSquare } from "lucide-react";
+import { Menu, Heart, Send, Home, Search, Compass, MessageCircle, User, Settings, LogOut, X, PlusSquare, Shield } from "lucide-react";
 
 const Header = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -25,74 +25,67 @@ const Header = () => {
 
   return (
     <>
-      {/* Main Header */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-100 px-4 h-16 flex justify-between items-center md:hidden">
-        {/* Left: Menu & Logo */}
+      {/* Header */}
+      <header className="bg-white border-b border-[#E5E7EB] px-4 h-16 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setIsSidebarOpen(true)} 
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+            className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors"
           >
-            <Menu size={24} className="text-gray-700" />
+            <Menu size={22} className="text-[#4B5563]" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 gradient-bg rounded-lg flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
+            <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">S</span>
             </div>
-            <span className="font-bold text-lg gradient-text">Socialix</span>
+            <span className="font-bold text-[#1F2937]">Socialix</span>
           </div>
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <NavLink 
             to="/notifications"
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors relative"
+            className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors relative"
           >
-            <Heart size={22} className="text-gray-700" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+            <Heart size={22} className="text-[#4B5563]" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </NavLink>
           <NavLink 
             to="/messages"
-            className="p-2 hover:bg-gray-100 rounded-xl transition-colors relative"
+            className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors relative"
           >
-            <Send size={20} className="text-gray-700" />
-            <span className="absolute top-1 right-1 bg-indigo-500 text-[10px] text-white font-bold min-w-[16px] h-4 flex items-center justify-center rounded-full border-2 border-white px-1">
-              2
-            </span>
+            <Send size={20} className="text-[#4B5563]" />
           </NavLink>
         </div>
       </header>
 
       {/* Mobile Drawer */}
       {isSidebarOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
-          {/* Backdrop */}
+        <div className="fixed inset-0 z-50 flex">
           <div 
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm" 
+            className="fixed inset-0 bg-black/50" 
             onClick={() => setIsSidebarOpen(false)}
           />
 
-          {/* Drawer */}
-          <div className="relative bg-white w-[300px] h-full shadow-2xl flex flex-col animate-slideIn">
+          <div className="relative bg-white w-[280px] h-full flex flex-col animate-slideIn">
             {/* Header */}
-            <div className="p-5 border-b border-gray-100 flex justify-between items-center">
+            <div className="px-5 py-4 border-b border-[#E5E7EB] flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-10 h-10 gradient-bg rounded-xl flex items-center justify-center">
-                  <Sparkles className="w-5 h-5 text-white" />
+                <div className="w-9 h-9 rounded-lg gradient-bg flex items-center justify-center">
+                  <span className="text-white font-bold">S</span>
                 </div>
-                <span className="font-bold text-xl gradient-text">Socialix</span>
+                <span className="font-bold text-lg text-[#1F2937]">Socialix</span>
               </div>
               <button 
                 onClick={() => setIsSidebarOpen(false)} 
-                className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors"
               >
-                <X size={24} className="text-gray-500" />
+                <X size={22} className="text-[#6B7280]" />
               </button>
             </div>
             
-            {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto py-4 px-3">
+            {/* Nav */}
+            <nav className="flex-1 overflow-y-auto p-3">
               <div className="space-y-1">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
@@ -102,65 +95,60 @@ const Header = () => {
                       to={item.path}
                       onClick={() => setIsSidebarOpen(false)}
                       className={({ isActive }) =>
-                        `flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
+                        `flex items-center gap-3 px-4 py-3 rounded-xl transition-all
                         ${isActive 
-                          ? "bg-gradient-to-r from-indigo-500 to-pink-500 text-white shadow-lg shadow-indigo-200" 
-                          : "text-gray-600 hover:bg-gray-50"
+                          ? "bg-[#EEF2FF] text-[#6366F1] font-semibold" 
+                          : "text-[#4B5563] hover:bg-[#F3F4F6]"
                         }`
                       }
                     >
                       <Icon size={22} />
-                      <span className="font-medium">{item.name}</span>
+                      <span className="text-[15px]">{item.name}</span>
                     </NavLink>
                   );
                 })}
               </div>
 
-              {/* Admin Link */}
               {isAdmin && (
-                <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
                   <NavLink
                     to="/admin"
                     onClick={() => setIsSidebarOpen(false)}
-                    className="flex items-center gap-4 px-4 py-3 text-purple-600 hover:bg-purple-50 rounded-xl transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 text-purple-600 hover:bg-purple-50 rounded-xl transition-colors"
                   >
                     <Shield size={22} />
-                    <span className="font-medium">Admin Panel</span>
+                    <span className="text-[15px] font-medium">Admin Panel</span>
                   </NavLink>
                 </div>
               )}
             </nav>
 
             {/* Footer */}
-            <div className="p-4 border-t border-gray-100 space-y-3">
-              {/* User Card */}
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                <div className="avatar-ring">
-                  <img 
-                    src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username}`}
-                    alt={currentUser?.username}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
-                </div>
+            <div className="p-3 border-t border-[#E5E7EB] space-y-2">
+              <div className="flex items-center gap-3 px-4 py-3 bg-[#F9FAFB] rounded-xl">
+                <img 
+                  src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username}`}
+                  alt={currentUser?.username}
+                  className="w-10 h-10 rounded-full object-cover bg-[#E5E7EB]"
+                />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 truncate">{currentUser?.username || "Guest"}</p>
-                  <p className="text-xs text-gray-500 truncate">{currentUser?.email}</p>
+                  <p className="font-semibold text-[#1F2937] truncate">{currentUser?.username || "Guest"}</p>
+                  <p className="text-xs text-[#6B7280] truncate">{currentUser?.email}</p>
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="flex gap-2">
                 <NavLink
                   to="/settings"
                   onClick={() => setIsSidebarOpen(false)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#F3F4F6] text-[#4B5563] rounded-xl hover:bg-[#E5E7EB] transition-colors text-sm font-medium"
                 >
                   <Settings size={18} />
                   Settings
                 </NavLink>
                 <button 
                   onClick={handleLogout}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors text-sm font-medium"
                 >
                   <LogOut size={18} />
                   Logout

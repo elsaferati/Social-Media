@@ -4,21 +4,20 @@ import Header from "./Header";
 
 const Layout = ({ children }) => {
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-900 font-sans">
-      
+    <div className="min-h-screen bg-[#F9FAFB]">
       {/* Mobile Header */}
-      <div className="md:hidden sticky top-0 z-50">
+      <div className="lg:hidden sticky top-0 z-50">
         <Header />
       </div>
 
-      {/* Left Sidebar */}
-      <div className="hidden md:block">
+      {/* Desktop Sidebar - Fixed position with solid background */}
+      <aside className="hidden lg:block fixed left-0 top-0 h-screen w-[280px] bg-white border-r border-[#E5E7EB] z-40">
         <Sidebar />
-      </div>
+      </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 md:ml-20 lg:ml-72 flex justify-center w-full transition-all duration-300">
-        <div className="w-full max-w-[1000px] py-6 px-4 md:px-8 animate-fadeIn">
+      {/* Main Content Area - Properly offset from sidebar */}
+      <main className="lg:ml-[280px] min-h-screen">
+        <div className="max-w-[1200px] mx-auto px-6 py-8">
           {children}
         </div>
       </main>

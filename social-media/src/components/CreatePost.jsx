@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { Image, MapPin, Smile, X, Upload, Sparkles } from "lucide-react";
+import { Image, MapPin, Smile, X, Upload } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const CreatePost = ({ onClose, onPost }) => {
@@ -28,9 +28,7 @@ const CreatePost = ({ onClose, onPost }) => {
       setSelectedImage(file);
       
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
+      reader.onloadend = () => setImagePreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
@@ -54,9 +52,7 @@ const CreatePost = ({ onClose, onPost }) => {
   const removeImage = () => {
     setSelectedImage(null);
     setImagePreview(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleSubmit = async () => {
@@ -69,18 +65,14 @@ const CreatePost = ({ onClose, onPost }) => {
       formData.append('content', content);
       formData.append('userId', currentUser.id);
       
-      if (selectedImage) {
-        formData.append('image', selectedImage);
-      }
+      if (selectedImage) formData.append('image', selectedImage);
 
       const response = await fetch('http://localhost:8800/api/posts', {
         method: 'POST',
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create post');
-      }
+      if (!response.ok) throw new Error('Failed to create post');
 
       const newPost = await response.json();
       
@@ -99,24 +91,20 @@ const CreatePost = ({ onClose, onPost }) => {
   };
 
   return (
-    <div className="w-full max-w-lg bg-white rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl animate-scaleIn">
-      
+    <div className="w-full max-w-lg bg-white rounded-xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
       {/* Header */}
-      <div className="border-b border-gray-100 p-4 flex justify-between items-center bg-gradient-to-r from-indigo-500 to-pink-500">
+      <div className="px-5 py-4 border-b border-[#E5E7EB] flex justify-between items-center">
         <button 
           onClick={onClose} 
-          className="text-white/80 hover:text-white font-medium transition-colors"
+          className="text-[#6B7280] hover:text-[#1F2937] font-medium transition-colors"
         >
           Cancel
         </button>
-        <div className="flex items-center gap-2 text-white">
-          <Sparkles size={18} />
-          <span className="font-semibold">Create Post</span>
-        </div>
+        <h3 className="font-semibold text-[#1F2937]">Create Post</h3>
         <button 
           onClick={handleSubmit} 
           disabled={isSubmitting || (content.trim() === "" && !selectedImage)}
-          className="text-white font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform"
+          className="text-[#6366F1] font-semibold hover:text-[#4F46E5] disabled:text-[#9CA3AF] disabled:cursor-not-allowed transition-colors"
         >
           {isSubmitting ? 'Posting...' : 'Share'}
         </button>
@@ -124,25 +112,23 @@ const CreatePost = ({ onClose, onPost }) => {
 
       {/* Body */}
       <div className="flex flex-col flex-1 overflow-y-auto">
-        {/* User Info */}
-        <div className="flex items-center gap-3 p-4 pb-3">
-          <div className="avatar-ring">
-            <img 
-              src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
-              alt="" 
-              className="w-11 h-11 rounded-full object-cover"
-            />
-          </div>
+        {/* User */}
+        <div className="flex items-center gap-3 px-5 py-4">
+          <img 
+            src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
+            alt="" 
+            className="w-11 h-11 rounded-full object-cover bg-[#F3F4F6]"
+          />
           <div>
-            <p className="font-semibold text-gray-900">{currentUser?.username}</p>
-            <p className="text-xs text-gray-400">Sharing to Feed</p>
+            <p className="font-semibold text-[#1F2937]">{currentUser?.username}</p>
+            <p className="text-xs text-[#9CA3AF]">Sharing to Feed</p>
           </div>
         </div>
 
-        {/* Text Area */}
-        <div className="px-4">
+        {/* Content */}
+        <div className="px-5">
           <textarea
-            className="w-full min-h-[100px] resize-none outline-none text-gray-800 placeholder-gray-400 text-[15px] leading-relaxed"
+            className="w-full min-h-[100px] resize-none outline-none text-[#374151] placeholder-[#9CA3AF] text-[15px] leading-relaxed"
             placeholder="What's on your mind?"
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -150,20 +136,16 @@ const CreatePost = ({ onClose, onPost }) => {
           />
         </div>
 
-        {/* Image Preview or Upload Zone */}
-        <div className="px-4 pb-4">
+        {/* Image Preview / Upload */}
+        <div className="px-5 pb-4">
           {imagePreview ? (
-            <div className="relative rounded-2xl overflow-hidden bg-gray-100 animate-fadeIn">
-              <img 
-                src={imagePreview} 
-                alt="Preview" 
-                className="w-full max-h-[300px] object-contain"
-              />
+            <div className="relative rounded-xl overflow-hidden bg-[#F3F4F6] animate-fadeIn">
+              <img src={imagePreview} alt="Preview" className="w-full max-h-[300px] object-contain" />
               <button
                 onClick={removeImage}
                 className="absolute top-3 right-3 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 transition-colors"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
             </div>
           ) : (
@@ -172,49 +154,48 @@ const CreatePost = ({ onClose, onPost }) => {
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
-              className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-200 ${
+              className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-all ${
                 isDragging 
-                  ? 'border-indigo-500 bg-indigo-50' 
-                  : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                  ? 'border-[#6366F1] bg-[#EEF2FF]' 
+                  : 'border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F9FAFB]'
               }`}
             >
-              <div className={`w-14 h-14 mx-auto mb-4 rounded-full flex items-center justify-center transition-colors ${
-                isDragging ? 'bg-indigo-100' : 'bg-gray-100'
+              <div className={`w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center transition-colors ${
+                isDragging ? 'bg-[#6366F1]/10' : 'bg-[#F3F4F6]'
               }`}>
-                <Upload className={`w-7 h-7 ${isDragging ? 'text-indigo-500' : 'text-gray-400'}`} />
+                <Upload className={`w-6 h-6 ${isDragging ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`} />
               </div>
-              <p className="text-gray-600 font-medium mb-1">
+              <p className="text-[#374151] font-medium mb-1">
                 {isDragging ? 'Drop your image here' : 'Add photos to your post'}
               </p>
-              <p className="text-gray-400 text-sm">
+              <p className="text-[#9CA3AF] text-sm">
                 Drag and drop or click to upload
               </p>
             </div>
           )}
         </div>
 
-        {/* Tools Row */}
-        <div className="flex justify-between items-center px-4 py-3 border-t border-gray-100 bg-gray-50">
+        {/* Tools */}
+        <div className="flex justify-between items-center px-5 py-3 border-t border-[#E5E7EB] bg-[#F9FAFB]">
           <div className="flex items-center gap-1">
             <button 
               onClick={() => fileInputRef.current?.click()}
-              className="p-2.5 hover:bg-white rounded-xl text-gray-500 hover:text-green-500 transition-all"
+              className="p-2.5 hover:bg-white rounded-lg text-[#6B7280] hover:text-green-500 transition-all"
             >
               <Image size={22} />
             </button>
-            <button className="p-2.5 hover:bg-white rounded-xl text-gray-500 hover:text-yellow-500 transition-all">
+            <button className="p-2.5 hover:bg-white rounded-lg text-[#6B7280] hover:text-yellow-500 transition-all">
               <Smile size={22} />
             </button>
-            <button className="p-2.5 hover:bg-white rounded-xl text-gray-500 hover:text-red-500 transition-all">
+            <button className="p-2.5 hover:bg-white rounded-lg text-[#6B7280] hover:text-red-500 transition-all">
               <MapPin size={22} />
             </button>
           </div>
-          <span className={`text-xs font-medium ${content.length > 2000 ? 'text-red-500' : 'text-gray-400'}`}>
+          <span className={`text-xs font-medium ${content.length > 2000 ? 'text-red-500' : 'text-[#9CA3AF]'}`}>
             {content.length}/2200
           </span>
         </div>
 
-        {/* Hidden file input */}
         <input
           type="file"
           ref={fileInputRef}

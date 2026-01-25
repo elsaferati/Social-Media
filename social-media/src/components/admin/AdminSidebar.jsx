@@ -37,30 +37,38 @@ const AdminSidebar = () => {
   ];
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
+    <aside className="w-[260px] bg-white border-r border-[#E5E7EB] min-h-screen flex flex-col">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <h1 className="text-xl font-bold text-gray-800">Admin Panel</h1>
-        <p className="text-sm text-gray-500 mt-1">Social Media Dashboard</p>
+      <div className="px-6 py-5 border-b border-[#E5E7EB]">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-lg gradient-bg flex items-center justify-center">
+            <span className="text-white font-bold text-sm">S</span>
+          </div>
+          <div>
+            <h1 className="text-base font-bold text-[#1F2937]">Admin Panel</h1>
+            <p className="text-xs text-[#6B7280]">Socialix Dashboard</p>
+          </div>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
+      <nav className="flex-1 px-3 py-4 overflow-y-auto">
+        <p className="px-4 mb-2 text-xs font-semibold text-[#9CA3AF] uppercase tracking-wider">Menu</p>
+        <ul className="space-y-1">
           {menuItems.map((item) => (
             <li key={item.path}>
               <NavLink
                 to={item.path}
                 end={item.end}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all ${
                     isActive
-                      ? 'bg-blue-50 text-blue-600 font-medium'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-[#EEF2FF] text-[#6366F1] font-semibold'
+                      : 'text-[#4B5563] hover:bg-[#F3F4F6] hover:text-[#1F2937]'
                   }`
                 }
               >
-                <item.icon className="w-5 h-5" />
+                <item.icon className="w-5 h-5 flex-shrink-0" />
                 <span>{item.label}</span>
               </NavLink>
             </li>
@@ -69,26 +77,26 @@ const AdminSidebar = () => {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="px-3 py-4 border-t border-[#E5E7EB]">
         {/* User Info */}
-        <div className="flex items-center gap-3 px-4 py-3 mb-2">
-          <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-            <span className="text-blue-600 font-medium text-sm">
+        <div className="flex items-center gap-3 px-4 py-3 mb-2 bg-[#F9FAFB] rounded-xl">
+          <div className="w-9 h-9 rounded-full bg-[#EEF2FF] flex items-center justify-center">
+            <span className="text-[#6366F1] font-semibold text-sm">
               {currentUser?.username?.charAt(0).toUpperCase()}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-semibold text-[#1F2937] truncate">
               {currentUser?.username}
             </p>
-            <p className="text-xs text-gray-500">Administrator</p>
+            <p className="text-xs text-[#6B7280]">Administrator</p>
           </div>
         </div>
 
         {/* Back to App */}
         <NavLink
           to="/"
-          className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          className="flex items-center gap-3 px-4 py-3 rounded-xl text-[#4B5563] hover:bg-[#F3F4F6] hover:text-[#1F2937] transition-all text-sm"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Back to App</span>
@@ -97,7 +105,7 @@ const AdminSidebar = () => {
         {/* Logout */}
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-500 hover:bg-red-50 transition-all text-sm"
         >
           <LogOut className="w-5 h-5" />
           <span>Logout</span>

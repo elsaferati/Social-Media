@@ -101,12 +101,12 @@ const SettingsPage = () => {
       case 'password':
         return (
           <div className="animate-fadeIn">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Change Password</h2>
-            <p className="text-gray-500 mb-8">Update your password to keep your account secure</p>
+            <h2 className="text-xl font-bold text-[#1F2937] mb-1">Change Password</h2>
+            <p className="text-[#6B7280] mb-6">Update your password to keep your account secure</p>
 
-            <form className="space-y-6 max-w-lg" onSubmit={handlePasswordSave}>
+            <form className="space-y-5 max-w-md" onSubmit={handlePasswordSave}>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+                <label className="block text-sm font-medium text-[#374151] mb-2">Current Password</label>
                 <input 
                   type="password" 
                   name="currentPassword" 
@@ -118,7 +118,7 @@ const SettingsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+                <label className="block text-sm font-medium text-[#374151] mb-2">New Password</label>
                 <input 
                   type="password" 
                   name="newPassword" 
@@ -130,7 +130,7 @@ const SettingsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+                <label className="block text-sm font-medium text-[#374151] mb-2">Confirm Password</label>
                 <input 
                   type="password" 
                   name="confirmPassword" 
@@ -141,11 +141,7 @@ const SettingsPage = () => {
                 />
               </div>
 
-              <button 
-                type="submit" 
-                disabled={status === 'loading'}
-                className="btn-primary w-full sm:w-auto"
-              >
+              <button type="submit" disabled={status === 'loading'} className="btn-primary">
                 {status === 'loading' ? 'Saving...' : 'Change Password'}
               </button>
             </form>
@@ -155,25 +151,24 @@ const SettingsPage = () => {
       case 'notifications':
         return (
           <div className="animate-fadeIn">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Notifications</h2>
-            <p className="text-gray-500 mb-8">Manage how you receive notifications</p>
+            <h2 className="text-xl font-bold text-[#1F2937] mb-1">Notifications</h2>
+            <p className="text-[#6B7280] mb-6">Manage how you receive notifications</p>
 
-            <div className="space-y-4 max-w-lg">
+            <div className="space-y-3 max-w-md">
               {[
                 { label: 'Likes', desc: 'When someone likes your post' },
                 { label: 'Comments', desc: 'When someone comments on your post' },
                 { label: 'New Followers', desc: 'When someone follows you' },
                 { label: 'Direct Messages', desc: 'When you receive a new message' },
-                { label: 'Mentions', desc: 'When someone mentions you' },
               ].map((item) => (
-                <label key={item.label} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
+                <label key={item.label} className="flex items-center justify-between p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl hover:border-[#D1D5DB] transition-colors cursor-pointer">
                   <div>
-                    <p className="font-semibold text-gray-900">{item.label}</p>
-                    <p className="text-sm text-gray-500">{item.desc}</p>
+                    <p className="font-medium text-[#1F2937]">{item.label}</p>
+                    <p className="text-sm text-[#6B7280]">{item.desc}</p>
                   </div>
                   <div className="relative">
                     <input type="checkbox" defaultChecked className="sr-only peer" />
-                    <div className="w-11 h-6 bg-gray-300 peer-checked:bg-indigo-500 rounded-full transition-colors"></div>
+                    <div className="w-11 h-6 bg-[#D1D5DB] peer-checked:bg-[#6366F1] rounded-full transition-colors"></div>
                     <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full peer-checked:translate-x-5 transition-transform shadow-sm"></div>
                   </div>
                 </label>
@@ -185,34 +180,33 @@ const SettingsPage = () => {
       case 'privacy':
         return (
           <div className="animate-fadeIn">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Privacy & Security</h2>
-            <p className="text-gray-500 mb-8">Control your account privacy settings</p>
+            <h2 className="text-xl font-bold text-[#1F2937] mb-1">Privacy & Security</h2>
+            <p className="text-[#6B7280] mb-6">Control your account privacy settings</p>
 
-            <div className="space-y-4 max-w-lg">
+            <div className="space-y-3 max-w-md">
               {[
                 { label: 'Private Account', desc: 'Only followers can see your posts', checked: false },
                 { label: 'Activity Status', desc: 'Show when you\'re active', checked: true },
                 { label: 'Allow Tagging', desc: 'Let others tag you in posts', checked: true },
-                { label: 'Show Online Status', desc: 'Let others see when you\'re online', checked: true },
               ].map((item) => (
-                <label key={item.label} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors cursor-pointer">
+                <label key={item.label} className="flex items-center justify-between p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl hover:border-[#D1D5DB] transition-colors cursor-pointer">
                   <div>
-                    <p className="font-semibold text-gray-900">{item.label}</p>
-                    <p className="text-sm text-gray-500">{item.desc}</p>
+                    <p className="font-medium text-[#1F2937]">{item.label}</p>
+                    <p className="text-sm text-[#6B7280]">{item.desc}</p>
                   </div>
                   <div className="relative">
                     <input type="checkbox" defaultChecked={item.checked} className="sr-only peer" />
-                    <div className="w-11 h-6 bg-gray-300 peer-checked:bg-indigo-500 rounded-full transition-colors"></div>
+                    <div className="w-11 h-6 bg-[#D1D5DB] peer-checked:bg-[#6366F1] rounded-full transition-colors"></div>
                     <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full peer-checked:translate-x-5 transition-transform shadow-sm"></div>
                   </div>
                 </label>
               ))}
             </div>
 
-            <div className="mt-8 p-4 bg-red-50 rounded-xl max-w-lg">
-              <h3 className="font-semibold text-red-700 mb-2">Danger Zone</h3>
-              <p className="text-sm text-red-600 mb-4">Once you delete your account, there is no going back.</p>
-              <button className="px-4 py-2 bg-red-100 text-red-700 font-semibold rounded-lg hover:bg-red-200 transition-colors">
+            <div className="mt-8 p-4 bg-red-50 border border-red-100 rounded-xl max-w-md">
+              <h3 className="font-medium text-red-700 mb-1">Danger Zone</h3>
+              <p className="text-sm text-red-600 mb-3">Once you delete your account, there is no going back.</p>
+              <button className="text-sm px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-colors">
                 Delete Account
               </button>
             </div>
@@ -222,34 +216,32 @@ const SettingsPage = () => {
       default:
         return (
           <div className="animate-fadeIn">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Edit Profile</h2>
-            <p className="text-gray-500 mb-8">Update your profile information</p>
+            <h2 className="text-xl font-bold text-[#1F2937] mb-1">Edit Profile</h2>
+            <p className="text-[#6B7280] mb-6">Update your profile information</p>
 
-            {/* Avatar Section */}
-            <div className="flex items-center gap-6 mb-8 p-4 bg-gray-50 rounded-2xl max-w-lg">
+            {/* Avatar */}
+            <div className="flex items-center gap-5 mb-6 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl max-w-md">
               <div className="relative">
-                <div className="avatar-ring">
-                  <img 
-                    src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
-                    className="w-20 h-20 rounded-full object-cover" 
-                    alt=""
-                  />
-                </div>
-                <button className="absolute -bottom-1 -right-1 w-8 h-8 gradient-bg rounded-full flex items-center justify-center shadow-lg">
-                  <Camera size={16} className="text-white" />
+                <img 
+                  src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
+                  className="w-16 h-16 rounded-full object-cover bg-[#E5E7EB]" 
+                  alt=""
+                />
+                <button className="absolute -bottom-1 -right-1 w-7 h-7 gradient-bg rounded-full flex items-center justify-center shadow-md">
+                  <Camera size={14} className="text-white" />
                 </button>
               </div>
               <div>
-                <p className="font-bold text-gray-900">{currentUser?.username}</p>
-                <button className="text-indigo-600 text-sm font-semibold hover:text-indigo-700">
-                  Change Profile Photo
+                <p className="font-semibold text-[#1F2937]">{currentUser?.username}</p>
+                <button className="text-[#6366F1] text-sm font-medium hover:text-[#4F46E5]">
+                  Change Photo
                 </button>
               </div>
             </div>
 
-            <form className="space-y-6 max-w-lg" onSubmit={handleSave}>
+            <form className="space-y-5 max-w-md" onSubmit={handleSave}>
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+                <label className="block text-sm font-medium text-[#374151] mb-2">Username</label>
                 <input 
                   type="text" 
                   name="username" 
@@ -260,7 +252,7 @@ const SettingsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+                <label className="block text-sm font-medium text-[#374151] mb-2">Email</label>
                 <input 
                   type="email" 
                   name="email" 
@@ -271,23 +263,18 @@ const SettingsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Bio</label>
+                <label className="block text-sm font-medium text-[#374151] mb-2">Bio</label>
                 <textarea 
                   name="bio"
                   value={inputs.bio}
                   onChange={handleChange}
-                  rows="4"
+                  rows="3"
                   className="input resize-none"
                   placeholder="Tell us about yourself..."
                 />
-                <p className="text-xs text-gray-400 mt-1">{inputs.bio.length}/150</p>
               </div>
 
-              <button 
-                type="submit" 
-                disabled={status === 'loading'}
-                className="btn-primary w-full sm:w-auto"
-              >
+              <button type="submit" disabled={status === 'loading'} className="btn-primary">
                 {status === 'loading' ? 'Saving...' : 'Save Changes'}
               </button>
             </form>
@@ -299,26 +286,26 @@ const SettingsPage = () => {
   return (
     <Layout>
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
+        <h1 className="text-2xl font-bold text-[#1F2937] mb-6">Settings</h1>
 
-        <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
-          <div className="md:w-64 flex-shrink-0">
-            <div className="card-flat p-2 space-y-1">
+          <div className="md:w-56 flex-shrink-0">
+            <div className="card p-2 space-y-1">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <button
                     key={tab.id}
                     onClick={() => { setActiveTab(tab.id); setMessage(''); }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left text-sm ${
                       activeTab === tab.id
-                        ? 'gradient-bg text-white shadow-lg shadow-indigo-200'
-                        : 'text-gray-600 hover:bg-gray-50'
+                        ? 'bg-[#EEF2FF] text-[#6366F1] font-semibold'
+                        : 'text-[#4B5563] hover:bg-[#F3F4F6]'
                     }`}
                   >
-                    <Icon size={20} />
-                    <span className="font-medium">{tab.label}</span>
+                    <Icon size={18} />
+                    <span>{tab.label}</span>
                   </button>
                 );
               })}
@@ -326,23 +313,15 @@ const SettingsPage = () => {
           </div>
 
           {/* Content */}
-          <div className="flex-1 card-flat p-6 md:p-8">
-            {/* Status Message */}
+          <div className="flex-1 card p-6">
             {message && (
               <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 animate-fadeIn ${
-                status === 'error' 
-                  ? 'bg-red-50 text-red-700' 
-                  : 'bg-green-50 text-green-700'
+                status === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
               }`}>
-                {status === 'error' ? (
-                  <AlertCircle size={20} />
-                ) : (
-                  <Check size={20} />
-                )}
-                <span className="font-medium">{message}</span>
+                {status === 'error' ? <AlertCircle size={18} /> : <Check size={18} />}
+                <span className="font-medium text-sm">{message}</span>
               </div>
             )}
-
             {renderContent()}
           </div>
         </div>
