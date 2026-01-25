@@ -1,38 +1,35 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, FileText, MessageCircle, MessageSquare, Heart, CircleDot, Flag, Hash, Activity, ArrowUpRight, TrendingUp } from 'lucide-react';
+import { Users, FileText, MessageCircle, MessageSquare, Heart, CircleDot, Flag, Hash, Activity, ArrowUpRight, TrendingUp, CheckCircle } from 'lucide-react';
 import { adminAPI } from '../../services/api';
 
 const StatCard = ({ title, value, icon: Icon, color, href }) => {
-  const colorClasses = {
-    blue: { bg: 'bg-blue-50', text: 'text-blue-600', icon: 'text-blue-500' },
-    green: { bg: 'bg-green-50', text: 'text-green-600', icon: 'text-green-500' },
-    purple: { bg: 'bg-purple-50', text: 'text-purple-600', icon: 'text-purple-500' },
-    orange: { bg: 'bg-orange-50', text: 'text-orange-600', icon: 'text-orange-500' },
-    pink: { bg: 'bg-pink-50', text: 'text-pink-600', icon: 'text-pink-500' },
-    red: { bg: 'bg-red-50', text: 'text-red-600', icon: 'text-red-500' },
-    indigo: { bg: 'bg-indigo-50', text: 'text-indigo-600', icon: 'text-indigo-500' },
-    gray: { bg: 'bg-gray-100', text: 'text-gray-600', icon: 'text-gray-500' },
-    cyan: { bg: 'bg-cyan-50', text: 'text-cyan-600', icon: 'text-cyan-500' },
+  const colorMap = {
+    blue: { bg: 'bg-[#DBEAFE]', icon: 'text-[#3B82F6]' },
+    green: { bg: 'bg-[#D1FAE5]', icon: 'text-[#10B981]' },
+    purple: { bg: 'bg-[#F3E8FF]', icon: 'text-[#7E22CE]' },
+    orange: { bg: 'bg-[#FEF3C7]', icon: 'text-[#F59E0B]' },
+    pink: { bg: 'bg-[#FCE7F3]', icon: 'text-[#EC4899]' },
+    red: { bg: 'bg-[#FEE2E2]', icon: 'text-[#EF4444]' },
+    indigo: { bg: 'bg-[#E0E7FF]', icon: 'text-[#6366F1]' },
+    gray: { bg: 'bg-[#F1F5F9]', icon: 'text-[#64748B]' },
+    cyan: { bg: 'bg-[#CFFAFE]', icon: 'text-[#06B6D4]' },
   };
 
-  const colors = colorClasses[color] || colorClasses.blue;
+  const colors = colorMap[color] || colorMap.purple;
 
   return (
-    <Link 
-      to={href || '#'}
-      className="stat-card group flex flex-col hover:border-[#D1D5DB]"
-    >
-      <div className="flex items-start justify-between mb-3">
+    <Link to={href || '#'} className="stat-card group block">
+      <div className="flex items-start justify-between">
         <div className={`stat-icon ${colors.bg}`}>
           <Icon className={`w-5 h-5 ${colors.icon}`} />
         </div>
         <ArrowUpRight 
-          size={16} 
-          className="text-[#9CA3AF] opacity-0 group-hover:opacity-100 transition-opacity" 
+          size={18} 
+          className="text-[#CBD5E1] opacity-0 group-hover:opacity-100 transition-opacity" 
         />
       </div>
-      <p className="stat-value">{value.toLocaleString()}</p>
+      <p className="stat-value mt-4">{value.toLocaleString()}</p>
       <p className="stat-label">{title}</p>
     </Link>
   );
@@ -72,14 +69,14 @@ const DashboardPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-10 h-10 border-3 border-[#6366F1] border-t-transparent rounded-full animate-spin"></div>
+        <div className="w-10 h-10 border-3 border-[#7E22CE] border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl">
+      <div className="bg-[#FEE2E2] border border-[#FECACA] text-[#DC2626] p-4 rounded-[12px]">
         Error loading statistics: {error}
       </div>
     );
@@ -89,11 +86,11 @@ const DashboardPage = () => {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-[#1F2937]">Dashboard</h1>
-        <p className="text-[#6B7280] mt-1">Overview of your social media platform</p>
+        <h1 className="text-2xl font-bold text-[#1E293B] tracking-tight">Dashboard</h1>
+        <p className="text-[#64748B] mt-1">Overview of your social media platform</p>
       </div>
 
-      {/* Primary Stats */}
+      {/* Primary Stats - 5 Column Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard title="Total Users" value={stats.users} icon={Users} color="blue" href="/admin/users" />
         <StatCard title="Total Posts" value={stats.posts} icon={FileText} color="green" href="/admin/posts" />
@@ -102,7 +99,7 @@ const DashboardPage = () => {
         <StatCard title="Likes" value={stats.likes} icon={Heart} color="pink" />
       </div>
 
-      {/* Secondary Stats */}
+      {/* Secondary Stats - 4 Column Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard title="Active Stories" value={stats.stories} icon={CircleDot} color="cyan" href="/admin/stories" />
         <StatCard title="Pending Reports" value={stats.pendingReports} icon={Flag} color="red" href="/admin/reports" />
@@ -110,46 +107,55 @@ const DashboardPage = () => {
         <StatCard title="Activity Logs" value={stats.activityLogs} icon={Activity} color="gray" href="/admin/activity-logs" />
       </div>
 
-      {/* Quick Actions & Welcome */}
+      {/* Quick Actions & Status */}
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Quick Actions */}
         <div className="lg:col-span-2 card p-6">
-          <h2 className="text-lg font-semibold text-[#1F2937] mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <h2 className="text-lg font-semibold text-[#1E293B] mb-5">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-4">
             {[
-              { href: '/admin/users', icon: Users, label: 'Manage Users', color: 'text-blue-500' },
-              { href: '/admin/posts', icon: FileText, label: 'Manage Posts', color: 'text-green-500' },
-              { href: '/admin/reports', icon: Flag, label: 'Review Reports', color: 'text-red-500' },
-              { href: '/admin/activity-logs', icon: Activity, label: 'View Activity', color: 'text-gray-500' },
+              { href: '/admin/users', icon: Users, label: 'Manage Users', color: 'bg-[#DBEAFE]', iconColor: 'text-[#3B82F6]' },
+              { href: '/admin/posts', icon: FileText, label: 'Manage Posts', color: 'bg-[#D1FAE5]', iconColor: 'text-[#10B981]' },
+              { href: '/admin/reports', icon: Flag, label: 'Review Reports', color: 'bg-[#FEE2E2]', iconColor: 'text-[#EF4444]' },
+              { href: '/admin/activity-logs', icon: Activity, label: 'View Activity', color: 'bg-[#F1F5F9]', iconColor: 'text-[#64748B]' },
             ].map((action) => (
               <Link
                 key={action.href}
                 to={action.href}
-                className="flex items-center gap-3 p-4 border border-[#E5E7EB] rounded-xl hover:border-[#D1D5DB] hover:bg-[#F9FAFB] transition-all group"
+                className="flex items-center gap-4 p-4 border border-[#E2E8F0] rounded-[12px] hover:border-[#CBD5E1] hover:shadow-sm transition-all group"
               >
-                <div className="w-10 h-10 rounded-lg bg-[#F3F4F6] flex items-center justify-center group-hover:bg-white transition-colors">
-                  <action.icon className={`w-5 h-5 ${action.color}`} />
+                <div className={`w-12 h-12 ${action.color} rounded-[10px] flex items-center justify-center transition-transform group-hover:scale-105`}>
+                  <action.icon className={`w-5 h-5 ${action.iconColor}`} />
                 </div>
-                <span className="font-medium text-[#374151]">{action.label}</span>
+                <span className="font-medium text-[#475569] group-hover:text-[#1E293B]">{action.label}</span>
               </Link>
             ))}
           </div>
         </div>
 
-        {/* Welcome Card */}
-        <div className="gradient-bg rounded-xl p-6 text-white">
-          <div className="flex items-center gap-2 mb-3">
-            <TrendingUp size={20} />
-            <span className="text-sm font-medium opacity-90">Platform Status</span>
-          </div>
-          <h2 className="text-xl font-bold mb-2">Everything looks good!</h2>
-          <p className="text-sm opacity-80 leading-relaxed">
-            Your platform is running smoothly. Monitor activity, manage content, and keep your community safe.
-          </p>
-          <div className="mt-4 pt-4 border-t border-white/20">
-            <div className="flex items-center justify-between text-sm">
-              <span className="opacity-80">System Health</span>
-              <span className="font-semibold">100%</span>
+        {/* Platform Status Card */}
+        <div className="gradient-bg rounded-[16px] p-6 text-white relative overflow-hidden">
+          {/* Background decoration */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+          
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-4">
+              <CheckCircle size={20} className="text-white" />
+              <span className="text-sm font-semibold text-white/90 uppercase tracking-wide">Platform Status</span>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Everything looks good!</h2>
+            <p className="text-white/80 text-sm leading-relaxed">
+              Your platform is running smoothly. Monitor activity, manage content, and keep your community safe.
+            </p>
+            <div className="mt-6 pt-4 border-t border-white/20">
+              <div className="flex items-center justify-between">
+                <span className="text-white/80 text-sm">System Health</span>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-[#4ADE80] rounded-full animate-pulse"></div>
+                  <span className="font-bold text-white">100%</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

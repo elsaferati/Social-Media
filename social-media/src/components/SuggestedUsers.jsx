@@ -18,11 +18,7 @@ const SuggestedUsers = () => {
         setUsers(data);
       } catch (err) {
         console.error('Error fetching suggestions:', err);
-        setUsers([
-          { id: 99, username: "design_daily", profilePic: "https://i.pravatar.cc/150?img=12" },
-          { id: 98, username: "travel_mike", profilePic: "https://i.pravatar.cc/150?img=15" },
-          { id: 97, username: "code_guru", profilePic: "https://i.pravatar.cc/150?img=8" },
-        ]);
+        setUsers([]);
       } finally {
         setLoading(false);
       }
@@ -60,7 +56,7 @@ const SuggestedUsers = () => {
     return (
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-sm font-semibold text-[#6B7280]">Suggested for you</span>
+          <span className="text-sm font-semibold text-[#64748B]">Suggested for you</span>
         </div>
         <div className="space-y-4">
           {[1, 2, 3].map((i) => (
@@ -70,7 +66,7 @@ const SuggestedUsers = () => {
                 <div className="h-3 skeleton rounded w-24 mb-2" />
                 <div className="h-2 skeleton rounded w-16" />
               </div>
-              <div className="w-16 h-8 skeleton rounded-lg" />
+              <div className="w-16 h-8 skeleton rounded-[10px]" />
             </div>
           ))}
         </div>
@@ -82,8 +78,8 @@ const SuggestedUsers = () => {
     <div className="card p-5">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-sm font-semibold text-[#6B7280]">Suggested for you</span>
-        <button className="text-xs font-semibold text-[#6366F1] hover:text-[#4F46E5] transition-colors">
+        <span className="text-sm font-semibold text-[#64748B]">Suggested for you</span>
+        <button className="text-xs font-semibold text-[#7E22CE] hover:text-[#6B21A8] transition-colors">
           See All
         </button>
       </div>
@@ -100,23 +96,23 @@ const SuggestedUsers = () => {
               <img 
                 src={user.profilePic || user.img || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} 
                 alt={user.username} 
-                className="w-10 h-10 rounded-full object-cover bg-[#F3F4F6]"
+                className="w-10 h-10 rounded-full object-cover bg-[#F1F5F9]"
               />
               <div className="min-w-0">
-                <p className="font-semibold text-sm text-[#1F2937] group-hover:text-[#6366F1] transition-colors truncate">
+                <p className="font-semibold text-sm text-[#1E293B] group-hover:text-[#7E22CE] transition-colors truncate">
                   {user.username}
                 </p>
-                <p className="text-xs text-[#9CA3AF] truncate">Suggested for you</p>
+                <p className="text-xs text-[#94A3B8] truncate">Suggested for you</p>
               </div>
             </Link>
 
             <button
               onClick={() => handleFollow(user.id)}
               disabled={followingIds.has(user.id)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-sm font-medium transition-all ${
                 followingIds.has(user.id)
-                  ? 'bg-[#F3F4F6] text-[#9CA3AF] cursor-not-allowed'
-                  : 'bg-[#6366F1] text-white hover:bg-[#4F46E5]'
+                  ? 'bg-[#F1F5F9] text-[#94A3B8] cursor-not-allowed'
+                  : 'bg-[#7E22CE] text-white hover:bg-[#6B21A8] shadow-sm'
               }`}
             >
               {followingIds.has(user.id) ? (
@@ -132,8 +128,8 @@ const SuggestedUsers = () => {
         ))}
         
         {users.length === 0 && (
-          <div className="text-center py-6">
-            <p className="text-[#6B7280] text-sm">No suggestions available</p>
+          <div className="text-center py-4">
+            <p className="text-[#64748B] text-sm">No suggestions available</p>
           </div>
         )}
       </div>

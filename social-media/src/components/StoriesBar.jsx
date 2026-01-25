@@ -122,7 +122,7 @@ const StoriesBar = () => {
   };
 
   const handlePrevStory = () => {
-    if (!selectedStory && selectedStory.currentIndex > 0) {
+    if (selectedStory && selectedStory.currentIndex > 0) {
       setSelectedStory({ ...selectedStory, currentIndex: selectedStory.currentIndex - 1 });
     }
   };
@@ -140,8 +140,8 @@ const StoriesBar = () => {
     return (
       <div className="card p-4 flex gap-4 overflow-hidden">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="flex flex-col items-center gap-2 min-w-[66px] animate-pulse">
-            <div className="w-[66px] h-[66px] rounded-full skeleton"></div>
+          <div key={i} className="flex flex-col items-center gap-2 min-w-[68px] animate-pulse">
+            <div className="w-[68px] h-[68px] rounded-full skeleton"></div>
             <div className="w-10 h-2.5 skeleton rounded"></div>
           </div>
         ))}
@@ -157,15 +157,15 @@ const StoriesBar = () => {
           <>
             <button
               onClick={() => scroll('left')}
-              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white shadow-md border border-[#E5E7EB] rounded-full flex items-center justify-center hover:bg-[#F3F4F6] transition-colors"
+              className="absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white shadow-md border border-[#E2E8F0] rounded-full flex items-center justify-center hover:bg-[#F8FAFC] transition-colors"
             >
-              <ChevronLeft size={16} className="text-[#4B5563]" />
+              <ChevronLeft size={16} className="text-[#475569]" />
             </button>
             <button
               onClick={() => scroll('right')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white shadow-md border border-[#E5E7EB] rounded-full flex items-center justify-center hover:bg-[#F3F4F6] transition-colors"
+              className="absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white shadow-md border border-[#E2E8F0] rounded-full flex items-center justify-center hover:bg-[#F8FAFC] transition-colors"
             >
-              <ChevronRight size={16} className="text-[#4B5563]" />
+              <ChevronRight size={16} className="text-[#475569]" />
             </button>
           </>
         )}
@@ -174,12 +174,12 @@ const StoriesBar = () => {
           {/* Create Story */}
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex flex-col items-center gap-2 min-w-[66px] group"
+            className="flex flex-col items-center gap-2 min-w-[68px] group"
           >
-            <div className="w-[66px] h-[66px] rounded-full border-2 border-dashed border-[#D1D5DB] flex items-center justify-center bg-[#F9FAFB] group-hover:border-[#6366F1] group-hover:bg-[#EEF2FF] transition-all">
-              <Plus size={24} className="text-[#9CA3AF] group-hover:text-[#6366F1] transition-colors" />
+            <div className="w-[68px] h-[68px] rounded-full border-2 border-dashed border-[#CBD5E1] flex items-center justify-center bg-[#F8FAFC] group-hover:border-[#7E22CE] group-hover:bg-[#F3E8FF] transition-all">
+              <Plus size={24} className="text-[#94A3B8] group-hover:text-[#7E22CE] transition-colors" />
             </div>
-            <span className="text-xs text-[#6B7280] font-medium">Add story</span>
+            <span className="text-xs text-[#64748B] font-medium">Add story</span>
           </button>
 
           {/* User Stories */}
@@ -187,17 +187,17 @@ const StoriesBar = () => {
             <button
               key={userStories.userId}
               onClick={() => handleViewStory(userStories)}
-              className="flex flex-col items-center gap-2 min-w-[66px] animate-fadeIn"
+              className="flex flex-col items-center gap-2 min-w-[68px] animate-fadeIn"
               style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className="w-[66px] h-[66px] rounded-full p-[2px] story-ring">
+              <div className="w-[68px] h-[68px] rounded-full p-[2px] story-ring">
                 <img 
                   src={userStories.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userStories.userId}`} 
                   className="w-full h-full rounded-full object-cover border-2 border-white" 
                   alt={userStories.username}
                 />
               </div>
-              <span className="text-xs text-[#374151] truncate w-[66px] text-center font-medium">
+              <span className="text-xs text-[#334155] truncate w-[68px] text-center font-medium">
                 {userStories.username}
               </span>
             </button>
@@ -207,25 +207,25 @@ const StoriesBar = () => {
 
       {/* Create Story Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full overflow-hidden shadow-2xl animate-scaleIn">
-            <div className="p-5 border-b border-[#E5E7EB] flex justify-between items-center">
-              <h3 className="font-semibold text-[#1F2937]">Create Story</h3>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[16px] max-w-lg w-full overflow-hidden shadow-2xl animate-scaleIn">
+            <div className="px-5 py-4 border-b border-[#E2E8F0] flex justify-between items-center">
+              <h3 className="font-semibold text-[#1E293B]">Create Story</h3>
               <button 
                 onClick={() => {
                   setShowCreateModal(false);
                   setCreateForm({ content: '', image: null });
                   setPreview(null);
                 }}
-                className="p-2 hover:bg-[#F3F4F6] rounded-full transition-colors"
+                className="p-2 hover:bg-[#F1F5F9] rounded-full transition-colors"
               >
-                <X size={20} className="text-[#6B7280]" />
+                <X size={20} className="text-[#64748B]" />
               </button>
             </div>
             
             <div className="p-5">
               {preview ? (
-                <div className="relative mb-4 rounded-xl overflow-hidden bg-[#F3F4F6]">
+                <div className="relative mb-4 rounded-[12px] overflow-hidden bg-[#F1F5F9]">
                   <img src={preview} alt="Preview" className="w-full max-h-[300px] object-contain" />
                   <button 
                     onClick={() => {
@@ -240,13 +240,13 @@ const StoriesBar = () => {
               ) : (
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-[#E5E7EB] rounded-xl p-10 text-center cursor-pointer hover:border-[#6366F1] hover:bg-[#F9FAFB] transition-all mb-4"
+                  className="w-full border-2 border-dashed border-[#E2E8F0] rounded-[12px] p-10 text-center cursor-pointer hover:border-[#7E22CE] hover:bg-[#F3E8FF]/20 transition-all mb-4"
                 >
-                  <div className="w-12 h-12 mx-auto mb-3 bg-[#F3F4F6] rounded-full flex items-center justify-center">
-                    <Upload className="w-6 h-6 text-[#9CA3AF]" />
+                  <div className="w-12 h-12 mx-auto mb-3 bg-[#F1F5F9] rounded-full flex items-center justify-center">
+                    <Upload className="w-6 h-6 text-[#94A3B8]" />
                   </div>
-                  <p className="text-[#374151] font-medium">Click to add an image</p>
-                  <p className="text-[#9CA3AF] text-sm mt-1">PNG, JPG up to 10MB</p>
+                  <p className="text-[#334155] font-medium">Click to add an image</p>
+                  <p className="text-[#94A3B8] text-sm mt-1">PNG, JPG up to 10MB</p>
                 </button>
               )}
               
@@ -267,7 +267,7 @@ const StoriesBar = () => {
               />
             </div>
             
-            <div className="p-5 border-t border-[#E5E7EB] bg-[#F9FAFB]">
+            <div className="px-5 py-4 border-t border-[#E2E8F0] bg-[#F8FAFC]">
               <button
                 onClick={handleCreateStory}
                 disabled={uploading || (!createForm.content && !createForm.image)}
@@ -342,13 +342,13 @@ const StoriesBar = () => {
                   ? selectedStory.stories[selectedStory.currentIndex].img 
                   : `http://localhost:8800${selectedStory.stories[selectedStory.currentIndex].img}`
                 }
-                className="w-full max-h-[80vh] object-contain rounded-xl"
+                className="w-full max-h-[80vh] object-contain rounded-[16px]"
                 alt="Story"
               />
             )}
             {selectedStory.stories[selectedStory.currentIndex].content && (
               <div className="absolute bottom-20 left-0 right-0 p-4">
-                <p className="text-white text-center text-lg bg-black/50 backdrop-blur-sm p-4 rounded-xl">
+                <p className="text-white text-center text-lg bg-black/50 backdrop-blur-sm p-4 rounded-[12px]">
                   {selectedStory.stories[selectedStory.currentIndex].content}
                 </p>
               </div>

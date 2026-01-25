@@ -101,12 +101,12 @@ const SettingsPage = () => {
       case 'password':
         return (
           <div className="animate-fadeIn">
-            <h2 className="text-xl font-bold text-[#1F2937] mb-1">Change Password</h2>
-            <p className="text-[#6B7280] mb-6">Update your password to keep your account secure</p>
+            <h2 className="text-xl font-bold text-[#1E293B] mb-1 tracking-tight">Change Password</h2>
+            <p className="text-[#64748B] mb-6">Update your password to keep your account secure</p>
 
             <form className="space-y-5 max-w-md" onSubmit={handlePasswordSave}>
               <div>
-                <label className="block text-sm font-medium text-[#374151] mb-2">Current Password</label>
+                <label className="block text-sm font-medium text-[#334155] mb-2">Current Password</label>
                 <input 
                   type="password" 
                   name="currentPassword" 
@@ -118,7 +118,7 @@ const SettingsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#374151] mb-2">New Password</label>
+                <label className="block text-sm font-medium text-[#334155] mb-2">New Password</label>
                 <input 
                   type="password" 
                   name="newPassword" 
@@ -130,7 +130,7 @@ const SettingsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#374151] mb-2">Confirm Password</label>
+                <label className="block text-sm font-medium text-[#334155] mb-2">Confirm Password</label>
                 <input 
                   type="password" 
                   name="confirmPassword" 
@@ -151,8 +151,8 @@ const SettingsPage = () => {
       case 'notifications':
         return (
           <div className="animate-fadeIn">
-            <h2 className="text-xl font-bold text-[#1F2937] mb-1">Notifications</h2>
-            <p className="text-[#6B7280] mb-6">Manage how you receive notifications</p>
+            <h2 className="text-xl font-bold text-[#1E293B] mb-1 tracking-tight">Notifications</h2>
+            <p className="text-[#64748B] mb-6">Manage how you receive notifications</p>
 
             <div className="space-y-3 max-w-md">
               {[
@@ -161,14 +161,14 @@ const SettingsPage = () => {
                 { label: 'New Followers', desc: 'When someone follows you' },
                 { label: 'Direct Messages', desc: 'When you receive a new message' },
               ].map((item) => (
-                <label key={item.label} className="flex items-center justify-between p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl hover:border-[#D1D5DB] transition-colors cursor-pointer">
+                <label key={item.label} className="flex items-center justify-between p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] hover:border-[#CBD5E1] transition-colors cursor-pointer">
                   <div>
-                    <p className="font-medium text-[#1F2937]">{item.label}</p>
-                    <p className="text-sm text-[#6B7280]">{item.desc}</p>
+                    <p className="font-medium text-[#1E293B]">{item.label}</p>
+                    <p className="text-sm text-[#64748B]">{item.desc}</p>
                   </div>
                   <div className="relative">
                     <input type="checkbox" defaultChecked className="sr-only peer" />
-                    <div className="w-11 h-6 bg-[#D1D5DB] peer-checked:bg-[#6366F1] rounded-full transition-colors"></div>
+                    <div className="w-11 h-6 bg-[#CBD5E1] peer-checked:bg-[#7E22CE] rounded-full transition-colors"></div>
                     <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full peer-checked:translate-x-5 transition-transform shadow-sm"></div>
                   </div>
                 </label>
@@ -180,8 +180,8 @@ const SettingsPage = () => {
       case 'privacy':
         return (
           <div className="animate-fadeIn">
-            <h2 className="text-xl font-bold text-[#1F2937] mb-1">Privacy & Security</h2>
-            <p className="text-[#6B7280] mb-6">Control your account privacy settings</p>
+            <h2 className="text-xl font-bold text-[#1E293B] mb-1 tracking-tight">Privacy & Security</h2>
+            <p className="text-[#64748B] mb-6">Control your account privacy settings</p>
 
             <div className="space-y-3 max-w-md">
               {[
@@ -189,24 +189,24 @@ const SettingsPage = () => {
                 { label: 'Activity Status', desc: 'Show when you\'re active', checked: true },
                 { label: 'Allow Tagging', desc: 'Let others tag you in posts', checked: true },
               ].map((item) => (
-                <label key={item.label} className="flex items-center justify-between p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl hover:border-[#D1D5DB] transition-colors cursor-pointer">
+                <label key={item.label} className="flex items-center justify-between p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] hover:border-[#CBD5E1] transition-colors cursor-pointer">
                   <div>
-                    <p className="font-medium text-[#1F2937]">{item.label}</p>
-                    <p className="text-sm text-[#6B7280]">{item.desc}</p>
+                    <p className="font-medium text-[#1E293B]">{item.label}</p>
+                    <p className="text-sm text-[#64748B]">{item.desc}</p>
                   </div>
                   <div className="relative">
                     <input type="checkbox" defaultChecked={item.checked} className="sr-only peer" />
-                    <div className="w-11 h-6 bg-[#D1D5DB] peer-checked:bg-[#6366F1] rounded-full transition-colors"></div>
+                    <div className="w-11 h-6 bg-[#CBD5E1] peer-checked:bg-[#7E22CE] rounded-full transition-colors"></div>
                     <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full peer-checked:translate-x-5 transition-transform shadow-sm"></div>
                   </div>
                 </label>
               ))}
             </div>
 
-            <div className="mt-8 p-4 bg-red-50 border border-red-100 rounded-xl max-w-md">
-              <h3 className="font-medium text-red-700 mb-1">Danger Zone</h3>
-              <p className="text-sm text-red-600 mb-3">Once you delete your account, there is no going back.</p>
-              <button className="text-sm px-4 py-2 bg-red-100 text-red-700 font-medium rounded-lg hover:bg-red-200 transition-colors">
+            <div className="mt-8 p-4 bg-[#FEE2E2] border border-[#FECACA] rounded-[12px] max-w-md">
+              <h3 className="font-medium text-[#DC2626] mb-1">Danger Zone</h3>
+              <p className="text-sm text-[#EF4444] mb-3">Once you delete your account, there is no going back.</p>
+              <button className="text-sm px-4 py-2 bg-[#FECACA] text-[#DC2626] font-medium rounded-[10px] hover:bg-[#FCA5A5] transition-colors">
                 Delete Account
               </button>
             </div>
@@ -216,15 +216,15 @@ const SettingsPage = () => {
       default:
         return (
           <div className="animate-fadeIn">
-            <h2 className="text-xl font-bold text-[#1F2937] mb-1">Edit Profile</h2>
-            <p className="text-[#6B7280] mb-6">Update your profile information</p>
+            <h2 className="text-xl font-bold text-[#1E293B] mb-1 tracking-tight">Edit Profile</h2>
+            <p className="text-[#64748B] mb-6">Update your profile information</p>
 
             {/* Avatar */}
-            <div className="flex items-center gap-5 mb-6 p-4 bg-[#F9FAFB] border border-[#E5E7EB] rounded-xl max-w-md">
+            <div className="flex items-center gap-5 mb-6 p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] max-w-md">
               <div className="relative">
                 <img 
                   src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
-                  className="w-16 h-16 rounded-full object-cover bg-[#E5E7EB]" 
+                  className="w-16 h-16 rounded-full object-cover bg-[#E2E8F0]" 
                   alt=""
                 />
                 <button className="absolute -bottom-1 -right-1 w-7 h-7 gradient-bg rounded-full flex items-center justify-center shadow-md">
@@ -232,8 +232,8 @@ const SettingsPage = () => {
                 </button>
               </div>
               <div>
-                <p className="font-semibold text-[#1F2937]">{currentUser?.username}</p>
-                <button className="text-[#6366F1] text-sm font-medium hover:text-[#4F46E5]">
+                <p className="font-semibold text-[#1E293B]">{currentUser?.username}</p>
+                <button className="text-[#7E22CE] text-sm font-medium hover:text-[#6B21A8]">
                   Change Photo
                 </button>
               </div>
@@ -241,7 +241,7 @@ const SettingsPage = () => {
 
             <form className="space-y-5 max-w-md" onSubmit={handleSave}>
               <div>
-                <label className="block text-sm font-medium text-[#374151] mb-2">Username</label>
+                <label className="block text-sm font-medium text-[#334155] mb-2">Username</label>
                 <input 
                   type="text" 
                   name="username" 
@@ -252,7 +252,7 @@ const SettingsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#374151] mb-2">Email</label>
+                <label className="block text-sm font-medium text-[#334155] mb-2">Email</label>
                 <input 
                   type="email" 
                   name="email" 
@@ -263,7 +263,7 @@ const SettingsPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-[#374151] mb-2">Bio</label>
+                <label className="block text-sm font-medium text-[#334155] mb-2">Bio</label>
                 <textarea 
                   name="bio"
                   value={inputs.bio}
@@ -285,8 +285,8 @@ const SettingsPage = () => {
 
   return (
     <Layout>
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold text-[#1F2937] mb-6">Settings</h1>
+      <div className="max-w-[900px] mx-auto">
+        <h1 className="text-2xl font-bold text-[#1E293B] mb-6 tracking-tight">Settings</h1>
 
         <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar */}
@@ -298,12 +298,15 @@ const SettingsPage = () => {
                   <button
                     key={tab.id}
                     onClick={() => { setActiveTab(tab.id); setMessage(''); }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left text-sm ${
+                    className={`relative w-full flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all text-left text-sm ${
                       activeTab === tab.id
-                        ? 'bg-[#EEF2FF] text-[#6366F1] font-semibold'
-                        : 'text-[#4B5563] hover:bg-[#F3F4F6]'
+                        ? 'bg-[#F3E8FF] text-[#7E22CE] font-semibold'
+                        : 'text-[#475569] hover:bg-[#F1F5F9]'
                     }`}
                   >
+                    {activeTab === tab.id && (
+                      <span className="absolute left-0 top-2 bottom-2 w-[3px] bg-[#7E22CE] rounded-r-full" />
+                    )}
                     <Icon size={18} />
                     <span>{tab.label}</span>
                   </button>
@@ -315,8 +318,8 @@ const SettingsPage = () => {
           {/* Content */}
           <div className="flex-1 card p-6">
             {message && (
-              <div className={`mb-6 p-4 rounded-xl flex items-center gap-3 animate-fadeIn ${
-                status === 'error' ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700'
+              <div className={`mb-6 p-4 rounded-[12px] flex items-center gap-3 animate-fadeIn ${
+                status === 'error' ? 'bg-[#FEE2E2] text-[#DC2626]' : 'bg-[#D1FAE5] text-[#059669]'
               }`}>
                 {status === 'error' ? <AlertCircle size={18} /> : <Check size={18} />}
                 <span className="font-medium text-sm">{message}</span>

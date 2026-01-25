@@ -4,8 +4,8 @@ import AdminSidebar from '../../components/admin/AdminSidebar';
 
 const AdminLayout = () => {
   return (
-    <div className="flex min-h-screen bg-[#F9FAFB]">
-      {/* Sidebar - Fixed */}
+    <div className="flex min-h-screen bg-[#F8FAFC]">
+      {/* Sidebar - Solid white background */}
       <AdminSidebar />
       
       {/* Main Content */}

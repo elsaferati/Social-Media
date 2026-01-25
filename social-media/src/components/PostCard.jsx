@@ -93,7 +93,7 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
 
   return (
     <>
-      <article className="card overflow-hidden animate-fadeIn">
+      <article className="card overflow-hidden hover:shadow-md transition-all duration-200 animate-fadeIn">
         {/* Header */}
         <div className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
@@ -101,17 +101,17 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
               <img 
                 src={userImage} 
                 alt={username} 
-                className="w-11 h-11 rounded-full object-cover bg-[#F3F4F6]"
+                className="w-11 h-11 rounded-full object-cover bg-[#F1F5F9]"
               />
             </Link>
             <div>
               <Link 
                 to={`/profile/${post.userId}`} 
-                className="font-semibold text-[#1F2937] hover:text-[#6366F1] transition-colors text-sm"
+                className="font-semibold text-[#1E293B] hover:text-[#7E22CE] transition-colors text-sm"
               >
                 {username}
               </Link>
-              <p className="text-xs text-[#9CA3AF]">{timeAgo}</p>
+              <p className="text-xs text-[#94A3B8]">{timeAgo}</p>
             </div>
           </div>
           
@@ -119,19 +119,19 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
           <div className="relative">
             <button 
               onClick={() => setShowMenu(!showMenu)} 
-              className="p-2 hover:bg-[#F3F4F6] rounded-full transition-colors"
+              className="p-2 hover:bg-[#F1F5F9] rounded-full transition-colors"
             >
-              <MoreHorizontal size={20} className="text-[#6B7280]" />
+              <MoreHorizontal size={20} className="text-[#64748B]" />
             </button>
             
             {showMenu && (
               <>
                 <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
-                <div className="absolute right-0 top-full mt-2 bg-white rounded-xl shadow-lg border border-[#E5E7EB] z-20 py-2 min-w-[160px] animate-scaleIn">
+                <div className="absolute right-0 top-full mt-2 bg-white rounded-[12px] shadow-lg border border-[#E2E8F0] z-20 py-2 min-w-[160px] animate-scaleIn">
                   {isOwnPost && (
                     <button
                       onClick={handleDelete}
-                      className="w-full px-4 py-2.5 text-left text-red-500 hover:bg-red-50 flex items-center gap-3 transition-colors"
+                      className="w-full px-4 py-2.5 text-left text-[#EF4444] hover:bg-[#FEE2E2] flex items-center gap-3 transition-colors"
                     >
                       <Trash2 size={16} />
                       <span className="font-medium">Delete</span>
@@ -139,7 +139,7 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
                   )}
                   <button
                     onClick={() => setShowMenu(false)}
-                    className="w-full px-4 py-2.5 text-left text-[#4B5563] hover:bg-[#F3F4F6] transition-colors"
+                    className="w-full px-4 py-2.5 text-left text-[#475569] hover:bg-[#F1F5F9] transition-colors"
                   >
                     Cancel
                   </button>
@@ -152,7 +152,7 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
         {/* Content */}
         {post.content && !post.img && (
           <div className="px-4 pb-3">
-            <p className="text-[#374151] text-[15px] leading-relaxed whitespace-pre-wrap">
+            <p className="text-[#334155] text-[15px] leading-relaxed whitespace-pre-wrap">
               {post.content}
             </p>
           </div>
@@ -160,7 +160,7 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
 
         {/* Image */}
         {post.img && (
-          <div className="bg-[#F9FAFB]">
+          <div className="bg-[#F8FAFC]">
             <img 
               src={post.img.startsWith('http') ? post.img : `http://localhost:8800${post.img}`} 
               alt="Post" 
@@ -179,18 +179,18 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
                 onClick={handleLike} 
                 disabled={likeLoading}
                 className={`p-2 rounded-full transition-all ${
-                  liked ? 'text-red-500 bg-red-50' : 'text-[#6B7280] hover:bg-[#F3F4F6]'
+                  liked ? 'text-[#EF4444] bg-[#FEE2E2]' : 'text-[#64748B] hover:bg-[#F1F5F9]'
                 }`}
               >
                 <Heart size={22} className={liked ? 'fill-current' : ''} />
               </button>
               <button 
                 onClick={() => setShowComments(true)} 
-                className="p-2 text-[#6B7280] hover:bg-[#F3F4F6] rounded-full transition-colors"
+                className="p-2 text-[#64748B] hover:bg-[#F1F5F9] rounded-full transition-colors"
               >
                 <MessageCircle size={22} />
               </button>
-              <button className="p-2 text-[#6B7280] hover:bg-[#F3F4F6] rounded-full transition-colors">
+              <button className="p-2 text-[#64748B] hover:bg-[#F1F5F9] rounded-full transition-colors">
                 <Send size={22} />
               </button>
             </div>
@@ -198,7 +198,7 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
               onClick={handleBookmark} 
               disabled={bookmarkLoading}
               className={`p-2 rounded-full transition-all ${
-                bookmarked ? 'text-[#6366F1] bg-[#EEF2FF]' : 'text-[#6B7280] hover:bg-[#F3F4F6]'
+                bookmarked ? 'text-[#7E22CE] bg-[#F3E8FF]' : 'text-[#64748B] hover:bg-[#F1F5F9]'
               }`}
             >
               <Bookmark size={22} className={bookmarked ? 'fill-current' : ''} />
@@ -206,24 +206,24 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
           </div>
 
           {/* Likes */}
-          <p className="font-semibold text-sm text-[#1F2937] mb-2">
+          <p className="font-semibold text-sm text-[#1E293B] mb-2">
             {likesCount.toLocaleString()} {likesCount === 1 ? 'like' : 'likes'}
           </p>
 
           {/* Caption */}
           {post.content && post.img && (
             <div className="mb-2">
-              <Link to={`/profile/${post.userId}`} className="font-semibold text-[#1F2937] text-sm mr-2">
+              <Link to={`/profile/${post.userId}`} className="font-semibold text-[#1E293B] text-sm mr-2">
                 {username}
               </Link>
-              <span className="text-[#374151] text-sm">{post.content}</span>
+              <span className="text-[#334155] text-sm">{post.content}</span>
             </div>
           )}
 
           {/* View Comments */}
           <button 
             onClick={() => setShowComments(true)} 
-            className="text-[#6B7280] text-sm hover:text-[#4B5563] transition-colors"
+            className="text-[#64748B] text-sm hover:text-[#475569] transition-colors"
           >
             View comments
           </button>

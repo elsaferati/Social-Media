@@ -26,35 +26,35 @@ const Header = () => {
   return (
     <>
       {/* Header */}
-      <header className="bg-white border-b border-[#E5E7EB] px-4 h-16 flex justify-between items-center">
+      <header className="bg-white border-b border-[#E2E8F0] px-4 h-16 flex justify-between items-center">
         <div className="flex items-center gap-3">
           <button 
             onClick={() => setIsSidebarOpen(true)} 
-            className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors"
+            className="p-2 hover:bg-[#F1F5F9] rounded-[10px] transition-colors"
           >
-            <Menu size={22} className="text-[#4B5563]" />
+            <Menu size={22} className="text-[#475569]" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg gradient-bg flex items-center justify-center">
+            <div className="w-8 h-8 rounded-[10px] gradient-bg flex items-center justify-center">
               <span className="text-white font-bold text-sm">S</span>
             </div>
-            <span className="font-bold text-[#1F2937]">Socialix</span>
+            <span className="font-bold text-[#1E293B]">Socialix</span>
           </div>
         </div>
 
         <div className="flex items-center gap-1">
           <NavLink 
             to="/notifications"
-            className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors relative"
+            className="p-2 hover:bg-[#F1F5F9] rounded-[10px] transition-colors relative"
           >
-            <Heart size={22} className="text-[#4B5563]" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            <Heart size={22} className="text-[#475569]" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-[#EF4444] rounded-full"></span>
           </NavLink>
           <NavLink 
             to="/messages"
-            className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors relative"
+            className="p-2 hover:bg-[#F1F5F9] rounded-[10px] transition-colors"
           >
-            <Send size={20} className="text-[#4B5563]" />
+            <Send size={20} className="text-[#475569]" />
           </NavLink>
         </div>
       </header>
@@ -69,23 +69,23 @@ const Header = () => {
 
           <div className="relative bg-white w-[280px] h-full flex flex-col animate-slideIn">
             {/* Header */}
-            <div className="px-5 py-4 border-b border-[#E5E7EB] flex justify-between items-center">
+            <div className="px-5 py-4 border-b border-[#E2E8F0] flex justify-between items-center">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-lg gradient-bg flex items-center justify-center">
+                <div className="w-9 h-9 rounded-[10px] gradient-bg flex items-center justify-center">
                   <span className="text-white font-bold">S</span>
                 </div>
-                <span className="font-bold text-lg text-[#1F2937]">Socialix</span>
+                <span className="font-bold text-lg text-[#1E293B]">Socialix</span>
               </div>
               <button 
                 onClick={() => setIsSidebarOpen(false)} 
-                className="p-2 hover:bg-[#F3F4F6] rounded-lg transition-colors"
+                className="p-2 hover:bg-[#F1F5F9] rounded-[10px] transition-colors"
               >
-                <X size={22} className="text-[#6B7280]" />
+                <X size={22} className="text-[#64748B]" />
               </button>
             </div>
             
             {/* Nav */}
-            <nav className="flex-1 overflow-y-auto p-3">
+            <nav className="flex-1 overflow-y-auto px-3 py-4">
               <div className="space-y-1">
                 {menuItems.map((item) => {
                   const Icon = item.icon;
@@ -95,26 +95,33 @@ const Header = () => {
                       to={item.path}
                       onClick={() => setIsSidebarOpen(false)}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                        `relative flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all
                         ${isActive 
-                          ? "bg-[#EEF2FF] text-[#6366F1] font-semibold" 
-                          : "text-[#4B5563] hover:bg-[#F3F4F6]"
+                          ? "bg-[#F3E8FF] text-[#7E22CE] font-semibold" 
+                          : "text-[#475569] hover:bg-[#F1F5F9]"
                         }`
                       }
                     >
-                      <Icon size={22} />
-                      <span className="text-[15px]">{item.name}</span>
+                      {({ isActive }) => (
+                        <>
+                          {isActive && (
+                            <span className="absolute left-0 top-2 bottom-2 w-[3px] bg-[#7E22CE] rounded-r-full" />
+                          )}
+                          <Icon size={22} />
+                          <span className="text-[15px]">{item.name}</span>
+                        </>
+                      )}
                     </NavLink>
                   );
                 })}
               </div>
 
               {isAdmin && (
-                <div className="mt-4 pt-4 border-t border-[#E5E7EB]">
+                <div className="mt-4 pt-4 border-t border-[#E2E8F0]">
                   <NavLink
                     to="/admin"
                     onClick={() => setIsSidebarOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 text-purple-600 hover:bg-purple-50 rounded-xl transition-colors"
+                    className="relative flex items-center gap-3 px-4 py-3 text-[#7E22CE] hover:bg-[#F3E8FF] rounded-[12px] transition-colors"
                   >
                     <Shield size={22} />
                     <span className="text-[15px] font-medium">Admin Panel</span>
@@ -124,16 +131,16 @@ const Header = () => {
             </nav>
 
             {/* Footer */}
-            <div className="p-3 border-t border-[#E5E7EB] space-y-2">
-              <div className="flex items-center gap-3 px-4 py-3 bg-[#F9FAFB] rounded-xl">
+            <div className="px-3 py-4 border-t border-[#E2E8F0] space-y-2">
+              <div className="flex items-center gap-3 px-4 py-3 bg-[#F8FAFC] rounded-[12px]">
                 <img 
                   src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username}`}
                   alt={currentUser?.username}
-                  className="w-10 h-10 rounded-full object-cover bg-[#E5E7EB]"
+                  className="w-10 h-10 rounded-full object-cover bg-[#E2E8F0]"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-[#1F2937] truncate">{currentUser?.username || "Guest"}</p>
-                  <p className="text-xs text-[#6B7280] truncate">{currentUser?.email}</p>
+                  <p className="font-semibold text-[#1E293B] truncate">{currentUser?.username || "Guest"}</p>
+                  <p className="text-xs text-[#64748B] truncate">{currentUser?.email}</p>
                 </div>
               </div>
 
@@ -141,14 +148,14 @@ const Header = () => {
                 <NavLink
                   to="/settings"
                   onClick={() => setIsSidebarOpen(false)}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#F3F4F6] text-[#4B5563] rounded-xl hover:bg-[#E5E7EB] transition-colors text-sm font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#F1F5F9] text-[#475569] rounded-[12px] hover:bg-[#E2E8F0] transition-colors text-sm font-medium"
                 >
                   <Settings size={18} />
                   Settings
                 </NavLink>
                 <button 
                   onClick={handleLogout}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-50 text-red-500 rounded-xl hover:bg-red-100 transition-colors text-sm font-medium"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-[#FEE2E2] text-[#EF4444] rounded-[12px] hover:bg-[#FECACA] transition-colors text-sm font-medium"
                 >
                   <LogOut size={18} />
                   Logout

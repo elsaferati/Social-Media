@@ -26,17 +26,17 @@ const Sidebar = () => {
   return (
     <div className="h-full flex flex-col bg-white">
       {/* Logo */}
-      <div className="px-6 py-6 border-b border-[#E5E7EB]">
+      <div className="px-6 py-5 border-b border-[#E2E8F0]">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
+          <div className="w-10 h-10 rounded-[12px] gradient-bg flex items-center justify-center shadow-sm">
             <span className="text-white font-bold text-lg">S</span>
           </div>
-          <span className="text-xl font-bold text-[#1F2937]">Socialix</span>
+          <span className="text-xl font-bold text-[#1E293B] tracking-tight">Socialix</span>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {menuItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -44,20 +44,20 @@ const Sidebar = () => {
               key={item.name}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group
+                `relative flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all duration-200 group
                 ${isActive 
-                  ? "bg-[#EEF2FF] text-[#6366F1] font-semibold" 
-                  : "text-[#4B5563] hover:bg-[#F3F4F6] hover:text-[#1F2937]"
+                  ? "bg-[#F3E8FF] text-[#7E22CE] font-semibold" 
+                  : "text-[#475569] hover:bg-[#F1F5F9] hover:text-[#1E293B]"
                 }`
               }
             >
               {({ isActive }) => (
                 <>
-                  <Icon 
-                    size={22} 
-                    strokeWidth={isActive ? 2.5 : 2}
-                    className="flex-shrink-0"
-                  />
+                  {/* Active Indicator Bar */}
+                  {isActive && (
+                    <span className="absolute left-0 top-2 bottom-2 w-[3px] bg-[#7E22CE] rounded-r-full" />
+                  )}
+                  <Icon size={22} strokeWidth={isActive ? 2.5 : 2} className="flex-shrink-0" />
                   <span className="text-[15px]">{item.name}</span>
                 </>
               )}
@@ -67,21 +67,28 @@ const Sidebar = () => {
       </nav>
 
       {/* Bottom Section */}
-      <div className="px-4 pb-6 space-y-1 border-t border-[#E5E7EB] pt-4">
+      <div className="px-3 pb-4 space-y-1 border-t border-[#E2E8F0] pt-4">
         {/* Admin Panel */}
         {isAdmin && (
           <NavLink 
             to="/admin" 
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+              `relative flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all duration-200
               ${isActive 
-                ? "bg-purple-50 text-purple-600 font-semibold" 
-                : "text-purple-600 hover:bg-purple-50"
+                ? "bg-[#F3E8FF] text-[#7E22CE] font-semibold" 
+                : "text-[#7E22CE] hover:bg-[#F3E8FF]/50"
               }`
             }
           >
-            <Shield size={22} />
-            <span className="text-[15px]">Admin Panel</span>
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span className="absolute left-0 top-2 bottom-2 w-[3px] bg-[#7E22CE] rounded-r-full" />
+                )}
+                <Shield size={22} />
+                <span className="text-[15px]">Admin Panel</span>
+              </>
+            )}
           </NavLink>
         )}
         
@@ -89,37 +96,44 @@ const Sidebar = () => {
         <NavLink 
           to="/settings" 
           className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
+            `relative flex items-center gap-3 px-4 py-3 rounded-[12px] transition-all duration-200
             ${isActive 
-              ? "bg-[#F3F4F6] text-[#1F2937] font-semibold" 
-              : "text-[#4B5563] hover:bg-[#F3F4F6]"
+              ? "bg-[#F1F5F9] text-[#1E293B] font-semibold" 
+              : "text-[#475569] hover:bg-[#F1F5F9]"
             }`
           }
         >
-          <Settings size={22} />
-          <span className="text-[15px]">Settings</span>
+          {({ isActive }) => (
+            <>
+              {isActive && (
+                <span className="absolute left-0 top-2 bottom-2 w-[3px] bg-[#475569] rounded-r-full" />
+              )}
+              <Settings size={22} />
+              <span className="text-[15px]">Settings</span>
+            </>
+          )}
         </NavLink>
         
         {/* Logout */}
         <button 
           onClick={handleLogout} 
-          className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200"
+          className="w-full flex items-center gap-3 px-4 py-3 text-[#EF4444] hover:bg-[#FEE2E2] rounded-[12px] transition-all duration-200"
         >
           <LogOut size={22} />
           <span className="text-[15px] font-medium">Logout</span>
         </button>
 
         {/* User Profile Card */}
-        <div className="mt-4 p-4 bg-[#F9FAFB] rounded-xl border border-[#E5E7EB]">
+        <div className="mt-3 p-4 bg-[#F8FAFC] rounded-[12px] border border-[#E2E8F0]">
           <div className="flex items-center gap-3">
             <img 
               src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username}`} 
               alt={currentUser?.username}
-              className="w-10 h-10 rounded-full object-cover bg-[#E5E7EB]"
+              className="w-10 h-10 rounded-full object-cover bg-[#E2E8F0]"
             />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-[#1F2937] truncate">{currentUser?.username}</p>
-              <p className="text-xs text-[#6B7280] truncate">{currentUser?.email}</p>
+              <p className="text-sm font-semibold text-[#1E293B] truncate">{currentUser?.username}</p>
+              <p className="text-xs text-[#64748B] truncate">{currentUser?.email}</p>
             </div>
           </div>
         </div>

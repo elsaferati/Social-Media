@@ -72,28 +72,29 @@ const SearchPage = () => {
 
   return (
     <Layout>
-      <div className="max-w-3xl mx-auto">
+      {/* Centered Content */}
+      <div className="max-w-[680px] mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Discover</h1>
-          <p className="text-gray-500">Find people, posts, and trending topics</p>
+          <h1 className="text-2xl font-bold text-[#1E293B] tracking-tight mb-1">Discover</h1>
+          <p className="text-[#64748B]">Find people, posts, and trending topics</p>
         </div>
 
-        {/* Search Bar */}
+        {/* Search Bar - Pill shaped */}
         <form onSubmit={handleSubmit} className="relative mb-8">
-          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8]" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Search users or posts..."
-            className="w-full pl-14 pr-28 py-4 bg-white border-2 border-gray-100 rounded-2xl focus:border-indigo-500 focus:outline-none text-gray-900 placeholder-gray-400 shadow-sm transition-all"
+            className="w-full pl-14 pr-28 py-4 bg-white border border-[#E2E8F0] rounded-full text-[#1E293B] placeholder-[#94A3B8] focus:border-[#7E22CE] focus:ring-4 focus:ring-[#F3E8FF] outline-none transition-all shadow-sm"
             autoFocus
           />
           <button
             type="submit"
-            className="absolute right-3 top-1/2 -translate-y-1/2 gradient-bg text-white px-6 py-2.5 rounded-xl text-sm font-semibold hover:shadow-lg hover:shadow-indigo-200 transition-all"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-[#7E22CE] hover:bg-[#6B21A8] text-white px-6 py-2.5 rounded-full text-sm font-medium transition-all"
           >
             Search
           </button>
@@ -101,24 +102,24 @@ const SearchPage = () => {
 
         {/* Trending Topics (before search) */}
         {!hasSearched && (
-          <div className="card-flat p-6 mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <TrendingUp className="w-5 h-5 text-indigo-500" />
-              <h2 className="font-bold text-gray-900">Trending Topics</h2>
+          <div className="card p-6 mb-8">
+            <div className="flex items-center gap-2 mb-5">
+              <TrendingUp className="w-5 h-5 text-[#7E22CE]" />
+              <h2 className="font-semibold text-[#1E293B]">Trending Topics</h2>
             </div>
             <div className="grid grid-cols-2 gap-3">
               {trendingTopics.map((topic) => (
                 <button
                   key={topic.tag}
                   onClick={() => { setQuery(topic.tag); handleSearch(topic.tag); }}
-                  className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl hover:bg-indigo-50 hover:border-indigo-200 border-2 border-transparent transition-all group"
+                  className="flex items-center gap-3 p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] hover:border-[#7E22CE] hover:bg-[#F3E8FF]/30 transition-all group"
                 >
-                  <div className="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 gradient-bg rounded-[10px] flex items-center justify-center">
                     <Hash className="w-5 h-5 text-white" />
                   </div>
                   <div className="text-left">
-                    <p className="font-semibold text-gray-900 group-hover:text-indigo-600">#{topic.tag}</p>
-                    <p className="text-xs text-gray-500">{topic.posts} posts</p>
+                    <p className="font-semibold text-[#1E293B] group-hover:text-[#7E22CE]">#{topic.tag}</p>
+                    <p className="text-xs text-[#64748B]">{topic.posts} posts</p>
                   </div>
                 </button>
               ))}
@@ -133,10 +134,10 @@ const SearchPage = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2.5 rounded-xl font-medium capitalize transition-all ${
+                className={`px-5 py-2.5 rounded-full font-medium capitalize transition-all text-sm ${
                   activeTab === tab
-                    ? 'gradient-bg text-white shadow-lg shadow-indigo-200'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-[#7E22CE] text-white shadow-sm'
+                    : 'bg-white border border-[#E2E8F0] text-[#475569] hover:border-[#CBD5E1]'
                 }`}
               >
                 {tab}
@@ -147,9 +148,11 @@ const SearchPage = () => {
 
         {/* Loading */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-500">Searching...</p>
+          <div className="card p-12">
+            <div className="flex flex-col items-center justify-center">
+              <div className="w-10 h-10 border-3 border-[#7E22CE] border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-[#64748B]">Searching...</p>
+            </div>
           </div>
         )}
 
@@ -158,33 +161,31 @@ const SearchPage = () => {
           <div className="space-y-6">
             {/* Users */}
             {users.length > 0 && (
-              <div className="card-flat p-6">
-                <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <User className="w-5 h-5 text-indigo-500" />
+              <div className="card p-6">
+                <h2 className="font-semibold text-[#1E293B] mb-4 flex items-center gap-2">
+                  <User className="w-5 h-5 text-[#7E22CE]" />
                   People ({users.length})
                 </h2>
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {users.map((user, index) => (
                     <Link
                       key={user.id}
                       to={`/profile/${user.id}`}
-                      className="flex items-center gap-4 p-3 -mx-3 rounded-xl hover:bg-gray-50 transition-colors animate-fadeIn"
+                      className="flex items-center gap-4 p-3 -mx-3 rounded-[12px] hover:bg-[#F8FAFC] transition-all animate-fadeIn"
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      <div className="avatar-ring">
-                        <img 
-                          src={user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} 
-                          alt={user.username} 
-                          className="w-12 h-12 rounded-full object-cover"
-                        />
-                      </div>
+                      <img 
+                        src={user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} 
+                        alt={user.username} 
+                        className="w-12 h-12 rounded-full object-cover bg-[#F1F5F9]"
+                      />
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900">{user.username}</p>
+                        <p className="font-semibold text-[#1E293B]">{user.username}</p>
                         {user.bio && (
-                          <p className="text-sm text-gray-500 line-clamp-1">{user.bio}</p>
+                          <p className="text-sm text-[#64748B] line-clamp-1">{user.bio}</p>
                         )}
                       </div>
-                      <span className="text-indigo-600 font-medium text-sm">View</span>
+                      <span className="text-[#7E22CE] font-medium text-sm">View</span>
                     </Link>
                   ))}
                 </div>
@@ -194,8 +195,8 @@ const SearchPage = () => {
             {/* Posts */}
             {posts.length > 0 && (
               <div>
-                <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-indigo-500" />
+                <h2 className="font-semibold text-[#1E293B] mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-[#7E22CE]" />
                   Posts ({posts.length})
                 </h2>
                 <div className="space-y-4">
@@ -208,13 +209,13 @@ const SearchPage = () => {
 
             {/* No Results */}
             {hasSearched && !loading && users.length === 0 && posts.length === 0 && (
-              <div className="card-flat p-12 text-center">
-                <div className="w-20 h-20 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-                  <Search className="w-10 h-10 text-gray-300" />
+              <div className="card p-12 text-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-[#F1F5F9] rounded-full flex items-center justify-center">
+                  <Search className="w-8 h-8 text-[#CBD5E1]" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">No results found</h3>
-                <p className="text-gray-500">We couldn't find anything for "{query}"</p>
-                <p className="text-sm text-gray-400 mt-1">Try different keywords or check your spelling</p>
+                <h3 className="text-lg font-semibold text-[#1E293B] mb-2">No results found</h3>
+                <p className="text-[#64748B]">We couldn't find anything for "{query}"</p>
+                <p className="text-sm text-[#94A3B8] mt-1">Try different keywords or check your spelling</p>
               </div>
             )}
           </div>
