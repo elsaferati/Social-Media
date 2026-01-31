@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { likeAPI, bookmarkAPI, postAPI } from "../services/api";
 import CommentsModal from "./CommentsModal";
+import SharePostModal from "./SharePostModal";
 
 const PostCard = ({ post, onDelete, onBookmarkChange }) => {
   const { currentUser } = useAuth();
@@ -12,6 +13,7 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
   const [likesCount, setLikesCount] = useState(0);
   const [bookmarked, setBookmarked] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
@@ -190,7 +192,11 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
               >
                 <MessageCircle size={22} />
               </button>
-              <button className="p-2 text-[#64748B] hover:bg-[#F1F5F9] rounded-full transition-colors">
+              <button 
+                onClick={() => setShowShareModal(true)} 
+                className="p-2 text-[#64748B] hover:bg-[#F1F5F9] rounded-full transition-colors"
+                title="Share post"
+              >
                 <Send size={22} />
               </button>
             </div>
@@ -234,6 +240,13 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
         isOpen={showComments}
         onClose={() => setShowComments(false)}
         postId={post.id}
+        postAuthor={username}
+      />
+
+      <SharePostModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        post={post}
         postAuthor={username}
       />
     </>
