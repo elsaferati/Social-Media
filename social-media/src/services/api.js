@@ -188,6 +188,27 @@ export const messageAPI = {
       body: JSON.stringify({ senderId, receiverId, content }),
     }),
 
+  uploadImage: async (file) => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_BASE_URL}/messages/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Upload failed');
+    }
+    return response.json();
+  },
+
   delete: (id) =>
     fetchWithAuth(`/messages/${id}`, {
       method: 'DELETE',

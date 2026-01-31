@@ -4,6 +4,18 @@ import Layout from "../components/Layout";
 import { Search, MoreHorizontal, Send, Image, Phone, Video, ArrowLeft, Smile } from "lucide-react"; 
 import { userAPI, messageAPI } from "../services/api";
 
+const EMOJI_LIST = ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😍', '🥰', '😘', '👍', '👋', '❤️', '🎉', '🔥', '✨', '😂', '🥺', '😭', '🤔', '🙃', '😎', '🤗', '😜', '🤪'];
+
+const isImageUrl = (content) => {
+  if (!content || typeof content !== 'string') return false;
+  return content.includes('/uploads/') && /\.(jpg|jpeg|png|gif|webp)(\?|$)/i.test(content);
+};
+
+const getImageUrl = (content) => {
+  if (!isImageUrl(content)) return null;
+  return content.startsWith('http') ? content : `http://localhost:8800${content}`;
+};
+
 const MessagesPage = () => {
   const { currentUser } = useAuth();
   
@@ -13,8 +25,12 @@ const MessagesPage = () => {
   const [newMessage, setNewMessage] = useState(""); 
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const scrollRef = useRef(); 
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const scrollRef = useRef();
+  const fileInputRef = useRef(null);
+  const inputRef = useRef(null); 
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -60,7 +76,7 @@ const MessagesPage = () => {
 
     try {
       setSending(true);
-      await messageAPI.send(currentUser.id, selectedUser.id, newMessage);
+      await messageAPI.send(currentUser.id, selectedUser.id, newMessage.trim());
       setNewMessage("");
       
       const data = await messageAPI.getMessages(currentUser.id, selectedUser.id);
@@ -70,6 +86,55 @@ const MessagesPage = () => {
     } finally {
       setSending(false);
     }
+  };
+
+  const handleImageSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedUser) return;
+    
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Please select a valid image (JPEG, PNG, GIF, or WebP)');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image must be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      const { url } = await messageAPI.uploadImage(file);
+      const fullUrl = url.startsWith('http') ? url : `http://localhost:8800${url}`;
+      await messageAPI.send(currentUser.id, selectedUser.id, fullUrl);
+      
+      const data = await messageAPI.getMessages(currentUser.id, selectedUser.id);
+      setMessages(data);
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      alert('Failed to upload image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleEmojiSelect = (emoji) => {
+    const input = inputRef.current;
+    if (input) {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const text = newMessage;
+      const newText = text.slice(0, start) + emoji + text.slice(end);
+      setNewMessage(newText);
+      setTimeout(() => {
+        input.focus();
+        input.setSelectionRange(start + emoji.length, start + emoji.length);
+      }, 0);
+    } else {
+      setNewMessage((prev) => prev + emoji);
+    }
+    setShowEmojiPicker(false);
   };
 
   const filteredFriends = friends.filter(f => 
@@ -224,7 +289,15 @@ const MessagesPage = () => {
                               : "bg-white text-gray-900 rounded-2xl rounded-bl-md border border-gray-200 shadow-sm"
                           }`}
                         >
-                          {msg.content}
+                          {getImageUrl(msg.content) ? (
+                            <img
+                              src={getImageUrl(msg.content)}
+                              alt="Shared"
+                              className="max-w-full max-h-64 rounded-lg object-contain"
+                            />
+                          ) : (
+                            msg.content
+                          )}
                         </div>
                       </div>
                     );
@@ -234,20 +307,65 @@ const MessagesPage = () => {
 
               {/* Input */}
               <form className="p-4 border-t border-gray-100 flex items-center gap-3" onSubmit={handleSend}>
-                <button type="button" className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
-                  <Image size={22} className="text-gray-500" />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingImage}
+                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Attach image"
+                >
+                  {uploadingImage ? (
+                    <div className="w-[22px] h-[22px] border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                  ) : (
+                    <Image size={22} className="text-gray-500" />
+                  )}
                 </button>
                 <div className="flex-1 relative">
                   <input
+                    ref={inputRef}
                     type="text"
-                    className="w-full bg-gray-50 border-2 border-transparent rounded-xl px-4 py-3 text-sm focus:border-indigo-500 focus:bg-white outline-none transition-all"
+                    className="w-full bg-gray-50 border-2 border-transparent rounded-xl px-4 py-3 pr-12 text-sm focus:border-indigo-500 focus:bg-white outline-none transition-all"
                     placeholder="Type a message..."
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                   />
-                  <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <Smile size={20} className="text-gray-400 hover:text-gray-600" />
-                  </button>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                    <button
+                      type="button"
+                      onClick={() => setShowEmojiPicker((p) => !p)}
+                      className={`p-1 rounded-lg transition-colors ${showEmojiPicker ? 'bg-indigo-100 text-indigo-600' : 'text-gray-400 hover:text-gray-600'}`}
+                      title="Add emoji"
+                    >
+                      <Smile size={20} />
+                    </button>
+                    {showEmojiPicker && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-10"
+                          onClick={() => setShowEmojiPicker(false)}
+                        />
+                        <div className="absolute right-0 bottom-full mb-2 bg-white rounded-xl shadow-lg border border-gray-200 p-2 z-20 w-[240px] flex flex-wrap gap-1">
+                          {EMOJI_LIST.map((emoji, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => handleEmojiSelect(emoji)}
+                              className="w-8 h-8 text-lg hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                              {emoji}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
                 <button 
                   type="submit"

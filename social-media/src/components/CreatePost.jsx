@@ -2,6 +2,8 @@ import React, { useState, useRef } from "react";
 import { Image, MapPin, Smile, X, Upload } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
+const EMOJI_LIST = ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😍', '🥰', '😘', '👍', '👋', '❤️', '🎉', '🔥', '✨', '😂', '🥺', '😭', '🤔', '🙃', '😎', '🤗', '😜', '🤪'];
+
 const CreatePost = ({ onClose, onPost }) => {
   const { currentUser } = useAuth();
   const [content, setContent] = useState("");
@@ -9,7 +11,10 @@ const CreatePost = ({ onClose, onPost }) => {
   const [imagePreview, setImagePreview] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
   const fileInputRef = useRef(null);
+  const textareaRef = useRef(null);
 
   const handleImageSelect = (e) => {
     const file = e.target.files?.[0] || e.dataTransfer?.files?.[0];
@@ -53,6 +58,58 @@ const CreatePost = ({ onClose, onPost }) => {
     setSelectedImage(null);
     setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleEmojiSelect = (emoji) => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const newContent = content.slice(0, start) + emoji + content.slice(end);
+      setContent(newContent);
+      setTimeout(() => {
+        textarea.focus();
+        textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+      }, 0);
+    } else {
+      setContent((prev) => prev + emoji);
+    }
+    setShowEmojiPicker(false);
+  };
+
+  const handleLocationClick = async () => {
+    if (!navigator.geolocation) {
+      alert('Location is not supported by your browser.');
+      return;
+    }
+    setLocationLoading(true);
+    try {
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        });
+      });
+      const { latitude, longitude } = position.coords;
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+        { headers: { 'Accept-Language': 'en' } }
+      );
+      const data = await res.json();
+      const place = data.display_name || data.address?.city || `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+      const locationText = `📍 ${place}`;
+      setContent((prev) => (prev ? `${prev}\n${locationText}` : locationText));
+    } catch (err) {
+      console.error('Location error:', err);
+      if (err.code === 1) {
+        alert('Location access was denied. Please enable location in your browser.');
+      } else {
+        alert('Could not get your location. Please try again.');
+      }
+    } finally {
+      setLocationLoading(false);
+    }
   };
 
   const handleSubmit = async () => {
@@ -128,6 +185,7 @@ const CreatePost = ({ onClose, onPost }) => {
         {/* Content */}
         <div className="px-5">
           <textarea
+            ref={textareaRef}
             className="w-full min-h-[100px] resize-none outline-none text-[#374151] placeholder-[#9CA3AF] text-[15px] leading-relaxed"
             placeholder="What's on your mind?"
             value={content}
@@ -176,19 +234,58 @@ const CreatePost = ({ onClose, onPost }) => {
         </div>
 
         {/* Tools */}
-        <div className="flex justify-between items-center px-5 py-3 border-t border-[#E5E7EB] bg-[#F9FAFB]">
+        <div className="flex justify-between items-center px-5 py-3 border-t border-[#E5E7EB] bg-[#F9FAFB] relative">
           <div className="flex items-center gap-1">
             <button 
+              type="button"
               onClick={() => fileInputRef.current?.click()}
               className="p-2.5 hover:bg-white rounded-lg text-[#6B7280] hover:text-green-500 transition-all"
+              title="Add photo"
             >
               <Image size={22} />
             </button>
-            <button className="p-2.5 hover:bg-white rounded-lg text-[#6B7280] hover:text-yellow-500 transition-all">
-              <Smile size={22} />
-            </button>
-            <button className="p-2.5 hover:bg-white rounded-lg text-[#6B7280] hover:text-red-500 transition-all">
-              <MapPin size={22} />
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker((p) => !p)}
+                className={`p-2.5 hover:bg-white rounded-lg transition-all ${showEmojiPicker ? 'bg-white text-yellow-500' : 'text-[#6B7280] hover:text-yellow-500'}`}
+                title="Add emoji"
+              >
+                <Smile size={22} />
+              </button>
+              {showEmojiPicker && (
+                <>
+                  <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShowEmojiPicker(false)}
+                  />
+                  <div className="absolute left-0 bottom-full mb-2 bg-white rounded-xl shadow-lg border border-[#E5E7EB] p-2 z-20 w-[240px] flex flex-wrap gap-1">
+                    {EMOJI_LIST.map((emoji, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => handleEmojiSelect(emoji)}
+                        className="w-8 h-8 text-lg hover:bg-gray-100 rounded-lg transition-colors"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleLocationClick}
+              disabled={locationLoading}
+              className="p-2.5 hover:bg-white rounded-lg text-[#6B7280] hover:text-red-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Add location"
+            >
+              {locationLoading ? (
+                <div className="w-[22px] h-[22px] border-2 border-red-500 border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <MapPin size={22} />
+              )}
             </button>
           </div>
           <span className={`text-xs font-medium ${content.length > 2000 ? 'text-red-500' : 'text-[#9CA3AF]'}`}>
