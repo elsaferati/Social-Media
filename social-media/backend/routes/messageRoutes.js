@@ -3,10 +3,11 @@ import {
   getMessages,
   sendMessage,
   deleteMessage,
+  updateMessage,
   getConversations,
   uploadMessageImage
 } from '../controllers/messageController.js';
-import { optionalAuth } from '../middleware/auth.js';
+import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 import upload from '../middleware/upload.js';
 
 const router = express.Router();
@@ -15,7 +16,8 @@ const router = express.Router();
 router.get('/', getMessages);
 router.post('/upload', upload.single('image'), uploadMessageImage);
 router.post('/', sendMessage);
-router.delete('/:id', optionalAuth, deleteMessage);
+router.put('/:id', authenticateToken, updateMessage);
+router.delete('/:id', authenticateToken, deleteMessage);
 
 // Conversation routes
 router.get('/conversations/:userId', getConversations);

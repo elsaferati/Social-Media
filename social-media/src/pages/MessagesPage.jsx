@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
-import { Search, MoreHorizontal, Send, Image, Phone, Video, ArrowLeft, Smile } from "lucide-react"; 
+import { Search, MoreHorizontal, Send, Image, Phone, Video, ArrowLeft, Smile, Pencil, Trash2 } from "lucide-react"; 
 import { userAPI, messageAPI } from "../services/api";
 
 const EMOJI_LIST = ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😍', '🥰', '😘', '👍', '👋', '❤️', '🎉', '🔥', '✨', '😂', '🥺', '😭', '🤔', '🙃', '😎', '🤗', '😜', '🤪'];
@@ -28,9 +28,13 @@ const MessagesPage = () => {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [editingMessageId, setEditingMessageId] = useState(null);
+  const [editContent, setEditContent] = useState("");
+  const [messageMenuId, setMessageMenuId] = useState(null);
   const scrollRef = useRef();
   const fileInputRef = useRef(null);
-  const inputRef = useRef(null); 
+  const inputRef = useRef(null);
+  const prevMessageCountRef = useRef(0);
 
   useEffect(() => {
     const fetchFriends = async () => {
@@ -48,7 +52,8 @@ const MessagesPage = () => {
 
   useEffect(() => {
     if (!selectedUser || !currentUser?.id) return;
-    
+    prevMessageCountRef.current = 0;
+
     const fetchMessages = async () => {
       try {
         setLoading(true);
@@ -67,8 +72,12 @@ const MessagesPage = () => {
   }, [selectedUser, currentUser?.id]);
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+    const hasNewMessage = messages.length > prevMessageCountRef.current;
+    prevMessageCountRef.current = messages.length;
+    if (!editingMessageId && hasNewMessage) {
+      scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, editingMessageId]);
 
   const handleSend = async (e) => {
     e.preventDefault();
@@ -116,6 +125,46 @@ const MessagesPage = () => {
     } finally {
       setUploadingImage(false);
       e.target.value = '';
+    }
+  };
+
+  const handleEditMessage = (msg) => {
+    if (isImageUrl(msg.content)) return;
+    setEditingMessageId(msg.id);
+    setEditContent(msg.content);
+    setMessageMenuId(null);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingMessageId || !editContent.trim()) return;
+    try {
+      const updated = await messageAPI.update(editingMessageId, editContent.trim());
+      setMessages((prev) =>
+        prev.map((m) => (m.id === updated.id ? updated : m))
+      );
+      setEditingMessageId(null);
+      setEditContent("");
+    } catch (err) {
+      console.error("Error updating message:", err);
+      alert("Failed to update message. Please try again.");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMessageId(null);
+    setEditContent("");
+    setMessageMenuId(null);
+  };
+
+  const handleDeleteMessage = async (msg) => {
+    if (!window.confirm("Delete this message?")) return;
+    try {
+      await messageAPI.delete(msg.id);
+      setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+      setMessageMenuId(null);
+    } catch (err) {
+      console.error("Error deleting message:", err);
+      alert("Failed to delete message. Please try again.");
     }
   };
 
@@ -267,12 +316,15 @@ const MessagesPage = () => {
                   messages.map((msg, index) => {
                     const isMe = msg.senderId === currentUser.id;
                     const showAvatar = !isMe && (index === 0 || messages[index - 1]?.senderId !== msg.senderId);
+                    const isEditing = editingMessageId === msg.id;
+                    const isImageMsg = getImageUrl(msg.content);
+                    const showMenu = messageMenuId === msg.id;
                     
                     return (
                       <div
                         key={msg.id}
                         ref={scrollRef}
-                        className={`flex items-end gap-2 ${isMe ? 'justify-end' : 'justify-start'} animate-fadeIn`}
+                        className={`flex items-end gap-2 ${isMe ? 'justify-end' : 'justify-start'} animate-fadeIn group`}
                       >
                         {!isMe && showAvatar && (
                           <img 
@@ -282,21 +334,98 @@ const MessagesPage = () => {
                           />
                         )}
                         {!isMe && !showAvatar && <div className="w-7" />}
-                        <div
-                          className={`max-w-[70%] px-4 py-2.5 text-sm ${
-                            isMe
-                              ? "gradient-bg text-white rounded-2xl rounded-br-md shadow-md shadow-indigo-200"
-                              : "bg-white text-gray-900 rounded-2xl rounded-bl-md border border-gray-200 shadow-sm"
-                          }`}
-                        >
-                          {getImageUrl(msg.content) ? (
-                            <img
-                              src={getImageUrl(msg.content)}
-                              alt="Shared"
-                              className="max-w-full max-h-64 rounded-lg object-contain"
-                            />
+                        <div className={`relative max-w-[70%] ${isMe ? 'group/msg' : ''}`}>
+                          {isEditing ? (
+                            <div className="bg-white rounded-2xl rounded-br-md border border-gray-200 shadow-lg p-3">
+                              <input
+                                type="text"
+                                value={editContent}
+                                onChange={(e) => setEditContent(e.target.value)}
+                                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg outline-none focus:border-indigo-500"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleSaveEdit();
+                                  if (e.key === 'Escape') handleCancelEdit();
+                                }}
+                              />
+                              <div className="flex gap-2 mt-2">
+                                <button
+                                  type="button"
+                                  onClick={handleCancelEdit}
+                                  className="px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
+                                >
+                                  Cancel
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={handleSaveEdit}
+                                  disabled={!editContent.trim()}
+                                  className="px-3 py-1.5 text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                  Save
+                                </button>
+                              </div>
+                            </div>
                           ) : (
-                            msg.content
+                            <>
+                              <div
+                                className={`px-4 py-2.5 text-sm ${
+                                  isMe
+                                    ? "gradient-bg text-white rounded-2xl rounded-br-md shadow-md shadow-indigo-200"
+                                    : "bg-white text-gray-900 rounded-2xl rounded-bl-md border border-gray-200 shadow-sm"
+                                }`}
+                              >
+                                {isImageMsg ? (
+                                  <img
+                                    src={isImageMsg}
+                                    alt="Shared"
+                                    className="max-w-full max-h-64 rounded-lg object-contain"
+                                  />
+                                ) : (
+                                  msg.content
+                                )}
+                              </div>
+                              {isMe && (
+                                <div className="absolute -left-8 top-1/2 -translate-y-1/2 opacity-0 group-hover/msg:opacity-100 transition-opacity">
+                                  <button
+                                    type="button"
+                                    onClick={() => setMessageMenuId(showMenu ? null : msg.id)}
+                                    className="p-1.5 hover:bg-gray-200 rounded-full transition-colors bg-white shadow border border-gray-200"
+                                    title="Message options"
+                                  >
+                                    <MoreHorizontal size={16} className="text-gray-600" />
+                                  </button>
+                                  {showMenu && (
+                                    <>
+                                      <div
+                                        className="fixed inset-0 z-10"
+                                        onClick={() => setMessageMenuId(null)}
+                                      />
+                                      <div className="absolute right-0 bottom-full mb-1 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20 min-w-[100px]">
+                                        {!isImageMsg && (
+                                          <button
+                                            type="button"
+                                            onClick={() => handleEditMessage(msg)}
+                                            className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                                          >
+                                            <Pencil size={14} />
+                                            Edit
+                                          </button>
+                                        )}
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteMessage(msg)}
+                                          className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                        >
+                                          <Trash2 size={14} />
+                                          Delete
+                                        </button>
+                                      </div>
+                                    </>
+                                  )}
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>

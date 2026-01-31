@@ -69,6 +69,15 @@ const Message = {
     return result.insertId;
   },
 
+  // Update message
+  update: async (id, content) => {
+    const [result] = await db.query(
+      'UPDATE messages SET content = ? WHERE id = ?',
+      [content, id]
+    );
+    return result.affectedRows > 0;
+  },
+
   // Delete message
   delete: async (id) => {
     const [result] = await db.query('DELETE FROM messages WHERE id = ?', [id]);

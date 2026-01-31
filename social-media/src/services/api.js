@@ -209,6 +209,12 @@ export const messageAPI = {
     return response.json();
   },
 
+  update: (id, content) =>
+    fetchWithAuth(`/messages/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ content }),
+    }),
+
   delete: (id) =>
     fetchWithAuth(`/messages/${id}`, {
       method: 'DELETE',

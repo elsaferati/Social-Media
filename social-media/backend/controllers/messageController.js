@@ -36,6 +36,34 @@ export const sendMessage = async (req, res) => {
   }
 };
 
+// Update a message
+export const updateMessage = async (req, res) => {
+  try {
+    const messageId = req.params.id;
+    const { content } = req.body;
+
+    if (!content || typeof content !== 'string' || !content.trim()) {
+      return res.status(400).json({ message: 'Content is required' });
+    }
+
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ message: 'Message not found' });
+    }
+
+    if (req.user && req.user.id !== message.senderId && req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized to edit this message' });
+    }
+
+    await Message.update(messageId, content.trim());
+    const updatedMessage = await Message.findById(messageId);
+    res.json(updatedMessage);
+  } catch (error) {
+    console.error('Update message error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Delete a message
 export const deleteMessage = async (req, res) => {
   try {
@@ -47,7 +75,7 @@ export const deleteMessage = async (req, res) => {
     }
 
     // Check ownership (unless admin)
-    if (req.user && req.user.id !== message.senderId && req.user.role !== 'admin') {
+    if (!req.user || (req.user.id !== message.senderId && req.user.role !== 'admin')) {
       return res.status(403).json({ message: 'Not authorized to delete this message' });
     }
 
