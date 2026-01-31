@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import { Search, MoreHorizontal, Send, Image, Phone, Video, ArrowLeft, Smile, Pencil, Trash2 } from "lucide-react"; 
 import { userAPI, messageAPI } from "../services/api";
+import ConfirmModal from "../components/ConfirmModal";
 
 const EMOJI_LIST = ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😍', '🥰', '😘', '👍', '👋', '❤️', '🎉', '🔥', '✨', '😂', '🥺', '😭', '🤔', '🙃', '😎', '🤗', '😜', '🤪'];
 
@@ -31,6 +32,7 @@ const MessagesPage = () => {
   const [editingMessageId, setEditingMessageId] = useState(null);
   const [editContent, setEditContent] = useState("");
   const [messageMenuId, setMessageMenuId] = useState(null);
+  const [deleteConfirmMessage, setDeleteConfirmMessage] = useState(null);
   const scrollRef = useRef();
   const fileInputRef = useRef(null);
   const inputRef = useRef(null);
@@ -156,15 +158,22 @@ const MessagesPage = () => {
     setMessageMenuId(null);
   };
 
-  const handleDeleteMessage = async (msg) => {
-    if (!window.confirm("Delete this message?")) return;
+  const handleDeleteClick = (msg) => {
+    setMessageMenuId(null);
+    setDeleteConfirmMessage(msg);
+  };
+
+  const handleConfirmDelete = async () => {
+    const msg = deleteConfirmMessage;
+    if (!msg) return;
     try {
       await messageAPI.delete(msg.id);
       setMessages((prev) => prev.filter((m) => m.id !== msg.id));
-      setMessageMenuId(null);
     } catch (err) {
       console.error("Error deleting message:", err);
       alert("Failed to delete message. Please try again.");
+    } finally {
+      setDeleteConfirmMessage(null);
     }
   };
 
@@ -414,7 +423,7 @@ const MessagesPage = () => {
                                         )}
                                         <button
                                           type="button"
-                                          onClick={() => handleDeleteMessage(msg)}
+                                          onClick={() => handleDeleteClick(msg)}
                                           className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                                         >
                                           <Trash2 size={14} />
@@ -518,6 +527,17 @@ const MessagesPage = () => {
           )}
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={!!deleteConfirmMessage}
+        onClose={() => setDeleteConfirmMessage(null)}
+        onConfirm={handleConfirmDelete}
+        title="Delete message"
+        message="This message will be permanently removed. This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </Layout>
   );
 };
