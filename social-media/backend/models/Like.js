@@ -1,13 +1,26 @@
 import db from '../config/db.js';
 
 const Like = {
-  // Get likes for a post
+  // Get likes for a post (user IDs only)
   getByPostId: async (postId) => {
     const [rows] = await db.query(
       'SELECT userId FROM likes WHERE postId = ?',
       [postId]
     );
     return rows.map(row => row.userId);
+  },
+
+  // Get likers with user info (id, username, profilePic) for "who liked" list
+  getLikersWithUser: async (postId) => {
+    const [rows] = await db.query(
+      `SELECT u.id, u.username, u.profilePic 
+       FROM likes l 
+       JOIN users u ON l.userId = u.id 
+       WHERE l.postId = ?
+       ORDER BY l.userId ASC`,
+      [postId]
+    );
+    return rows;
   },
 
   // Check if user liked a post

@@ -162,7 +162,7 @@ export const deletePost = async (req, res) => {
   }
 };
 
-// Get likes for a post
+// Get likes for a post (array of user IDs)
 export const getLikes = async (req, res) => {
   try {
     const postId = req.query.postId;
@@ -173,6 +173,21 @@ export const getLikes = async (req, res) => {
     res.json(likes);
   } catch (error) {
     console.error('Get likes error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get likers with user info (who liked this post)
+export const getLikers = async (req, res) => {
+  try {
+    const postId = req.params.postId;
+    if (!postId) {
+      return res.status(400).json({ message: 'postId is required' });
+    }
+    const likers = await Like.getLikersWithUser(postId);
+    res.json(likers);
+  } catch (error) {
+    console.error('Get likers error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

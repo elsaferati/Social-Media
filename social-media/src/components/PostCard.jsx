@@ -3,16 +3,19 @@ import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Trash2 } from "lu
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { likeAPI, bookmarkAPI, postAPI, getAvatarUrl } from "../services/api";
+import { likeAPI, bookmarkAPI, commentAPI, postAPI, getAvatarUrl } from "../services/api";
 import CommentsModal from "./CommentsModal";
 import SharePostModal from "./SharePostModal";
+import LikesModal from "./LikesModal";
 
 const PostCard = ({ post, onDelete, onBookmarkChange }) => {
   const { currentUser } = useAuth();
   const [liked, setLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
+  const [commentsCount, setCommentsCount] = useState(0);
   const [bookmarked, setBookmarked] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showLikesModal, setShowLikesModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [likeLoading, setLikeLoading] = useState(false);
@@ -27,7 +30,17 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
       fetchLikes();
       checkBookmark();
     }
+    fetchCommentsCount();
   }, [post.id, currentUser]);
+
+  const fetchCommentsCount = async () => {
+    try {
+      const count = await commentAPI.getCount(post.id);
+      setCommentsCount(typeof count === 'number' ? count : (count?.count ?? 0));
+    } catch {
+      setCommentsCount(0);
+    }
+  };
 
   const fetchLikes = async () => {
     try {
@@ -211,10 +224,17 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
             </button>
           </div>
 
-          {/* Likes */}
-          <p className="font-semibold text-sm text-[#1E293B] mb-2">
+          {/* Likes - click to see who liked (stops propagation so it doesn't trigger comment open) */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (likesCount > 0) setShowLikesModal(true);
+            }}
+            className={`font-semibold text-sm text-[#1E293B] mb-2 text-left ${likesCount > 0 ? 'hover:text-[#7E22CE] transition-colors cursor-pointer' : 'cursor-default'}`}
+          >
             {likesCount.toLocaleString()} {likesCount === 1 ? 'like' : 'likes'}
-          </p>
+          </button>
 
           {/* Caption */}
           {post.content && post.img && (
@@ -231,16 +251,25 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
             onClick={() => setShowComments(true)} 
             className="text-[#64748B] text-sm hover:text-[#475569] transition-colors"
           >
-            View comments
+            {commentsCount > 0 ? `View all ${commentsCount.toLocaleString()} comment${commentsCount === 1 ? '' : 's'}` : 'View comments'}
           </button>
         </div>
       </article>
 
       <CommentsModal
         isOpen={showComments}
-        onClose={() => setShowComments(false)}
+        onClose={() => {
+          setShowComments(false);
+          fetchCommentsCount();
+        }}
         postId={post.id}
         postAuthor={username}
+      />
+
+      <LikesModal
+        isOpen={showLikesModal}
+        onClose={() => setShowLikesModal(false)}
+        postId={post.id}
       />
 
       <SharePostModal

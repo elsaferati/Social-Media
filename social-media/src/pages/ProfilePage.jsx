@@ -3,7 +3,16 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import ProfileHeader from "../components/ProfileHeader";
+import CommentsModal from "../components/CommentsModal";
+import LikesModal from "../components/LikesModal";
 import { Grid, Bookmark, Heart, MessageCircle, Camera, Play } from "lucide-react";
+import { userAPI, postAPI, UPLOADS_ORIGIN } from "../services/api";
+
+const getPostImageUrl = (img) => {
+  if (!img) return null;
+  if (img.startsWith('http') || img.startsWith('data:')) return img;
+  return `${UPLOADS_ORIGIN}${img.startsWith('/') ? '' : '/'}${img}`;
+};
 
 const ProfilePage = () => {
   const { userId } = useParams();
@@ -13,20 +22,21 @@ const ProfilePage = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('posts');
+  const [commentsPostId, setCommentsPostId] = useState(null);
+  const [likesPostId, setLikesPostId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const userRes = await fetch(`http://localhost:8800/api/users/${userId}`);
-        const userData = await userRes.json();
+        const [userData, postsData] = await Promise.all([
+          userAPI.getUser(userId),
+          postAPI.getByUser(userId),
+        ]);
         setUser(userData);
-
-        const postsRes = await fetch(`http://localhost:8800/api/posts/user/${userId}`);
-        const postsData = await postsRes.json();
-        setPosts(postsData);
+        setPosts(Array.isArray(postsData) ? postsData : []);
       } catch (err) {
-        console.log(err);
+        console.error(err);
       } finally {
         setLoading(false);
       }
@@ -115,47 +125,78 @@ const ProfilePage = () => {
         {/* Post Grid */}
         <div className="grid grid-cols-3 gap-1 md:gap-4 mt-4">
           {posts.length > 0 ? (
-            posts.map((post, index) => (
+            posts.map((post, index) => {
+              const likeCount = post.likeCount ?? post.likecount ?? post.likes ?? 0;
+              const commentCount = post.commentCount ?? post.commentcount ?? 0;
+              return (
               <div 
                 key={post.id} 
-                className="aspect-square bg-gray-100 relative group cursor-pointer overflow-hidden rounded-lg animate-fadeIn hover-lift"
+                className="aspect-square bg-gray-100 relative group overflow-hidden rounded-lg animate-fadeIn"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                {post.img ? (
-                  <img 
-                    src={post.img.startsWith('http') ? post.img : `http://localhost:8800${post.img}`} 
-                    className="w-full h-full object-cover" 
-                    alt="post" 
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-pink-50 p-4">
-                    <p className="text-gray-600 text-sm text-center line-clamp-4">
-                      {post.content}
-                    </p>
-                  </div>
-                )}
+                {/* Content area - click opens comments */}
+                <button
+                  type="button"
+                  onClick={() => setCommentsPostId(post.id)}
+                  className="absolute inset-0 w-full h-full cursor-pointer text-left"
+                >
+                  {post.img ? (
+                    <img 
+                      src={getPostImageUrl(post.img)} 
+                      className="w-full h-full object-cover" 
+                      alt="post" 
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-pink-50 p-4">
+                      <p className="text-gray-600 text-sm text-center line-clamp-4">
+                        {post.content}
+                      </p>
+                    </div>
+                  )}
+                </button>
                 
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-6 text-white font-semibold">
+                {/* Bar: likes opens LikesModal, comments opens CommentsModal */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-2 flex items-center justify-center gap-4 text-white text-sm font-medium">
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); setLikesPostId(post.id); }}
+                    className="flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer"
+                  >
+                    <Heart size={16} fill="currentColor" />
+                    {likeCount}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); e.preventDefault(); setCommentsPostId(post.id); }}
+                    className="flex items-center gap-1.5 hover:opacity-90 transition-opacity cursor-pointer"
+                  >
+                    <MessageCircle size={16} fill="currentColor" />
+                    {commentCount}
+                  </button>
+                </div>
+                {/* Hover overlay - same click targets */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center gap-6 text-white font-semibold pointer-events-none">
                   <div className="flex items-center gap-2">
                     <Heart size={22} fill="white" />
-                    <span>{post.likes || 0}</span>
+                    <span>{likeCount}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MessageCircle size={22} fill="white" />
-                    <span>0</span>
+                    <span>{commentCount}</span>
                   </div>
                 </div>
 
                 {/* Video/Carousel Indicator */}
                 {post.isVideo && (
-                  <div className="absolute top-3 right-3">
+                  <div className="absolute top-3 right-3 pointer-events-none">
                     <Play size={20} fill="white" className="text-white drop-shadow-lg" />
                   </div>
                 )}
               </div>
-            ))
-          ) : (
+            );
+            })
+          ) : null}
+          {posts.length === 0 && (
             <div className="col-span-3 flex flex-col items-center py-20">
               <div className="w-20 h-20 rounded-full border-2 border-gray-200 flex items-center justify-center mb-6">
                 <Camera size={36} className="text-gray-300" />
@@ -166,11 +207,27 @@ const ProfilePage = () => {
               <p className="text-gray-500 text-center max-w-sm">
                 {isOwnProfile 
                   ? 'When you share photos, they will appear on your profile.' 
-                  : 'This user hasn\'t posted anything yet.'}
+                  : "This user hasn't posted anything yet."}
               </p>
             </div>
           )}
         </div>
+
+        {commentsPostId && (
+          <CommentsModal
+            isOpen={!!commentsPostId}
+            onClose={() => setCommentsPostId(null)}
+            postId={commentsPostId}
+            postAuthor={posts.find((p) => p.id === commentsPostId)?.username || 'User'}
+          />
+        )}
+        {likesPostId && (
+          <LikesModal
+            isOpen={!!likesPostId}
+            onClose={() => setLikesPostId(null)}
+            postId={likesPostId}
+          />
+        )}
       </div>
     </Layout>
   );

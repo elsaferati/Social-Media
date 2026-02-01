@@ -77,10 +77,12 @@ const Post = {
     return rows[0] || null;
   },
 
-  // Get posts by user ID
+  // Get posts by user ID (with like and comment counts)
   getByUserId: async (userId) => {
     const [rows] = await db.query(
-      `SELECT p.*, u.username, u.profilePic 
+      `SELECT p.*, u.username, u.profilePic,
+        (SELECT COUNT(*) FROM likes WHERE postId = p.id) AS \`likeCount\`,
+        (SELECT COUNT(*) FROM comments WHERE postId = p.id) AS \`commentCount\`
        FROM posts p 
        JOIN users u ON p.userId = u.id 
        WHERE p.userId = ? 

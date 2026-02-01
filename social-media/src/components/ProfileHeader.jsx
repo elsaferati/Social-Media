@@ -83,24 +83,22 @@ const ProfileHeader = ({ userId }) => {
 
   return (
     <div className="card-flat overflow-hidden">
-      {/* Cover Image */}
-      <div className="h-32 md:h-48 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative">
-        <div className="absolute inset-0 bg-black/10" />
+      {/* Cover banner - enough height so avatar overlap looks clean */}
+      <div className="h-36 md:h-52 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 relative rounded-t-2xl overflow-hidden">
+        <div className="absolute inset-0 bg-black/5" />
       </div>
 
       {/* Profile Content */}
       <div className="px-4 md:px-8 pb-6">
-        {/* Avatar */}
-        <div className="flex flex-col md:flex-row md:items-end gap-4 -mt-16 md:-mt-20">
+        {/* Avatar - overlaps banner with clear ring so it doesn't look cut off */}
+        <div className="flex flex-col md:flex-row md:items-end gap-4 -mt-14 md:-mt-18">
           <div className="mx-auto md:mx-0">
-            <div className="w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-white shadow-xl">
-              <div className="w-full h-full rounded-full p-1 gradient-bg">
-                <img 
-                  src={userImage} 
-                  alt={user.username} 
-                  className="w-full h-full rounded-full object-cover border-4 border-white"
-                />
-              </div>
+            <div className="w-28 h-28 md:w-36 md:h-36 rounded-full ring-4 ring-white shadow-xl bg-white">
+              <img 
+                src={userImage} 
+                alt={user.username} 
+                className="w-full h-full rounded-full object-cover"
+              />
             </div>
           </div>
 
@@ -206,17 +204,17 @@ const ProfileHeader = ({ userId }) => {
           )}
         </div>
 
-        {/* Story Highlights */}
-        <div className="flex gap-4 mt-6 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="flex flex-col items-center gap-2 flex-shrink-0">
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:scale-105 transition-transform cursor-pointer">
-                <span className="text-2xl">+</span>
+        {/* Story highlight - single "New" placeholder (stories can be added later) */}
+        {isOwnProfile && (
+          <div className="flex gap-4 mt-6 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="flex flex-col items-center gap-2 flex-shrink-0">
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gray-100 border-2 border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-200 transition-colors cursor-pointer">
+                <span className="text-2xl font-light">+</span>
               </div>
               <span className="text-xs text-gray-500 font-medium">New</span>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
