@@ -189,6 +189,30 @@ const setupDatabase = async () => {
     `);
     console.log('✓ Story views table ready');
 
+    // Profile highlights (archive stories on profile)
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS profile_highlights (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        userId INT NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        coverStoryId INT DEFAULT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (coverStoryId) REFERENCES stories(id) ON DELETE SET NULL
+      )
+    `);
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS profile_highlight_stories (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        highlightId INT NOT NULL,
+        storyId INT NOT NULL,
+        sortOrder INT DEFAULT 0,
+        FOREIGN KEY (highlightId) REFERENCES profile_highlights(id) ON DELETE CASCADE,
+        FOREIGN KEY (storyId) REFERENCES stories(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('✓ Profile highlights tables ready');
+
     // Create reports table
     await connection.query(`
       CREATE TABLE IF NOT EXISTS reports (

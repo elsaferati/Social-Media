@@ -30,13 +30,28 @@ export const getStory = async (req, res) => {
   }
 };
 
-// Get user stories
+// Get user stories (active only)
 export const getUserStories = async (req, res) => {
   try {
     const stories = await Story.getByUserId(req.params.userId);
     res.json(stories);
   } catch (error) {
     console.error('Get user stories error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get archived stories for user (expired - for adding to highlights)
+export const getArchivedStories = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (req.user?.id !== parseInt(userId)) {
+      return res.status(403).json({ message: 'You can only view your own archive' });
+    }
+    const stories = await Story.getArchivedByUserId(userId);
+    res.json(stories);
+  } catch (error) {
+    console.error('Get archived stories error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

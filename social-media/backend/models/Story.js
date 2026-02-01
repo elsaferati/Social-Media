@@ -57,13 +57,26 @@ const Story = {
     return rows;
   },
 
-  // Get stories by user
+  // Get stories by user (active only)
   getByUserId: async (userId) => {
     const [rows] = await db.query(
       `SELECT s.*, u.username, u.profilePic 
        FROM stories s 
        JOIN users u ON s.userId = u.id 
        WHERE s.userId = ? AND s.expiresAt > NOW()
+       ORDER BY s.createdAt DESC`,
+      [userId]
+    );
+    return rows;
+  },
+
+  // Get archived stories for user (expired - for highlights)
+  getArchivedByUserId: async (userId) => {
+    const [rows] = await db.query(
+      `SELECT s.*, u.username, u.profilePic 
+       FROM stories s 
+       JOIN users u ON s.userId = u.id 
+       WHERE s.userId = ? AND s.expiresAt <= NOW()
        ORDER BY s.createdAt DESC`,
       [userId]
     );

@@ -3,6 +3,7 @@ import {
   getStories,
   getStory,
   getUserStories,
+  getArchivedStories,
   createStory,
   updateStory,
   deleteStory,
@@ -20,6 +21,7 @@ const router = express.Router();
 // Public/User routes
 router.get('/feed/:userId', getStories);
 router.get('/user/:userId', getUserStories);
+router.get('/archive/:userId', authenticateToken, getArchivedStories);
 router.get('/:id', getStory);
 router.get('/:id/viewers', getStoryViewers);
 
