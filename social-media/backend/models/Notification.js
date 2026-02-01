@@ -64,12 +64,12 @@ const Notification = {
 
   // Mark as read
   markAsRead: async (id) => {
-    await db.query('UPDATE notifications SET isRead = 1 WHERE id = ?', [id]);
+    await db.query('UPDATE notifications SET `isRead` = 1 WHERE id = ?', [id]);
   },
 
   // Mark all as read for a user
   markAllAsRead: async (userId) => {
-    await db.query('UPDATE notifications SET isRead = 1 WHERE receiverUserId = ?', [userId]);
+    await db.query('UPDATE notifications SET `isRead` = 1 WHERE receiverUserId = ?', [userId]);
   },
 
   // Delete notification
@@ -81,7 +81,7 @@ const Notification = {
   // Get unread count
   getUnreadCount: async (userId) => {
     const [rows] = await db.query(
-      'SELECT COUNT(*) as count FROM notifications WHERE receiverUserId = ? AND isRead = 0',
+      'SELECT COUNT(*) as count FROM notifications WHERE receiverUserId = ? AND `isRead` = 0',
       [userId]
     );
     return rows[0].count;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Plus, X, ChevronLeft, ChevronRight, Eye, Upload } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { storyAPI } from '../services/api';
+import { storyAPI, getAvatarUrl } from '../services/api';
 
 const StoriesBar = () => {
   const { currentUser } = useAuth();
@@ -192,7 +192,7 @@ const StoriesBar = () => {
             >
               <div className="w-[68px] h-[68px] rounded-full p-[2px] story-ring">
                 <img 
-                  src={userStories.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userStories.userId}`} 
+                  src={getAvatarUrl(userStories.profilePic)} 
                   className="w-full h-full rounded-full object-cover border-2 border-white" 
                   alt={userStories.username}
                 />
@@ -322,7 +322,7 @@ const StoriesBar = () => {
           {/* User */}
           <div className="absolute top-10 left-4 flex items-center gap-3">
             <img 
-              src={selectedStory.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedStory.userId}`}
+              src={getAvatarUrl(selectedStory.profilePic)}
               className="w-10 h-10 rounded-full border-2 border-white object-cover"
               alt={selectedStory.username}
             />

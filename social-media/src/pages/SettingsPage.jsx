@@ -1,12 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
-import { userAPI } from "../services/api";
+import { userAPI, authAPI, getAvatarUrl } from "../services/api";
 import { User, Lock, Bell, Shield, Camera, Check, AlertCircle } from "lucide-react";
 
+const NOTIFICATION_PREFS_KEY = 'socialix_notification_prefs';
+const PRIVACY_PREFS_KEY = 'socialix_privacy_prefs';
+
+const getStoredNotificationPrefs = (userId) => {
+  if (!userId) return { likes: true, comments: true, newFollowers: true, directMessages: true };
+  try {
+    const raw = localStorage.getItem(`${NOTIFICATION_PREFS_KEY}_${userId}`);
+    if (!raw) return { likes: true, comments: true, newFollowers: true, directMessages: true };
+    const parsed = JSON.parse(raw);
+    return { likes: true, comments: true, newFollowers: true, directMessages: true, ...parsed };
+  } catch {
+    return { likes: true, comments: true, newFollowers: true, directMessages: true };
+  }
+};
+
 const SettingsPage = () => {
-  const { currentUser, updateUser } = useAuth();
+  const navigate = useNavigate();
+  const { currentUser, updateUser, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
+  const fileInputRef = useRef(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+
+  const [notificationPrefs, setNotificationPrefs] = useState(() =>
+    getStoredNotificationPrefs(currentUser?.id)
+  );
+
+  const getStoredPrivacyPrefs = (userId) => {
+    if (!userId) return { privateAccount: false, activityStatus: true, allowTagging: true };
+    try {
+      const raw = localStorage.getItem(`${PRIVACY_PREFS_KEY}_${userId}`);
+      if (!raw) return { privateAccount: false, activityStatus: true, allowTagging: true };
+      const parsed = JSON.parse(raw);
+      return { privateAccount: false, activityStatus: true, allowTagging: true, ...parsed };
+    } catch {
+      return { privateAccount: false, activityStatus: true, allowTagging: true };
+    }
+  };
+
+  const [privacyPrefs, setPrivacyPrefs] = useState(() =>
+    getStoredPrivacyPrefs(currentUser?.id)
+  );
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const [inputs, setInputs] = useState({
     username: currentUser?.username || "",
@@ -30,6 +73,55 @@ const SettingsPage = () => {
 
   const handlePasswordChange = (e) => {
     setPasswordInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  useEffect(() => {
+    setNotificationPrefs(getStoredNotificationPrefs(currentUser?.id));
+  }, [currentUser?.id]);
+
+  useEffect(() => {
+    setPrivacyPrefs(getStoredPrivacyPrefs(currentUser?.id));
+  }, [currentUser?.id]);
+
+  const handlePrivacyToggle = (key) => {
+    const next = { ...privacyPrefs, [key]: !privacyPrefs[key] };
+    setPrivacyPrefs(next);
+    if (currentUser?.id) {
+      localStorage.setItem(`${PRIVACY_PREFS_KEY}_${currentUser.id}`, JSON.stringify(next));
+    }
+  };
+
+  const handleNotificationToggle = (key) => {
+    const next = { ...notificationPrefs, [key]: !notificationPrefs[key] };
+    setNotificationPrefs(next);
+    if (currentUser?.id) {
+      localStorage.setItem(`${NOTIFICATION_PREFS_KEY}_${currentUser.id}`, JSON.stringify(next));
+    }
+  };
+
+  const handlePhotoChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUser?.id) return;
+    const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowed.includes(file.type)) {
+      setStatus('error');
+      setMessage('Please choose a JPEG, PNG, GIF or WebP image.');
+      return;
+    }
+    setUploadingPhoto(true);
+    setMessage('');
+    try {
+      const data = await userAPI.updateProfilePic(currentUser.id, file);
+      updateUser(data);
+      setStatus('success');
+      setMessage('Profile photo updated!');
+    } catch (err) {
+      setStatus('error');
+      setMessage(err.message || 'Failed to upload photo.');
+    } finally {
+      setUploadingPhoto(false);
+      e.target.value = '';
+    }
   };
 
   const handleSave = async (e) => {
@@ -149,25 +241,31 @@ const SettingsPage = () => {
         );
 
       case 'notifications':
+        const notificationItems = [
+          { key: 'likes', label: 'Likes', desc: 'When someone likes your post' },
+          { key: 'comments', label: 'Comments', desc: 'When someone comments on your post' },
+          { key: 'newFollowers', label: 'New Followers', desc: 'When someone follows you' },
+          { key: 'directMessages', label: 'Direct Messages', desc: 'When you receive a new message' },
+        ];
         return (
           <div className="animate-fadeIn">
             <h2 className="text-xl font-bold text-[#1E293B] mb-1 tracking-tight">Notifications</h2>
             <p className="text-[#64748B] mb-6">Manage how you receive notifications</p>
 
             <div className="space-y-3 max-w-md">
-              {[
-                { label: 'Likes', desc: 'When someone likes your post' },
-                { label: 'Comments', desc: 'When someone comments on your post' },
-                { label: 'New Followers', desc: 'When someone follows you' },
-                { label: 'Direct Messages', desc: 'When you receive a new message' },
-              ].map((item) => (
-                <label key={item.label} className="flex items-center justify-between p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] hover:border-[#CBD5E1] transition-colors cursor-pointer">
+              {notificationItems.map((item) => (
+                <label key={item.key} className="flex items-center justify-between p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] hover:border-[#CBD5E1] transition-colors cursor-pointer">
                   <div>
                     <p className="font-medium text-[#1E293B]">{item.label}</p>
                     <p className="text-sm text-[#64748B]">{item.desc}</p>
                   </div>
                   <div className="relative">
-                    <input type="checkbox" defaultChecked className="sr-only peer" />
+                    <input
+                      type="checkbox"
+                      checked={notificationPrefs[item.key] ?? true}
+                      onChange={() => handleNotificationToggle(item.key)}
+                      className="sr-only peer"
+                    />
                     <div className="w-11 h-6 bg-[#CBD5E1] peer-checked:bg-[#7E22CE] rounded-full transition-colors"></div>
                     <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full peer-checked:translate-x-5 transition-transform shadow-sm"></div>
                   </div>
@@ -178,24 +276,30 @@ const SettingsPage = () => {
         );
 
       case 'privacy':
+        const privacyItems = [
+          { key: 'privateAccount', label: 'Private Account', desc: 'Only followers can see your posts' },
+          { key: 'activityStatus', label: 'Activity Status', desc: "Show when you're active" },
+          { key: 'allowTagging', label: 'Allow Tagging', desc: 'Let others tag you in posts' },
+        ];
         return (
           <div className="animate-fadeIn">
             <h2 className="text-xl font-bold text-[#1E293B] mb-1 tracking-tight">Privacy & Security</h2>
             <p className="text-[#64748B] mb-6">Control your account privacy settings</p>
 
             <div className="space-y-3 max-w-md">
-              {[
-                { label: 'Private Account', desc: 'Only followers can see your posts', checked: false },
-                { label: 'Activity Status', desc: 'Show when you\'re active', checked: true },
-                { label: 'Allow Tagging', desc: 'Let others tag you in posts', checked: true },
-              ].map((item) => (
-                <label key={item.label} className="flex items-center justify-between p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] hover:border-[#CBD5E1] transition-colors cursor-pointer">
+              {privacyItems.map((item) => (
+                <label key={item.key} className="flex items-center justify-between p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] hover:border-[#CBD5E1] transition-colors cursor-pointer">
                   <div>
                     <p className="font-medium text-[#1E293B]">{item.label}</p>
                     <p className="text-sm text-[#64748B]">{item.desc}</p>
                   </div>
                   <div className="relative">
-                    <input type="checkbox" defaultChecked={item.checked} className="sr-only peer" />
+                    <input
+                      type="checkbox"
+                      checked={privacyPrefs[item.key] ?? (item.key === 'privateAccount' ? false : true)}
+                      onChange={() => handlePrivacyToggle(item.key)}
+                      className="sr-only peer"
+                    />
                     <div className="w-11 h-6 bg-[#CBD5E1] peer-checked:bg-[#7E22CE] rounded-full transition-colors"></div>
                     <div className="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full peer-checked:translate-x-5 transition-transform shadow-sm"></div>
                   </div>
@@ -206,10 +310,66 @@ const SettingsPage = () => {
             <div className="mt-8 p-4 bg-[#FEE2E2] border border-[#FECACA] rounded-[12px] max-w-md">
               <h3 className="font-medium text-[#DC2626] mb-1">Danger Zone</h3>
               <p className="text-sm text-[#EF4444] mb-3">Once you delete your account, there is no going back.</p>
-              <button className="text-sm px-4 py-2 bg-[#FECACA] text-[#DC2626] font-medium rounded-[10px] hover:bg-[#FCA5A5] transition-colors">
+              <button
+                type="button"
+                onClick={() => setShowDeleteModal(true)}
+                className="text-sm px-4 py-2 bg-[#FECACA] text-[#DC2626] font-medium rounded-[10px] hover:bg-[#FCA5A5] transition-colors"
+              >
                 Delete Account
               </button>
             </div>
+
+            {/* Delete account modal */}
+            {showDeleteModal && (
+              <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !deletingAccount && setShowDeleteModal(false)} />
+                <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-scaleIn p-6" onClick={(e) => e.stopPropagation()}>
+                  <h3 className="text-lg font-semibold text-gray-900">Delete account</h3>
+                  <p className="mt-1 text-sm text-gray-600 mb-4">Enter your password to permanently delete your account. This cannot be undone.</p>
+                  <input
+                    type="password"
+                    value={deletePassword}
+                    onChange={(e) => setDeletePassword(e.target.value)}
+                    placeholder="Your password"
+                    className="input w-full mb-4"
+                    autoFocus
+                  />
+                  <div className="flex gap-3 justify-end">
+                    <button
+                      type="button"
+                      onClick={() => { setShowDeleteModal(false); setDeletePassword(''); }}
+                      disabled={deletingAccount}
+                      className="px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors disabled:opacity-70"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!deletePassword.trim()) return;
+                        setDeletingAccount(true);
+                        try {
+                          await authAPI.deleteAccount(deletePassword);
+                          logout();
+                          navigate('/login');
+                        } catch (err) {
+                          setStatus('error');
+                          setMessage(err.message || 'Failed to delete account.');
+                          setShowDeleteModal(false);
+                          setDeletePassword('');
+                        } finally {
+                          setDeletingAccount(false);
+                        }
+                      }}
+                      disabled={deletingAccount || !deletePassword.trim()}
+                      className="px-4 py-2.5 text-sm font-medium bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors disabled:opacity-70"
+                    >
+                      {deletingAccount ? 'Deleting...' : 'Delete my account'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
 
@@ -221,20 +381,37 @@ const SettingsPage = () => {
 
             {/* Avatar */}
             <div className="flex items-center gap-5 mb-6 p-4 bg-[#F8FAFC] border border-[#E2E8F0] rounded-[12px] max-w-md">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                className="hidden"
+                onChange={handlePhotoChange}
+              />
               <div className="relative">
                 <img 
-                  src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
+                  src={getAvatarUrl(currentUser?.profilePic)} 
                   className="w-16 h-16 rounded-full object-cover bg-[#E2E8F0]" 
                   alt=""
                 />
-                <button className="absolute -bottom-1 -right-1 w-7 h-7 gradient-bg rounded-full flex items-center justify-center shadow-md">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingPhoto}
+                  className="absolute -bottom-1 -right-1 w-7 h-7 gradient-bg rounded-full flex items-center justify-center shadow-md disabled:opacity-70"
+                >
                   <Camera size={14} className="text-white" />
                 </button>
               </div>
               <div>
                 <p className="font-semibold text-[#1E293B]">{currentUser?.username}</p>
-                <button className="text-[#7E22CE] text-sm font-medium hover:text-[#6B21A8]">
-                  Change Photo
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadingPhoto}
+                  className="text-[#7E22CE] text-sm font-medium hover:text-[#6B21A8] disabled:opacity-70"
+                >
+                  {uploadingPhoto ? 'Uploading...' : 'Change Photo'}
                 </button>
               </div>
             </div>

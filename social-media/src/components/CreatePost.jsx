@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { Image, MapPin, Smile, X, Upload } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { getAvatarUrl } from "../services/api";
 
 const EMOJI_LIST = ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😍', '🥰', '😘', '👍', '👋', '❤️', '🎉', '🔥', '✨', '😂', '🥺', '😭', '🤔', '🙃', '😎', '🤗', '😜', '🤪'];
 
@@ -172,7 +173,7 @@ const CreatePost = ({ onClose, onPost }) => {
         {/* User */}
         <div className="flex items-center gap-3 px-5 py-4">
           <img 
-            src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
+            src={getAvatarUrl(currentUser?.profilePic)} 
             alt="" 
             className="w-11 h-11 rounded-full object-cover bg-[#F3F4F6]"
           />

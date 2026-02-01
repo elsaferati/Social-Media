@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import { Search, MoreHorizontal, Send, Image, Phone, Video, ArrowLeft, Smile, Pencil, Trash2 } from "lucide-react"; 
-import { userAPI, messageAPI } from "../services/api";
+import { userAPI, messageAPI, getAvatarUrl } from "../services/api";
 import ConfirmModal from "../components/ConfirmModal";
 
 const EMOJI_LIST = ['😀', '😃', '😄', '😁', '😅', '😂', '🤣', '😊', '😇', '🙂', '😉', '😍', '🥰', '😘', '👍', '👋', '❤️', '🎉', '🔥', '✨', '😂', '🥺', '😭', '🤔', '🙃', '😎', '🤗', '😜', '🤪'];
@@ -251,7 +251,7 @@ const MessagesPage = () => {
                     <div className="relative">
                       <div className="avatar-ring">
                         <img 
-                          src={friend.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.username}`} 
+                          src={getAvatarUrl(friend.profilePic)} 
                           className="w-12 h-12 rounded-full object-cover" 
                           alt="" 
                         />
@@ -284,7 +284,7 @@ const MessagesPage = () => {
                   </button>
                   <div className="avatar-ring">
                     <img 
-                      src={selectedUser.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.username}`} 
+                      src={getAvatarUrl(selectedUser.profilePic)} 
                       className="w-10 h-10 rounded-full object-cover" 
                       alt="" 
                     />
@@ -337,7 +337,7 @@ const MessagesPage = () => {
                       >
                         {!isMe && showAvatar && (
                           <img 
-                            src={selectedUser.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${selectedUser.username}`}
+                            src={getAvatarUrl(selectedUser.profilePic)}
                             className="w-7 h-7 rounded-full object-cover"
                             alt=""
                           />

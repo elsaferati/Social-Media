@@ -138,6 +138,14 @@ const setupDatabase = async () => {
     `);
     console.log('✓ Notifications table ready');
 
+    // Ensure isRead column exists (for existing databases created without it)
+    try {
+      await connection.query(`ALTER TABLE notifications ADD COLUMN \`isRead\` TINYINT(1) DEFAULT 0`);
+      console.log('  Added isRead column to notifications');
+    } catch (e) {
+      if (!e.message?.includes('Duplicate column')) throw e;
+    }
+
     // Create messages table
     await connection.query(`
       CREATE TABLE IF NOT EXISTS messages (

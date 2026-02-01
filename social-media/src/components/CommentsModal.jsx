@@ -3,7 +3,7 @@ import { X, Send, Heart, MoreHorizontal, Trash2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '../context/AuthContext';
-import { commentAPI } from '../services/api';
+import { commentAPI, getAvatarUrl } from '../services/api';
 
 const CommentsModal = ({ isOpen, onClose, postId, postAuthor }) => {
   const { currentUser } = useAuth();
@@ -105,7 +105,7 @@ const CommentsModal = ({ isOpen, onClose, postId, postAuthor }) => {
                 <Link to={`/profile/${comment.userId}`} className="shrink-0">
                   <div className="avatar-ring">
                     <img 
-                      src={comment.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.username}`} 
+                      src={getAvatarUrl(comment.profilePic)} 
                       alt={comment.username} 
                       className="w-9 h-9 rounded-full object-cover"
                     />
@@ -159,7 +159,7 @@ const CommentsModal = ({ isOpen, onClose, postId, postAuthor }) => {
         >
           <div className="avatar-ring shrink-0">
             <img 
-              src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username}`} 
+              src={getAvatarUrl(currentUser?.profilePic)} 
               alt={currentUser?.username} 
               className="w-9 h-9 rounded-full object-cover"
             />

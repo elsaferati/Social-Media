@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { NavLink, useNavigate } from "react-router-dom";
+import { getAvatarUrl } from "../services/api";
 import { Menu, Heart, Send, Home, Search, Compass, MessageCircle, User, Settings, LogOut, X, PlusSquare, Shield } from "lucide-react";
 
 const Header = () => {
@@ -134,7 +135,7 @@ const Header = () => {
             <div className="px-3 py-4 border-t border-[#E2E8F0] space-y-2">
               <div className="flex items-center gap-3 px-4 py-3 bg-[#F8FAFC] rounded-[12px]">
                 <img 
-                  src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username}`}
+                  src={getAvatarUrl(currentUser?.profilePic)}
                   alt={currentUser?.username}
                   className="w-10 h-10 rounded-full object-cover bg-[#E2E8F0]"
                 />

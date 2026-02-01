@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { Link } from "react-router-dom";
-import { userAPI, relationshipAPI } from "../services/api";
+import { userAPI, relationshipAPI, getAvatarUrl } from "../services/api";
 import { UserPlus } from "lucide-react";
 
 const SuggestedUsers = () => {
@@ -94,7 +94,7 @@ const SuggestedUsers = () => {
           >
             <Link to={`/profile/${user.id}`} className="flex items-center gap-3 group flex-1 min-w-0">
               <img 
-                src={user.profilePic || user.img || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} 
+                src={getAvatarUrl(user.profilePic || user.img)} 
                 alt={user.username} 
                 className="w-10 h-10 rounded-full object-cover bg-[#F1F5F9]"
               />

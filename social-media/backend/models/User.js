@@ -42,12 +42,12 @@ const User = {
     if (password) {
       await db.query(
         'UPDATE users SET username = ?, email = ?, password = ?, bio = ?, profilePic = ? WHERE id = ?',
-        [username, email, password, bio || null, profilePic || null, id]
+        [username, email, password, bio ?? null, profilePic ?? null, id]
       );
     } else {
       await db.query(
-        'UPDATE users SET username = ?, email = ?, bio = ? WHERE id = ?',
-        [username, email, bio || null, id]
+        'UPDATE users SET username = ?, email = ?, bio = ?, profilePic = ? WHERE id = ?',
+        [username, email, bio ?? null, profilePic ?? null, id]
       );
     }
     return User.findById(id);

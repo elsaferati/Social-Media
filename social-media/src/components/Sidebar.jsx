@@ -1,6 +1,7 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { getAvatarUrl } from "../services/api";
 import { Home, Search, Compass, Heart, User, PlusSquare, MessageCircle, Settings, LogOut, Shield } from "lucide-react";
 
 const Sidebar = () => {
@@ -127,7 +128,7 @@ const Sidebar = () => {
         <div className="mt-3 p-4 bg-[#F8FAFC] rounded-[12px] border border-[#E2E8F0]">
           <div className="flex items-center gap-3">
             <img 
-              src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.username}`} 
+              src={getAvatarUrl(currentUser?.profilePic)} 
               alt={currentUser?.username}
               className="w-10 h-10 rounded-full object-cover bg-[#E2E8F0]"
             />

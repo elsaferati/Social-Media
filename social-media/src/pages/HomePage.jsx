@@ -7,7 +7,7 @@ import ModalSystem from "../components/ModalSystem";
 import CreatePost from "../components/CreatePost";
 import StoriesBar from "../components/StoriesBar";
 import { Image, Smile, TrendingUp } from "lucide-react"; 
-import { postAPI } from "../services/api";
+import { postAPI, getAvatarUrl } from "../services/api";
 
 const HomePage = () => {
   const [posts, setPosts] = useState([]);
@@ -65,7 +65,7 @@ const HomePage = () => {
           <div className="card p-5">
             <div className="flex items-center gap-4">
               <img 
-                src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
+                src={getAvatarUrl(currentUser?.profilePic)} 
                 className="w-12 h-12 rounded-full object-cover bg-[#F1F5F9]" 
                 alt="" 
               />
@@ -128,7 +128,7 @@ const HomePage = () => {
             <div className="card p-5">
               <div className="flex items-center gap-4">
                 <img 
-                  src={currentUser?.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser?.id}`} 
+                  src={getAvatarUrl(currentUser?.profilePic)} 
                   className="w-14 h-14 rounded-full object-cover bg-[#F1F5F9]" 
                   alt="" 
                 />

@@ -2,6 +2,7 @@ import express from 'express';
 import {
   getUser,
   updateUser,
+  uploadProfilePic,
   getSuggestions,
   getFriends,
   followUser,
@@ -12,6 +13,7 @@ import {
   getFollowing
 } from '../controllers/userController.js';
 import { authenticateToken } from '../middleware/auth.js';
+import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
@@ -33,6 +35,9 @@ router.get('/following/:userId', getFollowing);
 
 // Single user by ID (must be LAST for GET requests)
 router.get('/:userId', getUser);
+
+// Upload profile picture (must be before generic PUT :userId)
+router.put('/:userId/avatar', authenticateToken, upload.single('photo'), uploadProfilePic);
 
 // Update user
 router.put('/:userId', updateUser);

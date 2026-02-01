@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import FollowButton from "./FollowButton";
 import { Settings, MessageCircle, UserPlus } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { userAPI, relationshipAPI, postAPI } from "../services/api";
+import { userAPI, relationshipAPI, postAPI, getAvatarUrl } from "../services/api";
 
 const ProfileHeader = ({ userId }) => {
   const { currentUser } = useAuth();
@@ -79,7 +79,7 @@ const ProfileHeader = ({ userId }) => {
     return null;
   }
 
-  const userImage = user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`;
+  const userImage = getAvatarUrl(user.profilePic);
 
   return (
     <div className="card-flat overflow-hidden">

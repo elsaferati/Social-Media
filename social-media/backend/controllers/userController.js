@@ -21,7 +21,7 @@ export const getUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const { username, email, password, bio } = req.body;
+    const { username, email, password, bio, profilePic } = req.body;
 
     // Check if user exists
     const existingUser = await User.findById(userId);
@@ -36,12 +36,13 @@ export const updateUser = async (req, res) => {
       hashedPassword = await bcrypt.hash(password, salt);
     }
 
-    // Update user
+    // Update user (profilePic can be set from body when removing or from upload)
     const updatedUser = await User.update(userId, {
       username: username || existingUser.username,
       email: email || existingUser.email,
       password: hashedPassword,
-      bio
+      bio: bio !== undefined ? bio : existingUser.bio,
+      profilePic: profilePic !== undefined ? profilePic : existingUser.profilePic
     });
 
     res.json(updatedUser);
@@ -50,6 +51,37 @@ export const updateUser = async (req, res) => {
     if (error.code === 'ER_DUP_ENTRY') {
       return res.status(409).json({ message: 'Username or email already taken' });
     }
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Upload profile picture
+export const uploadProfilePic = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    if (String(req.user?.id) !== String(userId)) {
+      return res.status(403).json({ message: 'You can only update your own profile picture' });
+    }
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    const existingUser = await User.findById(userId);
+    if (!existingUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const profilePicPath = `/uploads/${req.file.filename}`;
+    const updatedUser = await User.update(userId, {
+      username: existingUser.username,
+      email: existingUser.email,
+      bio: existingUser.bio,
+      profilePic: profilePicPath
+    });
+
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Upload profile pic error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

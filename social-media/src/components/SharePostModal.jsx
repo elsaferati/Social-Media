@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { userAPI, messageAPI } from '../services/api';
+import { userAPI, messageAPI, getAvatarUrl } from '../services/api';
 
 const SharePostModal = ({ isOpen, onClose, post, postAuthor }) => {
   const { currentUser } = useAuth();
@@ -127,7 +127,7 @@ const SharePostModal = ({ isOpen, onClose, post, postAuthor }) => {
                   } disabled:opacity-60 disabled:cursor-not-allowed`}
                 >
                   <img
-                    src={friend.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.username}`}
+                    src={getAvatarUrl(friend.profilePic)}
                     alt=""
                     className="w-10 h-10 rounded-full object-cover"
                   />

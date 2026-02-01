@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import Layout from "../components/Layout";
 import { Link } from "react-router-dom";
 import { Heart, UserPlus, MessageCircle, Bell, CheckCheck } from "lucide-react";
-import { notificationAPI } from "../services/api";
+import { notificationAPI, getAvatarUrl } from "../services/api";
 import { formatDistanceToNow } from "date-fns";
 
 const NotificationsPage = () => {
@@ -132,7 +132,7 @@ const NotificationsPage = () => {
                       <Link to={`/profile/${n.senderUserId}`} className="relative flex-shrink-0">
                         <div className="avatar-ring">
                           <img 
-                            src={n.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${n.senderUserId}`} 
+                            src={getAvatarUrl(n.profilePic)} 
                             className="w-12 h-12 rounded-full object-cover" 
                             alt="" 
                           />
@@ -188,7 +188,7 @@ const NotificationsPage = () => {
                       <Link to={`/profile/${n.senderUserId}`} className="relative flex-shrink-0">
                         <div className="avatar-ring">
                           <img 
-                            src={n.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${n.senderUserId}`} 
+                            src={getAvatarUrl(n.profilePic)} 
                             className="w-12 h-12 rounded-full object-cover" 
                             alt="" 
                           />

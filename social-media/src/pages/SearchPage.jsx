@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { Search, User, FileText, TrendingUp, Hash } from 'lucide-react';
 import Layout from '../components/Layout';
 import PostCard from '../components/PostCard';
-import { searchAPI } from '../services/api';
+import { searchAPI, getAvatarUrl } from '../services/api';
 
 const SearchPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -175,7 +175,7 @@ const SearchPage = () => {
                       style={{ animationDelay: `${index * 50}ms` }}
                     >
                       <img 
-                        src={user.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`} 
+                        src={getAvatarUrl(user.profilePic)} 
                         alt={user.username} 
                         className="w-12 h-12 rounded-full object-cover bg-[#F1F5F9]"
                       />

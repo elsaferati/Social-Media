@@ -1,5 +1,16 @@
 // API Service Layer
 const API_BASE_URL = 'http://localhost:8800/api';
+const UPLOADS_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, '');
+
+// Single unknown/default avatar for all users without a profile photo (neutral person icon)
+export const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239ca3af'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+
+// Resolve profile pic URL: use full URL for uploads, or return default avatar
+export const getAvatarUrl = (profilePic) => {
+  if (!profilePic) return DEFAULT_AVATAR;
+  if (profilePic.startsWith('http') || profilePic.startsWith('data:')) return profilePic;
+  return `${UPLOADS_ORIGIN}${profilePic.startsWith('/') ? '' : '/'}${profilePic}`;
+};
 
 // Get token from localStorage
 const getToken = () => localStorage.getItem('token');
@@ -56,6 +67,12 @@ export const authAPI = {
     }),
 
   getCurrentUser: () => fetchWithAuth('/auth/me'),
+
+  deleteAccount: (password) =>
+    fetchWithAuth('/auth/delete-account', {
+      method: 'POST',
+      body: JSON.stringify({ password }),
+    }),
 };
 
 // ==================== USERS ====================
@@ -67,6 +84,24 @@ export const userAPI = {
       method: 'PUT',
       body: JSON.stringify(data),
     }),
+
+  updateProfilePic: async (userId, file) => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('photo', file);
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/avatar`, {
+      method: 'PUT',
+      headers,
+      body: formData,
+    });
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || 'Failed to upload photo');
+    }
+    return response.json();
+  },
 
   getSuggestions: (userId) => fetchWithAuth(`/users/suggestions/${userId}`),
   

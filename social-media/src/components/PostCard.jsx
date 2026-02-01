@@ -3,7 +3,7 @@ import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Trash2 } from "lu
 import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { likeAPI, bookmarkAPI, postAPI } from "../services/api";
+import { likeAPI, bookmarkAPI, postAPI, getAvatarUrl } from "../services/api";
 import CommentsModal from "./CommentsModal";
 import SharePostModal from "./SharePostModal";
 
@@ -18,7 +18,7 @@ const PostCard = ({ post, onDelete, onBookmarkChange }) => {
   const [likeLoading, setLikeLoading] = useState(false);
   const [bookmarkLoading, setBookmarkLoading] = useState(false);
 
-  const userImage = post.profilePic || `https://api.dicebear.com/7.x/avataaars/svg?seed=${post.userId}`;
+  const userImage = getAvatarUrl(post.profilePic);
   const username = post.username || "user_" + post.userId;
   const timeAgo = post.createdAt ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true }) : "just now";
 
