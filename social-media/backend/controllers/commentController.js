@@ -1,12 +1,14 @@
 import Comment from '../models/Comment.js';
+import CommentLike from '../models/CommentLike.js';
 import Post from '../models/Post.js';
 import Notification from '../models/Notification.js';
 
-// Get comments for a post
+// Get comments for a post (with likeCount and liked for current user)
 export const getComments = async (req, res) => {
   try {
     const postId = req.params.postId;
-    const comments = await Comment.getByPostId(postId);
+    const currentUserId = req.user?.id ?? null;
+    const comments = await Comment.getByPostId(postId, currentUserId);
     res.json(comments);
   } catch (error) {
     console.error('Get comments error:', error);
@@ -14,10 +16,10 @@ export const getComments = async (req, res) => {
   }
 };
 
-// Create comment
+// Create comment (optionally a reply: parentCommentId)
 export const createComment = async (req, res) => {
   try {
-    const { content, userId, postId } = req.body;
+    const { content, userId, postId, parentCommentId } = req.body;
 
     if (!content || !userId || !postId) {
       return res.status(400).json({ message: 'Content, userId, and postId are required' });
@@ -29,7 +31,7 @@ export const createComment = async (req, res) => {
       return res.status(404).json({ message: 'Post not found' });
     }
 
-    const commentId = await Comment.create({ content, userId, postId });
+    const commentId = await Comment.create({ content, userId, postId, parentCommentId: parentCommentId || null });
     const comment = await Comment.findById(commentId);
 
     // Create notification if not own post
@@ -101,6 +103,29 @@ export const getCommentCount = async (req, res) => {
     res.json({ count });
   } catch (error) {
     console.error('Get comment count error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Toggle like on a comment
+export const likeComment = async (req, res) => {
+  try {
+    const commentId = req.params.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: 'Login required to like comments' });
+    }
+
+    const comment = await Comment.findById(commentId);
+    if (!comment) {
+      return res.status(404).json({ message: 'Comment not found' });
+    }
+
+    const liked = await CommentLike.toggle(userId, commentId);
+    const count = await CommentLike.countByComment(commentId);
+    res.json({ liked, count });
+  } catch (error) {
+    console.error('Like comment error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

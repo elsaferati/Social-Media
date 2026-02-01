@@ -140,6 +140,15 @@ const Hashtag = {
     return result.affectedRows > 0;
   },
 
+  // Remove all hashtags from a post (for update: clear then re-add)
+  removeAllFromPost: async (postId) => {
+    const [rows] = await db.query('SELECT hashtagId FROM post_hashtags WHERE postId = ?', [postId]);
+    await db.query('DELETE FROM post_hashtags WHERE postId = ?', [postId]);
+    for (const row of rows) {
+      await Hashtag.decrementUsage(row.hashtagId);
+    }
+  },
+
   // Get hashtags for a post
   getByPostId: async (postId) => {
     const [rows] = await db.query(

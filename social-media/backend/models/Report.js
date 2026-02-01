@@ -1,33 +1,38 @@
 import db from '../config/db.js';
 
 const Report = {
-  // Find report by ID
+  // Find report by ID (reportedUsername from reported user or post author when reporting a post)
   findById: async (id) => {
     const [rows] = await db.query(
       `SELECT r.*, 
         reporter.username as reporterUsername, reporter.profilePic as reporterProfilePic,
-        reported.username as reportedUsername, reported.profilePic as reportedProfilePic,
+        COALESCE(reported.username, postAuthor.username) as reportedUsername,
+        COALESCE(reported.profilePic, postAuthor.profilePic) as reportedProfilePic,
         p.content as postContent
        FROM reports r
        JOIN users reporter ON r.reporterUserId = reporter.id
        LEFT JOIN users reported ON r.reportedUserId = reported.id
        LEFT JOIN posts p ON r.reportedPostId = p.id
+       LEFT JOIN users postAuthor ON p.userId = postAuthor.id
        WHERE r.id = ?`,
       [id]
     );
     return rows[0] || null;
   },
 
-  // Get all reports (paginated, for admin)
+  // Get all reports (paginated, for admin). reportedUsername = reported user or post author when post reported
   getAll: async (page = 1, limit = 10, status = null, reportType = null) => {
     const offset = (page - 1) * limit;
     let query = `
       SELECT r.*, 
         reporter.username as reporterUsername, reporter.profilePic as reporterProfilePic,
-        reported.username as reportedUsername, reported.profilePic as reportedProfilePic
+        COALESCE(reported.username, postAuthor.username) as reportedUsername,
+        COALESCE(reported.profilePic, postAuthor.profilePic) as reportedProfilePic
        FROM reports r
        JOIN users reporter ON r.reporterUserId = reporter.id
        LEFT JOIN users reported ON r.reportedUserId = reported.id
+       LEFT JOIN posts p ON r.reportedPostId = p.id
+       LEFT JOIN users postAuthor ON p.userId = postAuthor.id
     `;
     let countQuery = 'SELECT COUNT(*) as total FROM reports r';
     const params = [];

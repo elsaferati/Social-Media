@@ -73,6 +73,47 @@ const Like = {
   count: async () => {
     const [rows] = await db.query('SELECT COUNT(*) as count FROM likes');
     return rows[0].count;
+  },
+
+  // Admin: get all likes (paginated, with user and post info)
+  getAllAdmin: async (page = 1, limit = 10, search = '') => {
+    const offset = (page - 1) * limit;
+    const searchCond = search
+      ? `AND (u.username LIKE ? OR p.content LIKE ?)`
+      : '';
+    const searchArg = search ? [`%${search}%`, `%${search}%`] : [];
+    const [rows] = await db.query(
+      `SELECT l.id, l.userId, l.postId, l.createdAt,
+              u.username,
+              LEFT(p.content, 80) AS postContent
+       FROM likes l
+       JOIN users u ON l.userId = u.id
+       JOIN posts p ON l.postId = p.id
+       WHERE 1=1 ${searchCond}
+       ORDER BY l.createdAt DESC
+       LIMIT ? OFFSET ?`,
+      [...searchArg, limit, offset]
+    );
+    const [countRows] = await db.query(
+      `SELECT COUNT(*) AS total FROM likes l
+       JOIN users u ON l.userId = u.id
+       JOIN posts p ON l.postId = p.id
+       WHERE 1=1 ${searchCond}`,
+      searchArg
+    );
+    const total = countRows[0]?.total ?? 0;
+    return { likes: rows, total, totalPages: Math.ceil(total / limit) || 1 };
+  },
+
+  // Find like by id (admin)
+  findById: async (id) => {
+    const [rows] = await db.query('SELECT * FROM likes WHERE id = ?', [id]);
+    return rows[0] || null;
+  },
+
+  // Delete like by id (admin)
+  deleteById: async (id) => {
+    await db.query('DELETE FROM likes WHERE id = ?', [id]);
   }
 };
 

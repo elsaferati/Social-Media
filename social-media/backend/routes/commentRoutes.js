@@ -4,19 +4,21 @@ import {
   createComment,
   updateComment,
   deleteComment,
-  getCommentCount
+  getCommentCount,
+  likeComment
 } from '../controllers/commentController.js';
 import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Public routes
-router.get('/:postId', getComments);
+// Get comments (optional auth for like state)
+router.get('/:postId', optionalAuth, getComments);
 router.get('/count/:postId', getCommentCount);
 
 // Protected routes
-router.post('/', createComment);
+router.post('/', authenticateToken, createComment);
 router.put('/:id', optionalAuth, updateComment);
 router.delete('/:id', optionalAuth, deleteComment);
+router.post('/:id/like', authenticateToken, likeComment);
 
 export default router;

@@ -1,17 +1,25 @@
 import db from '../config/db.js';
 
 const Comment = {
-  // Get comments for a post
-  getByPostId: async (postId) => {
+  // Get comments for a post (with optional likeCount and liked for current user)
+  getByPostId: async (postId, currentUserId = null) => {
     const [rows] = await db.query(
-      `SELECT c.*, u.username, u.profilePic 
-       FROM comments c 
-       JOIN users u ON c.userId = u.id 
+      `SELECT c.*, u.username, u.profilePic,
+              (SELECT COUNT(*) FROM comment_likes cl WHERE cl.commentId = c.id) AS likeCount,
+              ${currentUserId
+                ? `(SELECT 1 FROM comment_likes cl WHERE cl.commentId = c.id AND cl.userId = ?) AS liked`
+                : '0 AS liked'}
+       FROM comments c
+       JOIN users u ON c.userId = u.id
        WHERE c.postId = ?
-       ORDER BY c.createdAt ASC`,
-      [postId]
+       ORDER BY COALESCE(c.parentCommentId, c.id) ASC, c.createdAt ASC`,
+      currentUserId ? [currentUserId, postId] : [postId]
     );
-    return rows;
+    return rows.map((r) => ({
+      ...r,
+      likeCount: Number(r.likeCount ?? 0),
+      liked: currentUserId ? Boolean(r.liked) : false
+    }));
   },
 
   // Get all comments for admin (paginated)
@@ -65,11 +73,11 @@ const Comment = {
     return rows[0] || null;
   },
 
-  // Create comment
-  create: async ({ content, userId, postId }) => {
+  // Create comment (optionally a reply to parentCommentId)
+  create: async ({ content, userId, postId, parentCommentId = null }) => {
     const [result] = await db.query(
-      'INSERT INTO comments (content, userId, postId) VALUES (?, ?, ?)',
-      [content, userId, postId]
+      'INSERT INTO comments (content, userId, postId, parentCommentId) VALUES (?, ?, ?, ?)',
+      [content, userId, postId, parentCommentId || null]
     );
     return result.insertId;
   },

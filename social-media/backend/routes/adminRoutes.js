@@ -31,7 +31,14 @@ import {
   getAdminActivityLogs,
   getAdminActivityLog,
   updateAdminActivityLog,
-  deleteAdminActivityLog
+  deleteAdminActivityLog,
+  // Likes
+  getAdminLikes,
+  deleteAdminLike,
+  // Highlights
+  getAdminHighlights,
+  getAdminHighlight,
+  deleteAdminHighlight
 } from '../controllers/adminController.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { isAdmin } from '../middleware/admin.js';
@@ -87,5 +94,14 @@ router.get('/activity-logs', getAdminActivityLogs);
 router.get('/activity-logs/:id', getAdminActivityLog);
 router.put('/activity-logs/:id', updateAdminActivityLog);
 router.delete('/activity-logs/:id', deleteAdminActivityLog);
+
+// Likes management
+router.get('/likes', getAdminLikes);
+router.delete('/likes/:id', deleteAdminLike);
+
+// Highlights management (profile story highlights)
+router.get('/highlights', getAdminHighlights);
+router.get('/highlights/:id', getAdminHighlight);
+router.delete('/highlights/:id', deleteAdminHighlight);
 
 export default router;

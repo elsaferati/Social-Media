@@ -1,6 +1,48 @@
 import db from '../config/db.js';
 
 const Highlight = {
+  // Get all highlights for admin (paginated, with user info)
+  getAll: async (page = 1, limit = 10, search = '') => {
+    const offset = (page - 1) * limit;
+    let query = `
+      SELECT h.*, u.username, s.img as coverImg 
+       FROM profile_highlights h 
+       JOIN users u ON h.userId = u.id 
+       LEFT JOIN stories s ON h.coverStoryId = s.id 
+    `;
+    let countQuery = 'SELECT COUNT(*) as total FROM profile_highlights h JOIN users u ON h.userId = u.id';
+    const params = [];
+    const countParams = [];
+
+    if (search) {
+      query += ' WHERE u.username LIKE ? OR h.name LIKE ?';
+      countQuery += ' WHERE u.username LIKE ? OR h.name LIKE ?';
+      const term = `%${search}%`;
+      params.push(term, term);
+      countParams.push(term, term);
+    }
+
+    query += ' ORDER BY h.createdAt DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const [rows] = await db.query(query, params);
+    const [countResult] = await db.query(countQuery, countParams);
+    const total = countResult[0].total;
+
+    return {
+      highlights: rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  },
+
+  count: async () => {
+    const [rows] = await db.query('SELECT COUNT(*) as count FROM profile_highlights');
+    return rows[0].count;
+  },
+
   // Get highlights for a user (with cover image from first story)
   getByUserId: async (userId) => {
     const [rows] = await db.query(

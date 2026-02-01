@@ -13,8 +13,8 @@ import { isAdmin } from '../middleware/admin.js';
 
 const router = express.Router();
 
-// User routes (creating reports)
-router.post('/', createReport);
+// User routes (creating reports - must be logged in)
+router.post('/', authenticateToken, createReport);
 
 // Admin routes
 router.get('/', authenticateToken, isAdmin, getAllReports);

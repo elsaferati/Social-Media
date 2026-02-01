@@ -72,12 +72,35 @@ const setupDatabase = async () => {
         content TEXT NOT NULL,
         userId INT NOT NULL,
         postId INT NOT NULL,
+        parentCommentId INT DEFAULT NULL,
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (postId) REFERENCES posts(id) ON DELETE CASCADE
+        FOREIGN KEY (postId) REFERENCES posts(id) ON DELETE CASCADE,
+        FOREIGN KEY (parentCommentId) REFERENCES comments(id) ON DELETE CASCADE
       )
     `);
     console.log('✓ Comments table ready');
+
+    try {
+      await connection.query('ALTER TABLE comments ADD COLUMN parentCommentId INT DEFAULT NULL');
+      console.log('  Added parentCommentId to comments');
+    } catch (e) {
+      if (!e.message?.includes('Duplicate column')) throw e;
+    }
+
+    // Create comment_likes table
+    await connection.query(`
+      CREATE TABLE IF NOT EXISTS comment_likes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        userId INT NOT NULL,
+        commentId INT NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_comment_like (userId, commentId),
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (commentId) REFERENCES comments(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('✓ Comment likes table ready');
 
     // Create likes table
     await connection.query(`

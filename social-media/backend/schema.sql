@@ -36,9 +36,22 @@ CREATE TABLE IF NOT EXISTS comments (
   content TEXT NOT NULL,
   userId INT NOT NULL,
   postId INT NOT NULL,
+  parentCommentId INT DEFAULT NULL,
   createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (postId) REFERENCES posts(id) ON DELETE CASCADE
+  FOREIGN KEY (postId) REFERENCES posts(id) ON DELETE CASCADE,
+  FOREIGN KEY (parentCommentId) REFERENCES comments(id) ON DELETE CASCADE
+);
+
+-- Comment likes table
+CREATE TABLE IF NOT EXISTS comment_likes (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  userId INT NOT NULL,
+  commentId INT NOT NULL,
+  createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY unique_comment_like (userId, commentId),
+  FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (commentId) REFERENCES comments(id) ON DELETE CASCADE
 );
 
 -- Likes table
@@ -102,6 +115,8 @@ CREATE TABLE IF NOT EXISTS messages (
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_posts_userId ON posts(userId);
 CREATE INDEX IF NOT EXISTS idx_comments_postId ON comments(postId);
+CREATE INDEX IF NOT EXISTS idx_comments_parentCommentId ON comments(parentCommentId);
+CREATE INDEX IF NOT EXISTS idx_comment_likes_commentId ON comment_likes(commentId);
 CREATE INDEX IF NOT EXISTS idx_likes_postId ON likes(postId);
 CREATE INDEX IF NOT EXISTS idx_notifications_receiver ON notifications(receiverUserId);
 CREATE INDEX IF NOT EXISTS idx_messages_sender ON messages(senderId);

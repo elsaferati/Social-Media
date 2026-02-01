@@ -2,6 +2,7 @@ import Post from '../models/Post.js';
 import Like from '../models/Like.js';
 import Bookmark from '../models/Bookmark.js';
 import Notification from '../models/Notification.js';
+import Hashtag from '../models/Hashtag.js';
 
 // Get all posts
 export const getAllPosts = async (req, res) => {
@@ -104,6 +105,13 @@ export const createPost = async (req, res) => {
       userId: parseInt(userId), 
       img: imgUrl 
     });
+    if (content) {
+      try {
+        await Hashtag.processPostHashtags(postId, content);
+      } catch (e) {
+        console.error('Hashtag process error:', e);
+      }
+    }
     const post = await Post.findById(postId);
 
     res.status(201).json(post);
@@ -131,6 +139,14 @@ export const updatePost = async (req, res) => {
     }
 
     const updatedPost = await Post.update(postId, { content });
+    if (content != null) {
+      try {
+        await Hashtag.removeAllFromPost(postId);
+        await Hashtag.processPostHashtags(postId, content);
+      } catch (e) {
+        console.error('Hashtag process error:', e);
+      }
+    }
     res.json(updatedPost);
   } catch (error) {
     console.error('Update post error:', error);

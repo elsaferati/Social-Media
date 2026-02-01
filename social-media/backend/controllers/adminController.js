@@ -7,12 +7,13 @@ import Story from '../models/Story.js';
 import Report from '../models/Report.js';
 import Hashtag from '../models/Hashtag.js';
 import ActivityLog from '../models/ActivityLog.js';
+import Highlight from '../models/Highlight.js';
 import bcrypt from 'bcryptjs';
 
 // Get dashboard statistics
 export const getStats = async (req, res) => {
   try {
-    const [usersCount, postsCount, commentsCount, messagesCount, likesCount, storiesCount, pendingReportsCount, hashtagsCount, logsCount] = await Promise.all([
+    const [usersCount, postsCount, commentsCount, messagesCount, likesCount, storiesCount, pendingReportsCount, hashtagsCount, logsCount, highlightsCount] = await Promise.all([
       User.count(),
       Post.count(),
       Comment.count(),
@@ -21,7 +22,8 @@ export const getStats = async (req, res) => {
       Story.count(),
       Report.countPending(),
       Hashtag.count(),
-      ActivityLog.count()
+      ActivityLog.count(),
+      Highlight.count()
     ]);
 
     res.json({
@@ -33,7 +35,8 @@ export const getStats = async (req, res) => {
       stories: storiesCount,
       pendingReports: pendingReportsCount,
       hashtags: hashtagsCount,
-      activityLogs: logsCount
+      activityLogs: logsCount,
+      highlights: highlightsCount
     });
   } catch (error) {
     console.error('Get stats error:', error);
@@ -577,6 +580,89 @@ export const deleteAdminActivityLog = async (req, res) => {
     res.json({ message: 'Activity log deleted successfully' });
   } catch (error) {
     console.error('Delete admin activity log error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ==================== LIKES ====================
+
+// Get all likes (paginated)
+export const getAdminLikes = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+
+    const result = await Like.getAllAdmin(page, limit, search);
+    res.json(result);
+  } catch (error) {
+    console.error('Get admin likes error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Delete like
+export const deleteAdminLike = async (req, res) => {
+  try {
+    const likeId = req.params.id;
+
+    const like = await Like.findById(likeId);
+    if (!like) {
+      return res.status(404).json({ message: 'Like not found' });
+    }
+
+    await Like.deleteById(likeId);
+    res.json({ message: 'Like removed successfully' });
+  } catch (error) {
+    console.error('Delete admin like error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// ==================== HIGHLIGHTS (Profile story highlights) ====================
+
+// Get all highlights (paginated)
+export const getAdminHighlights = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+
+    const result = await Highlight.getAll(page, limit, search);
+    res.json(result);
+  } catch (error) {
+    console.error('Get admin highlights error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get single highlight (with stories)
+export const getAdminHighlight = async (req, res) => {
+  try {
+    const highlight = await Highlight.findById(req.params.id);
+    if (!highlight) {
+      return res.status(404).json({ message: 'Highlight not found' });
+    }
+    const stories = await Highlight.getStories(req.params.id);
+    res.json({ ...highlight, stories });
+  } catch (error) {
+    console.error('Get admin highlight error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Delete highlight
+export const deleteAdminHighlight = async (req, res) => {
+  try {
+    const highlightId = req.params.id;
+    const highlight = await Highlight.findById(highlightId);
+    if (!highlight) {
+      return res.status(404).json({ message: 'Highlight not found' });
+    }
+    await Highlight.delete(highlightId);
+    res.json({ message: 'Highlight deleted successfully' });
+  } catch (error) {
+    console.error('Delete admin highlight error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };

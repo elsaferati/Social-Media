@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import ActivityLog from '../models/ActivityLog.js';
 
 // Register new user
 export const register = async (req, res) => {
@@ -72,6 +73,20 @@ export const login = async (req, res) => {
 
     // Remove password from response
     const { password: _, ...userData } = user;
+
+    // Log login for activity log
+    try {
+      await ActivityLog.create({
+        userId: user.id,
+        action: 'login',
+        entityType: 'user',
+        entityId: user.id,
+        ipAddress: req.ip || req.connection?.remoteAddress,
+        userAgent: req.headers?.['user-agent']
+      });
+    } catch (e) {
+      console.error('Activity log login error:', e);
+    }
 
     res.json({ 
       token, 
