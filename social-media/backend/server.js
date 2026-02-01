@@ -27,6 +27,7 @@ import highlightRoutes from './routes/highlightRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import hashtagRoutes from './routes/hashtagRoutes.js';
 import activityLogRoutes from './routes/activityLogRoutes.js';
+import db from './config/db.js';
 
 const app = express();
 
@@ -73,7 +74,49 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 8800;
 
-app.listen(PORT, () => {
-  console.log(`Backend server running on port ${PORT}!`);
-  console.log(`API available at http://localhost:${PORT}/api`);
-});
+// Ensure comments table has parentCommentId (for older DBs created before replies were added)
+async function ensureCommentSchema() {
+  try {
+    await db.query('ALTER TABLE comments ADD COLUMN parentCommentId INT DEFAULT NULL');
+    console.log('  comments.parentCommentId column ready');
+  } catch (e) {
+    if (!e.message?.includes('Duplicate column')) console.error('  ensureCommentSchema:', e.message);
+  }
+}
+
+// Ensure comment_likes table exists (for DBs created before comment likes were added)
+async function ensureCommentLikesTable() {
+  try {
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS comment_likes (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        userId INT NOT NULL,
+        commentId INT NOT NULL,
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY unique_comment_like (userId, commentId),
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (commentId) REFERENCES comments(id) ON DELETE CASCADE
+      )
+    `);
+    console.log('  comment_likes table ready');
+  } catch (e) {
+    console.error('  ensureCommentLikesTable:', e.message);
+  }
+}
+
+async function ensureSchema() {
+  await ensureCommentSchema();
+  await ensureCommentLikesTable();
+}
+
+ensureSchema()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Backend server running on port ${PORT}!`);
+      console.log(`API available at http://localhost:${PORT}/api`);
+    });
+  })
+  .catch((err) => {
+    console.error('Failed to ensure schema:', err);
+    process.exit(1);
+  });

@@ -19,13 +19,21 @@ export const getComments = async (req, res) => {
   }
 };
 
-// Create comment (optionally a reply: parentCommentId)
+// Create comment (optionally a reply: parentCommentId). Uses authenticated user.
 export const createComment = async (req, res) => {
   try {
-    const { content, userId, postId, parentCommentId } = req.body;
+    const { content, postId: postIdRaw, parentCommentId } = req.body;
+    const postId = parseInt(postIdRaw, 10);
+    const userId = req.user?.id ?? req.body.userId;
 
-    if (!content || !userId || !postId) {
-      return res.status(400).json({ message: 'Content, userId, and postId are required' });
+    if (!content || !postIdRaw) {
+      return res.status(400).json({ message: 'Content and postId are required' });
+    }
+    if (Number.isNaN(postId)) {
+      return res.status(400).json({ message: 'Invalid post ID' });
+    }
+    if (!userId) {
+      return res.status(401).json({ message: 'Please sign in to comment' });
     }
 
     // Check if post exists
@@ -37,15 +45,21 @@ export const createComment = async (req, res) => {
     const commentId = await Comment.create({ content, userId, postId, parentCommentId: parentCommentId || null });
     const comment = await Comment.findById(commentId);
 
-    // Create notification if not own post
-    if (post.userId !== userId) {
-      await Notification.createCommentNotification(post.userId, userId, postId);
+    // Create notification if not own post (post author may be post.userId or post.userid from MySQL)
+    const postAuthorId = post.userId ?? post.userid;
+    if (postAuthorId && postAuthorId !== userId) {
+      try {
+        await Notification.createCommentNotification(postAuthorId, userId, postId);
+      } catch (notifErr) {
+        console.error('Create comment notification error:', notifErr);
+        // Don't fail the request; comment was created
+      }
     }
 
     res.status(201).json(comment);
   } catch (error) {
     console.error('Create comment error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: error.message || 'Server error' });
   }
 };
 
@@ -74,20 +88,35 @@ export const updateComment = async (req, res) => {
   }
 };
 
-// Delete comment
+// Delete comment (comment author, post author, or admin only)
 export const deleteComment = async (req, res) => {
   try {
     const commentId = req.params.id;
 
-    // Check if comment exists
     const existingComment = await Comment.findById(commentId);
     if (!existingComment) {
       return res.status(404).json({ message: 'Comment not found' });
     }
 
-    // Check ownership (unless admin)
-    if (req.user && req.user.id !== existingComment.userId && req.user.role !== 'admin') {
-      return res.status(403).json({ message: 'Not authorized to delete this comment' });
+    const commentAuthorId = existingComment.userId ?? existingComment.userid;
+    const isCommentAuthor = req.user?.id === commentAuthorId;
+    const isAdmin = req.user?.role === 'admin';
+
+    // Post author can delete any comment on their post
+    let isPostAuthor = false;
+    if (req.user?.id && existingComment.postId) {
+      const post = await Post.findById(existingComment.postId);
+      if (post) {
+        const postOwnerId = post.userId ?? post.userid;
+        isPostAuthor = req.user.id === postOwnerId;
+      }
+    }
+
+    if (!req.user) {
+      return res.status(401).json({ message: 'Sign in to delete comments' });
+    }
+    if (!isCommentAuthor && !isPostAuthor && !isAdmin) {
+      return res.status(403).json({ message: 'You can only delete your own comments or comments on your posts' });
     }
 
     await Comment.delete(commentId);

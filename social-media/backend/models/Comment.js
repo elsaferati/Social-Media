@@ -1,7 +1,7 @@
 import db from '../config/db.js';
 
 const Comment = {
-  // Get comments for a post (with optional likeCount and liked for current user)
+  // Get comments for a post (with optional likeCount and liked for current user). All users can see all comments.
   getByPostId: async (postId, currentUserId = null) => {
     const [rows] = await db.query(
       `SELECT c.*, u.username, u.profilePic,
@@ -10,13 +10,18 @@ const Comment = {
                 ? `(SELECT 1 FROM comment_likes cl WHERE cl.commentId = c.id AND cl.userId = ?) AS liked`
                 : '0 AS liked'}
        FROM comments c
-       JOIN users u ON c.userId = u.id
+       LEFT JOIN users u ON c.userId = u.id
        WHERE c.postId = ?
-       ORDER BY COALESCE(c.parentCommentId, c.id) ASC, c.createdAt ASC`,
+       ORDER BY COALESCE(c.parentCommentId, c.id) ASC, c.id ASC`,
       currentUserId ? [currentUserId, postId] : [postId]
     );
     return rows.map((r) => ({
       ...r,
+      userId: r.userId ?? r.userid,
+      username: r.username ?? r.Username ?? 'Unknown',
+      profilePic: r.profilePic ?? r.profilepic ?? null,
+      parentCommentId: r.parentCommentId ?? r.parentcommentid ?? r.parent_comment_id ?? null,
+      createdAt: r.createdAt ?? r.created_at ?? r.createdat ?? null,
       likeCount: Number(r.likeCount ?? 0),
       liked: currentUserId ? Boolean(r.liked) : false
     }));
@@ -75,11 +80,24 @@ const Comment = {
 
   // Create comment (optionally a reply to parentCommentId)
   create: async ({ content, userId, postId, parentCommentId = null }) => {
-    const [result] = await db.query(
-      'INSERT INTO comments (content, userId, postId, parentCommentId) VALUES (?, ?, ?, ?)',
-      [content, userId, postId, parentCommentId || null]
-    );
-    return result.insertId;
+    try {
+      const [result] = await db.query(
+        'INSERT INTO comments (content, userId, postId, parentCommentId) VALUES (?, ?, ?, ?)',
+        [content, userId, postId, parentCommentId || null]
+      );
+      return result.insertId;
+    } catch (err) {
+      // If comments table was created before parentCommentId was added, add column and retry
+      if (err.code === 'ER_BAD_FIELD_ERROR' && err.message?.includes('parentCommentId')) {
+        await db.query('ALTER TABLE comments ADD COLUMN parentCommentId INT DEFAULT NULL');
+        const [result] = await db.query(
+          'INSERT INTO comments (content, userId, postId, parentCommentId) VALUES (?, ?, ?, ?)',
+          [content, userId, postId, parentCommentId || null]
+        );
+        return result.insertId;
+      }
+      throw err;
+    }
   },
 
   // Update comment
