@@ -92,13 +92,13 @@ const Post = {
     return rows;
   },
 
-  // Get explore posts (random)
+  // Get explore posts (newest first)
   getExplore: async (limit = 20) => {
     const [rows] = await db.query(
       `SELECT p.*, u.username, u.profilePic 
        FROM posts p 
        JOIN users u ON p.userId = u.id 
-       ORDER BY RAND() 
+       ORDER BY p.createdAt DESC 
        LIMIT ?`,
       [limit]
     );
