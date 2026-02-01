@@ -3,10 +3,13 @@ import CommentLike from '../models/CommentLike.js';
 import Post from '../models/Post.js';
 import Notification from '../models/Notification.js';
 
-// Get comments for a post (with likeCount and liked for current user)
+// Get comments for a post (with likeCount and liked for current user). All users can see all comments.
 export const getComments = async (req, res) => {
   try {
-    const postId = req.params.postId;
+    const postId = parseInt(req.params.postId, 10);
+    if (Number.isNaN(postId)) {
+      return res.status(400).json({ message: 'Invalid post ID' });
+    }
     const currentUserId = req.user?.id ?? null;
     const comments = await Comment.getByPostId(postId, currentUserId);
     res.json(comments);

@@ -17,7 +17,15 @@ const Report = {
        WHERE r.id = ?`,
       [id]
     );
-    return rows[0] || null;
+    const row = rows[0] || null;
+    if (!row) return null;
+    return {
+      ...row,
+      reporterUsername: row.reporterUsername ?? row.reporterusername,
+      reporterProfilePic: row.reporterProfilePic ?? row.reporterprofilepic,
+      reportedUsername: row.reportedUsername ?? row.reportedusername,
+      reportedProfilePic: row.reportedProfilePic ?? row.reportedprofilepic,
+    };
   },
 
   // Get all reports (paginated, for admin). reportedUsername = reported user or post author when post reported
@@ -63,8 +71,17 @@ const Report = {
     const [rows] = await db.query(query, params);
     const [countResult] = await db.query(countQuery, countParams);
 
+    // Normalize so frontend always gets camelCase (MySQL may return lowercase keys)
+    const reports = rows.map((r) => ({
+      ...r,
+      reporterUsername: r.reporterUsername ?? r.reporterusername,
+      reporterProfilePic: r.reporterProfilePic ?? r.reporterprofilepic,
+      reportedUsername: r.reportedUsername ?? r.reportedusername,
+      reportedProfilePic: r.reportedProfilePic ?? r.reportedprofilepic,
+    }));
+
     return {
-      reports: rows,
+      reports,
       total: countResult[0].total,
       page,
       limit,

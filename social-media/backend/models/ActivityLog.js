@@ -10,7 +10,13 @@ const ActivityLog = {
        WHERE al.id = ?`,
       [id]
     );
-    return rows[0] || null;
+    const row = rows[0] || null;
+    if (!row) return null;
+    return {
+      ...row,
+      username: row.username ?? row.Username ?? null,
+      profilePic: row.profilePic ?? row.profilepic ?? null,
+    };
   },
 
   // Get all logs (paginated, for admin)
@@ -68,8 +74,15 @@ const ActivityLog = {
     const [rows] = await db.query(query, params);
     const [countResult] = await db.query(countQuery, countParams);
 
+    // Normalize so frontend always gets username/profilePic (MySQL may return lowercase keys)
+    const logs = rows.map((r) => ({
+      ...r,
+      username: r.username ?? r.Username ?? null,
+      profilePic: r.profilePic ?? r.profilepic ?? null,
+    }));
+
     return {
-      logs: rows,
+      logs,
       total: countResult[0].total,
       page,
       limit,

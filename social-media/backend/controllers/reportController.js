@@ -1,4 +1,5 @@
 import Report from '../models/Report.js';
+import Post from '../models/Post.js';
 import ActivityLog from '../models/ActivityLog.js';
 
 // Get all reports (admin)
@@ -50,9 +51,16 @@ export const createReport = async (req, res) => {
       return res.status(400).json({ message: 'reportedUserId or reportedPostId is required' });
     }
 
+    // For post reports: ensure reportedUserId is set (post author) so admin can see reported user
+    let resolvedReportedUserId = reportedUserId || null;
+    if (reportedPostId && !resolvedReportedUserId) {
+      const post = await Post.findById(reportedPostId);
+      if (post?.userId) resolvedReportedUserId = post.userId;
+    }
+
     const reportId = await Report.create({
       reporterUserId,
-      reportedUserId,
+      reportedUserId: resolvedReportedUserId,
       reportedPostId,
       reportType,
       reason,

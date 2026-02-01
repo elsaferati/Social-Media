@@ -53,6 +53,11 @@ const User = {
     return User.findById(id);
   },
 
+  // Update password only (for reset password flow)
+  updatePassword: async (id, hashedPassword) => {
+    await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, id]);
+  },
+
   // Update user role
   updateRole: async (id, role) => {
     await db.query('UPDATE users SET role = ? WHERE id = ?', [role, id]);

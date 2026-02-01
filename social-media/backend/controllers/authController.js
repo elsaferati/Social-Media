@@ -112,6 +112,77 @@ export const getCurrentUser = async (req, res) => {
   }
 };
 
+// Forgot password: send reset token (JWT with email, 1h expiry). No email service = return token for dev.
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const user = await User.findByEmail(email);
+    if (!user) {
+      // Don't reveal whether email exists
+      return res.json({
+        message: 'If an account exists with this email, you will receive a reset link.',
+        resetToken: null,
+      });
+    }
+
+    const resetToken = jwt.sign(
+      { email: user.email, purpose: 'password_reset' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // In production you would send email with link. For dev, return token so frontend can redirect.
+    res.json({
+      message: 'If an account exists with this email, you will receive a reset link.',
+      resetToken,
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Reset password: verify token and set new password
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) {
+      return res.status(400).json({ message: 'Token and new password are required' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (e) {
+      return res.status(400).json({ message: 'Invalid or expired reset link. Please request a new one.' });
+    }
+    if (decoded.purpose !== 'password_reset' || !decoded.email) {
+      return res.status(400).json({ message: 'Invalid reset token' });
+    }
+
+    const user = await User.findByEmail(decoded.email);
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    await User.updatePassword(user.id, hashedPassword);
+
+    res.json({ message: 'Password reset successfully. You can sign in with your new password.' });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 // Delete own account (requires password confirmation)
 export const deleteAccount = async (req, res) => {
   try {

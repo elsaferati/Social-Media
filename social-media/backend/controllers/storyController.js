@@ -78,8 +78,15 @@ export const createStory = async (req, res) => {
     const storyId = await Story.create({ userId, img: imgUrl, content });
     const story = await Story.findById(storyId);
 
-    // Log activity
-    await ActivityLog.logUserAction(req, 'create_story', 'story', storyId);
+    // Log activity (use userId from request so we record who created it even when route has no auth)
+    await ActivityLog.create({
+      userId,
+      action: 'create_story',
+      entityType: 'story',
+      entityId: storyId,
+      ipAddress: req.ip || req.connection?.remoteAddress,
+      userAgent: req.headers?.['user-agent'],
+    });
 
     res.status(201).json(story);
   } catch (error) {

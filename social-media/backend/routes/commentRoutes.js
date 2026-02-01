@@ -11,9 +11,9 @@ import { authenticateToken, optionalAuth } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Get comments (optional auth for like state)
-router.get('/:postId', optionalAuth, getComments);
+// More specific route first so /count/123 is not matched as postId "count"
 router.get('/count/:postId', getCommentCount);
+router.get('/:postId', optionalAuth, getComments);
 
 // Protected routes
 router.post('/', authenticateToken, createComment);
