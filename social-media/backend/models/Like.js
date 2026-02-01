@@ -82,15 +82,15 @@ const Like = {
       ? `AND (u.username LIKE ? OR p.content LIKE ?)`
       : '';
     const searchArg = search ? [`%${search}%`, `%${search}%`] : [];
+    // Use l.* and ORDER BY l.id so we don't depend on createdAt column name (MySQL casing)
     const [rows] = await db.query(
-      `SELECT l.id, l.userId, l.postId, l.createdAt,
-              u.username,
+      `SELECT l.*, u.username,
               LEFT(p.content, 80) AS postContent
        FROM likes l
        JOIN users u ON l.userId = u.id
        JOIN posts p ON l.postId = p.id
        WHERE 1=1 ${searchCond}
-       ORDER BY l.createdAt DESC
+       ORDER BY l.id DESC
        LIMIT ? OFFSET ?`,
       [...searchArg, limit, offset]
     );
@@ -101,8 +101,14 @@ const Like = {
        WHERE 1=1 ${searchCond}`,
       searchArg
     );
-    const total = countRows[0]?.total ?? 0;
-    return { likes: rows, total, totalPages: Math.ceil(total / limit) || 1 };
+    const total = Number(countRows[0]?.total ?? countRows[0]?.Total ?? 0);
+    // Normalize createdAt from l.* (MySQL may return different casing: createdAt, created_at, createdat, etc.)
+    const likes = rows.map((r) => {
+      const createdAt =
+        r.createdAt ?? r.created_at ?? r.createdat ?? r.CreatedAt ?? r.Created_At ?? null;
+      return { ...r, createdAt };
+    });
+    return { likes, total, totalPages: Math.ceil(total / limit) || 1 };
   },
 
   // Find like by id (admin)

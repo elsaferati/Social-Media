@@ -591,13 +591,17 @@ export const getAdminLikes = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const search = req.query.search || '';
+    const search = (req.query.search || '').trim();
 
     const result = await Like.getAllAdmin(page, limit, search);
     res.json(result);
   } catch (error) {
     console.error('Get admin likes error:', error);
-    res.status(500).json({ message: 'Server error' });
+    let message = 'Server error';
+    if (error.code === 'ER_NO_SUCH_TABLE') message = 'Likes table not set up. Run: node setupDatabase.js';
+    else if (error.code === 'ER_BAD_FIELD_ERROR') message = 'Database schema may be out of date. Run: node setupDatabase.js';
+    else if (error.message) message = error.message;
+    res.status(500).json({ message });
   }
 };
 
